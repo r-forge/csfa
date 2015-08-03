@@ -61,6 +61,7 @@
 \usepackage{color}
 \usepackage{easybmat}
 \usepackage{setspace}
+\usepackage{subcaption}
 \usepackage{multirow}
 \usepackage{float}
 \usepackage[english]{babel}
@@ -246,7 +247,8 @@ strong) and negative connected compounds.
 The next CS analysis which is applied is the one using Multiple Factor Analysis
 (MFA) by setting the \texttt{type} to \texttt{"CSmfa"}. Three of the
 available plots were chosen, namely the Reference Loadings, Gene Scores,
-Compound Loadings (Scores) and Compound Profiles (\texttt{which=c(2,4,5)}).\\
+Compound Loadings (Connectivity Scores) and Compound Profiles
+(\texttt{which=c(2,4,5)}).\\
 Note that in the R-code we already preselected which component to investigate
 with \texttt{factor.plot}.
 Further we also already decided which columns of the query matrix we would like
@@ -348,7 +350,90 @@ Zhang and MFA graphs.
 % 23,24,25 -> 29,30,31
 %highlight the connected ones in MFA, look if the same ones (hurrdurr)
 
-\subsection{Compare CS Results}
+\section{Example CS permutation}
+The \texttt{CSFA} package also contains a function called \texttt{CSpermute}.
+With this function it is possible to compute p-values through permutation for
+the MFA and Zhang \& Gant results. \\
+These results will be added to the \verb|CS| slot of both the MFA and ZG
+results. More information is also entered in the \verb|permutation.object| slot. 
+\\ \\
+First, let us apply the permutation on the MFA and ZG result without plotting
+any plots just yet by putting \texttt{which} to \texttt{c()}. The number of
+permutation was chosen to only be 100 in this case. Further, the p-values are
+also adjusted for multiplicity by setting a value for \texttt{method.adjust}
+different than \texttt{"none"}.\\
+(Note: it is possible for MFA results to compute the p-values in a different factor than the one chosen in the CS analysis. This is accomplished through the \texttt{mfa.factor} parameter.)
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,}\hlkwc{CSresult}\hlstd{=out_MFA,}\hlkwc{B}\hlstd{=}\hlnum{100}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
+                        \hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(),}\hlkwc{verbose}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+        \hlstd{out_ZG} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,}\hlkwc{CSresult}\hlstd{=out_ZG,}\hlkwc{B}\hlstd{=}\hlnum{100}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
+                        \hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(),}\hlkwc{verbose}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{head}\hlstd{(out_MFA}\hlopt{@}\hlkwc{CS}\hlopt{$}\hlstd{CS.query)}
+\end{alltt}
+\begin{verbatim}
+##         Factor1 pvalues pvalues.adjusted
+## cWP-1 0.5858096       0                0
+## cWP-2 0.5771857       0                0
+## cWP-3 0.5739775       0                0
+## cWP-4 0.5867910       0                0
+## cWP-5 0.5770335       0                0
+## cWP-6 0.5852554       0                0
+\end{verbatim}
+\begin{alltt}
+\hlkwd{head}\hlstd{(out_ZG}\hlopt{@}\hlkwc{CS}\hlopt{$}\hlstd{CS.query)}
+\end{alltt}
+\begin{verbatim}
+##       ZhangScore pvalues pvalues.adjusted
+## cWP-1  0.5590061       0                0
+## cWP-2  0.5473340       0                0
+## cWP-3  0.5621351       0                0
+## cWP-4  0.5649765       0                0
+## cWP-5  0.5578107       0                0
+## cWP-6  0.5468158       0                0
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\noindent Next, we can actually re-use the updated \texttt{out\_MFA} and
+\texttt{out\_ZG} in \texttt{CSpermute}.
+As long as the number of permutations (\texttt{B}) is not changed, the permutation will not need to computed all over again. 
+This means you can plot the available graphs (\text{which}: 1, volcano plot ; 2, connectivity score compound distribution histogram under null hypothesis with p-value) as many times as needed.
+The parameter \texttt{cmpd.hist} decides which compounds should be used for the second type of plot. 
+If this parameter is not given (\texttt{NULL}), you can interactively choose them on the volcano plot by left-clicking on them (and right-click to stop).
+In the code below, we plot both type of graphs for the MFA result with a pre-determined \texttt{cmpd.hist}.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,out_MFA,}\hlkwc{B}\hlstd{=}\hlnum{100}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
+                \hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),}\hlkwc{cmpd.hist}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{29}\hlstd{,}\hlnum{105}\hlstd{),}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{)}
+\end{alltt}
+\end{kframe}\begin{figure}[H]
+
+
+\includegraphics[width=9cm,height=10cm]{figure/CSpermute_plots-1} 
+\includegraphics[width=9cm,height=10cm]{figure/CSpermute_plots-2} 
+\includegraphics[width=9cm,height=10cm]{figure/CSpermute_plots-3} \hfill{}
+
+\caption[CSpermute graphs for out_MFA]{CSpermute graphs for out_MFA\label{fig:CSpermute_plots}}
+\end{figure}
+
+
+\end{knitrout}
+
+\section{Example Compare CS Results}
 Finally, CSFA also provides a way to quickly compare the 2 results on the same
 data.\\
 In the R-code below, we first compare the Zhang and Gant results with the MFA
@@ -373,14 +458,14 @@ comparison plot will be coloring according to these thresholds.
         \hlstd{corr_MFA_FABIA} \hlkwb{<-} \hlkwd{CScompare}\hlstd{(out_MFA,out_FABIA,}\hlkwc{component1.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{component2.plot}\hlstd{=}\hlnum{1}\hlstd{,}
                         \hlkwc{gene.thresP}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{2}\hlstd{),}\hlkwc{gene.thresN}\hlstd{=}\hlkwd{c}\hlstd{(}\hlopt{-}\hlnum{2}\hlstd{,}\hlopt{-}\hlnum{2}\hlstd{),}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{)}
 
-        \hlstd{corr_ZG_MFA}
+        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{correlation}
 \end{alltt}
 \begin{verbatim}
 ## CS Correlation 
 ##      0.9931169
 \end{verbatim}
 \begin{alltt}
-        \hlstd{corr_MFA_FABIA}
+        \hlstd{corr_MFA_FABIA}\hlopt{$}\hlstd{correlation}
 \end{alltt}
 \begin{verbatim}
 ## CS Correlation GS Correlation 
@@ -400,7 +485,31 @@ comparison plot will be coloring according to these thresholds.
 \end{knitrout}
 \noindent Note that apart from the scatter plots in Figure \ref{fig:CScompare},
 the function also returns the pearson correlation between the scores.
-%correlation printed
+\\ \\
+Further because both the MFA and ZG contain p-values and adjusted p-values, the
+returned object also contains a small comparison between the number of
+significant p-values. The significancy threshold can be changed with the
+\texttt{threshold.pvalues} parameter and is defaulted to 0.05.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{compare.pvalues}
+\end{alltt}
+\begin{verbatim}
+##                 Result1.Sign Result1.NotSign
+## Result2.Sign              37               0
+## Result2.NotSign           47             257
+\end{verbatim}
+\begin{alltt}
+        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{compare.pvalues.adjusted}
+\end{alltt}
+\begin{verbatim}
+##                 Result1.Sign Result1.NotSign
+## Result2.Sign              37               0
+## Result2.NotSign           11             293
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 
 \newpage
 %\nocite{*}

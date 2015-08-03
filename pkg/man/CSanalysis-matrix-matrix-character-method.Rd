@@ -8,7 +8,7 @@
 \S4method{CSanalysis}{matrix,matrix,character}(refMat, querMat, type, ...)
 }
 \arguments{
-\item{refMat}{Reference matrix}
+\item{refMat}{Reference matrix (Rows = genes and columns = compounds)}
 
 \item{querMat}{Query matrix}
 

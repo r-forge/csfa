@@ -14,7 +14,7 @@ analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE
 					basefilename="analyseZhang",
 					#column.interest=NULL,
 					colour.query=NULL,legend.names=NULL,legend.cols=unique(colour.query),legend.x=NULL,legend.y=NULL,
-					result.available=NULL,plot.type="pdf",
+					result.available=NULL,plot.type="pdf",print.top=TRUE,
 					which=c(1)){
 	
 	## Plot-in and -out functions			
@@ -35,7 +35,7 @@ analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE
 	}
 	
 	## Printing Top Connections Scores + Pvalues
-	print(zhang_result$Top)
+	if(print.top){print(zhang_result$Top)}
 	if(permute==TRUE){print(zhang_result$Toppvalues)}
 	
 	##
@@ -1478,7 +1478,7 @@ analyse_Zhang_fabia <- function(data,resZhang,resFAB=NULL,
 ##			-5: Compound Profiles (Select if necessary)
 
 analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("penalty","varnum"),use.corr=FALSE,lambda=1e-6,max.iter=200,trace=FALSE,eps.conv=1e-3,
-		basefilename="analyseMFA",ref.index=c(1),
+		basefilename="analyseMFA",ref.index=c(1),sparse.dim=2,
 		factor.plot=1,column.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
 		colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
 		result.available=NULL,plot.type="pdf",
@@ -1501,8 +1501,25 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 	
 	## Doing sMFA Analysis
 	if(is.null(result.available)){
-				
-		resMFA <- spca(x=data,K=K,para=para,type=type,sparse=sparse,use.corr=use.corr,lambda=lambda,max.iter=max.iter,trace=trace,eps.conv=eps.conv)
+		
+		if(!(sparse.dim %in% c(1,2))){stop("Please use a correct sparse.dim")}
+		
+		if(sparse.dim==1){data.spca <- t(data)}else{data.spca <- data}
+		
+		if(lambda==Inf){
+			if(dim(data.spca)[2]<dim(data.spca)[1]){warning("The to-be-reduced-with-sparsness dimension  is larger than the other dimension. Consider putting lambda at 0.")}
+			
+			
+			resMFA <- arrayspc(x=data.spca,K=K,para=para,use.corr=use.corr,max.iter=max.iter,trace=trace,eps=eps.conv)
+			
+		}
+		else{
+			if(dim(data.spca)[2]>dim(data.spca)[1]){warning("The to-be-reduced-with-sparsness dimension  is larger than the other dimension. Consider putting lambda at Inf.")}
+			
+			resMFA <- spca(x=data.spca,K=K,para=para,type=type,sparse=sparse,use.corr=use.corr,lambda=lambda,max.iter=max.iter,trace=trace,eps.conv=eps.conv)
+			
+		}
+		
 	}
 	else{
 		resMFA <- result.available
@@ -1519,12 +1536,22 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 	}
 	
 	##
-	loadings <- resMFA$loadings	# For compounds	
-	scores <- data %*% loadings	# For genes
-	if(!is.null(colour.columns)){groupCol <- colour.columns} else { groupCol <- "black"}
+	
+	if(sparse.dim==2){
+		loadings <- resMFA$loadings	# For compounds	
+		scores <- data %*% loadings	# For genes
+		
+	}
+	else if(sparse.dim==1){
+		scores <- resMFA$loadings	# For genes	
+		loadings <- data.spca %*% scores	# For compounds
+	}
 	
 	##
 	
+	if(!is.null(colour.columns)){groupCol <- colour.columns} else { groupCol <- "black"}
+	
+	##
 	
 	if(2 %in% which){
 		## PLOT: Loadings for reference compounds -> select which PC to use if factor.plot is NOT given

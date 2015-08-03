@@ -30,7 +30,7 @@
 
 \item{factor.plot}{Which factor (only one) should be investigated? If \code{NULL}, you can choose a factor of interest interactively from reference loadings plot.}
 
-\item{column.interest}{Numeric vector of columns which should be in the compound profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes on the Gene Scores plot.}
+\item{column.interest}{Numeric vector of indices of query columns which should be in the compound profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes on the Gene Scores plot.}
 
 \item{color.columns}{Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.}
 

@@ -20,7 +20,7 @@ NULL
 #' @importFrom fabia fabia extractBic showSelected
 #' @importFrom FactoMineR PCA MFA
 #' @importFrom pls stdize
-#' @importFrom elasticnet spca
+#' @importFrom elasticnet spca arrayspc
 
 
 
@@ -34,12 +34,13 @@ setClass("CSzhang",slots=c(call="call"))
 #' An S4 class in which the results of the Connectivity Scores by Factor Analysis are stored.
 #' 
 #' @export
-#' @slot type A character string containing the analysis type
-#' @slot CS List containing the connectivity scores for the query (and reference loadings)
-#' @slot GS Dataframe containing the gene scores
-#' @slot object Object containing the FA or Zhang result
-#' @slot call The original call of \code{CSanalysis}
-setClass("CSresult",slots=list(type="character",CS="list",GS="data.frame",object="ANY",call="call"))
+#' @slot type A character string containing the analysis type.
+#' @slot CS List containing the connectivity scores for the query (and reference loadings). If permutation was applied, will also contain p-values.
+#' @slot GS Dataframe containing the gene scores.
+#' @slot object Object containing the FA or Zhang result.
+#' @slot permutation.object Contains permuted data, CS for permuted data and a dataframe with the p-values (only for MFA and Zhang).
+#' @slot call List object containing the original call of \code{CSanalysis} as well as the parameters for the chosen method.
+setClass("CSresult",slots=list(type="character",CS="list",GS="data.frame",object="ANY",permutation.object="ANY",call="ANY"))
 
 setClass("CSzhangCompare",slots=c(CSresult1="CSresult",CSresult2="CSresult"))
 setClass("CSfabiaCompare",slots=c(CSresult1="CSresult",CSresult2="CSresult"))
@@ -51,7 +52,7 @@ setClass("CSfabiaCompare",slots=c(CSresult1="CSresult",CSresult2="CSresult"))
 #' Doing a CS analysis, interactively generating graphs. See specific type for additional parameteres.
 #' 
 #' @export
-#' @param refMat Reference matrix
+#' @param refMat Reference matrix (Rows = genes and columns = compounds)
 #' @param querMat Query matrix
 #' @param type Type of Factor Analysis or Zhang & Gant ( \code{"CSfabia"}, \code{"CSmfa"}, \code{"CSpca"}, \code{"CSsmfa"} or \code{"CSzhang"})
 #' @param ... Additional parameters for analysis
@@ -74,7 +75,7 @@ setGeneric('CSanalysis', function(refMat,querMat,type, ...){standardGeneric('CSa
 #' Doing a CS analysis, interactively generating graphs. See specific type for additional parameteres.
 #' 
 #' @export
-#' @param refMat Reference matrix
+#' @param refMat Reference matrix (Rows = genes and columns = compounds)
 #' @param querMat Query matrix
 #' @param type Type of Factor Analysis or Zhang & Gant ( \code{"CSfabia"}, \code{"CSmfa"}, \code{"CSpca"}, \code{"CSsmfa"} or \code{"CSzhang"})
 #' @param ... Additional parameters for analysis
@@ -161,9 +162,12 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 
 			if(!is.null(result.available)){
 				if(class(result.available) == "CSresult"){
-					result.available <- result.available@object
+					result.available2 <- result.available@object
 				}
 				else{stop("result.available is not of the correct class")}
+			}
+			else{
+				result.available2 <- NULL
 			}
 			
 			if(!is.null(column.interest)){column.interest <- column.interest + dim(refMat)[2]}
@@ -174,7 +178,7 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 					BC.plot=BC.plot,
 					column.interest=column.interest,row.interest=row.interest,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
 					colour.columns=colour.columns,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
-					result.available=result.available,plot.type=plot.type,
+					result.available=result.available2,plot.type=plot.type,
 					which=which)
 
 			BC.select <- out[[1]]
@@ -199,8 +203,24 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 			rownames(GS) <- rownames(scores)
 			colnames(GS) <- sapply(BC.select,FUN=function(x){paste0("BC",x)})
 			
+			call.object <- list(match.call=type@call,analysis.pm=list(p=p,alpha=alpha,cyc=cyc,spl=spl,spz=spz,non_negative=non_negative,random=random,center=center,norm=norm,scale=scale,la=lap,nL=nL,lL=lL,bL=bL))
 
-			return(new("CSresult",type="CSfabia",CS=CS,GS=GS,object=result,call=type@call))
+			if(!is.null(result.available)){
+				if(identical(result.available@permutation.object$analysis.perm.pm , call.object$analysis.pm   )){
+					warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object slot is unchanged.")
+					return(new("CSresult",type="CSfabia",CS=CS,GS=GS,object=result,permutation.object=result.available@permutation.object,call=call.object))
+					
+				}
+				else{
+					warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object was also deleted due to a different choice of method parameters.")
+					return(new("CSresult",type="CSfabia",CS=CS,GS=GS,object=result,permutation.object=NULL,call=call.object))
+					
+				}
+			}
+			else{
+				return(new("CSresult",type="CSfabia",CS=CS,GS=GS,object=result,permutation.object=NULL,call=call.object))
+				
+			}
 		})
 
 
@@ -259,9 +279,12 @@ setMethod("CSanalysis",c("matrix","matrix","CSmfa"),function(
 			
 			if(!is.null(result.available)){
 				if(class(result.available) == "CSresult"){
-					result.available <- result.available@object
+					result.available2 <- result.available@object
 				}
 				else{stop("result.available is not of the correct class")}
+			}
+			else{
+				result.available2 <- NULL
 			}
 			
 			if(!is.null(column.interest)){column.interest <- column.interest + dim(refMat)[2]}
@@ -270,7 +293,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSmfa"),function(
 					basefilename=basefilename,
 					factor.plot=factor.plot,column.interest=column.interest,row.interest=row.interest,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
 					colour.columns=colour.columns,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
-					result.available=result.available,plot.type=plot.type,
+					result.available=result.available2,plot.type=plot.type,
 					which=which)
 			
 			factor.select <- out[[1]]
@@ -293,8 +316,26 @@ setMethod("CSanalysis",c("matrix","matrix","CSmfa"),function(
 			rownames(GS) <- rownames(scores)
 			colnames(GS) <- sapply(factor.select,FUN=function(x){paste0("Factor",x)})
 			
+			call.object <- list(match.call=type@call,analysis.pm=list(ncp=ncp,weight.col.mfa=weight.col.mfa,row.w=row.w,factor.select=factor.select))
 			
-			return(new("CSresult",type="CSmfa",CS=CS,GS=GS,object=result,call=type@call))
+			
+			if(!is.null(result.available)){
+				if(identical(result.available@permutation.object$analysis.perm.pm , call.object$analysis.pm   )){
+					warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object slot is unchanged.")
+					return(new("CSresult",type="CSmfa",CS=CS,GS=GS,object=result,permutation.object=result.available@permutation.object,call=call.object))
+					
+				}
+				else{
+					warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object was also deleted due to a different choice of method parameters.")
+					return(new("CSresult",type="CSmfa",CS=CS,GS=GS,object=result,permutation.object=NULL,call=call.object))
+					
+				}
+			}
+			else{
+				return(new("CSresult",type="CSmfa",CS=CS,GS=GS,object=result,permutation.object=NULL,call=call.object))
+			}
+			
+			
 					
 		})
 
@@ -353,9 +394,12 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 					
 			if(!is.null(result.available)){
 				if(class(result.available) == "CSresult"){
-					result.available <- result.available@object
+					result.available2 <- result.available@object
 				}
 				else{stop("result.available is not of the correct class")}
+			}
+			else{
+				result.available2 <- NULL
 			}
 			
 			if(!is.null(column.interest)){column.interest <- column.interest + dim(refMat)[2]}
@@ -366,7 +410,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 					basefilename=basefilename,
 					ref.index=1,factor.plot=factor.plot,column.interest=column.interest,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
 					colour.columns=colour.columns,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
-					result.available=result.available,plot.type=plot.type,which=which)
+					result.available=result.available2,plot.type=plot.type,which=which)
 			
 			factor.select <- out[[1]]
 			result <- out[[2]]
@@ -388,8 +432,24 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 			rownames(GS) <- rownames(scores)
 			colnames(GS) <- sapply(factor.select,FUN=function(x){paste0("PC",x)})
 			
+			call.object <- list(match.call=type@call,analysis.pm=list(ncp=ncp,scale.unit=scale.unit,row.w=row.w,col.w=col.w))
 			
-			return(new("CSresult",type="CSpca",CS=CS,GS=GS,object=result,call=type@call))
+			if(!is.null(result.available)){
+				if(identical(result.available@permutation.object$analysis.perm.pm , call.object$analysis.pm   )){
+					warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object slot is unchanged.")
+					return(new("CSresult",type="CSpca",CS=CS,GS=GS,object=result,permutation.object=result.available@permutation.object,call=call.object))
+					
+				}
+				else{
+					warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object was also deleted due to a different choice of method parameters.")
+					return(new("CSresult",type="CSpca",CS=CS,GS=GS,object=result,permutation.object=NULL,call=call.object))
+					
+				}
+			}
+			else{
+				return(new("CSresult",type="CSpca",CS=CS,GS=GS,object=result,permutation.object=NULL,call=call.object))
+			}
+			
 					
 		})
 
@@ -405,8 +465,9 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 #' @param type \code{"CSsmfa"}
 #' @param K \emph{sMFA Parameters:} Number of components.
 #' @param para \emph{sMFA Parameters:} A vector of length K. All elements should be positive. If \code{sparse="varnum"}, the elements integers. 
-#' @param lambda \emph{sMFA Parameters:} Quadratic penalty parameter. Default value is 1e-6.
-#' @param sparse \emph{sMFA Parameters:} If \code{sparse="penalty"}, \code{para} is a vector of 1-norm penalty parameters. If \code{sparse="varnum"}, \code{para} defines the number of sparse loadings to be obtained.
+#' @param lambda \emph{sMFA Parameters:} Quadratic penalty parameter. Default value is 1e-6. If the target dimension of the sparsness is higher than the other dimension (p > n), it is advised to put \code{lambda} to \code{Inf} which uses the \code{arrayspc} algorithm optimized for this case. For the other case, p < n, a zero or positive \code{lambda} is sufficient and will utilize the normal \code{spca} algorithm.
+#' @param sparse.dim \emph{sMFA Parameters:} Which dimension should be sparse? 1: Rows, 2: Columns (default)
+#' @param sparse \emph{sMFA Parameters (\code{lambda < Inf} only):} If \code{sparse="penalty"}, \code{para} is a vector of 1-norm penalty parameters. If \code{sparse="varnum"}, \code{para} defines the number of sparse loadings to be obtained.
 #' @param max.iter \emph{sMFA Parameters:} Maximum number of iterations.
 #' @param eps.conv \emph{sMFA Parameters:} Convergence criterion.
 #' @param which Choose one or more plots to draw. 1: Percentage of variance explained by PC's, 2: Loadings for reference compounds, 3: Factor 1 VS PC Factor 2 : Loadings & Genes, 4: Loadings & Genes for Factor \code{factor.plot}, 5: Compound (column) Profiles
@@ -425,7 +486,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 #' @param basefilename Basename of the graphs if saved in pdf files
 #' @return An object of the S4 Class \code{CSresult}.
 setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
-				refMat,querMat,type="Csmfa",K=15,para,lambda=1e-6,sparse="penalty",max.iter=200,eps.conv=1e-3,
+				refMat,querMat,type="Csmfa",K=15,para,lambda=1e-6,sparse.dim=2,sparse="penalty",max.iter=200,eps.conv=1e-3,
 				which=c(1,2,3,4,5),
 				factor.plot=NULL,
 				column.interest=NULL,
@@ -450,18 +511,21 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 					
 			if(!is.null(result.available)){
 				if(class(result.available) == "CSresult"){
-					result.available <- result.available@object
+					result.available2 <- result.available@object
 				}
 				else{stop("result.available is not of the correct class")}
 			}	
+			else{
+				result.available2 <- NULL
+			}
 			
 			if(!is.null(column.interest)){column.interest <- column.interest + dim(refMat)[2]}
 			
-			out <- analyse_sMFA(data=data,K=K,para=para,type="predictor",sparse=sparse,use.corr=FALSE,lambda=lambda,max.iter=max.iter,trace=FALSE,eps.conv=eps.conv,
+			out <- analyse_sMFA(data=data,K=K,para=para,type="predictor",sparse=sparse,use.corr=FALSE,lambda=lambda,max.iter=max.iter,trace=FALSE,eps.conv=eps.conv,sparse.dim=sparse.dim,
 					basefilename=basefilename,ref.index=c(1:dim(refMat)[2]),
 					factor.plot=factor.plot,column.interest=column.interest,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
 					colour.columns=colour.columns,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
-					result.available=result.available,plot.type=plot.type,
+					result.available=result.available2,plot.type=plot.type,
 					which=which)
 			
 			factor.select <- out[[1]]
@@ -484,8 +548,25 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 			rownames(GS) <- rownames(scores)
 			colnames(GS) <- sapply(factor.select,FUN=function(x){paste0("Factor",x)})
 			
+			call.object <- list(match.call=type@call,analysis.pm=list(K=K,lambda=lambda,sparse=sparse,max.iter=max.iter,eps.conv=eps.conv))
 			
-			return(new("CSresult",type="CSsmfa",CS=CS,GS=GS,object=result,call=type@call))
+			if(!is.null(result.available)){
+				if(identical(result.available@permutation.object$analysis.perm.pm , call.object$analysis.pm   )){
+					warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object slot is unchanged.")
+					return(new("CSresult",type="CSsmfa",CS=CS,GS=GS,object=result,permutation.object=NULL,call=call.object))
+					
+				}
+				else{
+					warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object was also deleted due to a different choice of method parameters.")
+					return(new("CSresult",type="CSsmfa",CS=CS,GS=GS,object=result,permutation.object=NULL,call=call.object))
+					
+				}
+			}
+			else{
+				return(new("CSresult",type="CSsmfa",CS=CS,GS=GS,object=result,permutation.object=NULL,call=call.object))
+			}
+			
+			
 			
 		})
 
@@ -502,9 +583,9 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 #' @param nref \emph{Zhang Parameter:} Number of top up- and downregulated genes in reference signature. If \code{NULL}, all rows (genes) are used.
 #' @param nquery \emph{Zhang Parameter:} Number of top up- and downregulated genes in query signature. If \code{NULL}, all rows (genes) are used. (Note that \eqn{nref >= nquery})
 #' @param ord.query \emph{Zhang Parameter:} Logical value. Should the query signature be treated as ordered?
-#' @param permute \emph{Zhang Parameter:} Logical value. Should p-values be computed through permutation?
-#' @param B \emph{Zhang Parameter:} Number of permutations for p-value calculation.
-#' @param ntop.pvalues \emph{Zhang Parameter:} Number of top p-values to be reported first. 
+# @param permute \emph{Zhang Parameter:} Logical value. Should p-values be computed through permutation?
+# @param B \emph{Zhang Parameter:} Number of permutations for p-value calculation.
+# @param ntop.pvalues \emph{Zhang Parameter:} Number of top p-values to be reported first. 
 #' @param ntop.scores \emph{Zhang Parameter:} Number of top positive and negative CS to be reported first.
 #' @param color.query Vector of colors for the query columns. You can use this option to highlight columns(compounds) of interest in the CS plot. (This does not include the reference columns since they are not included in the CS plot.)
 #' @param legend.names Option to draw a legend (about the highlights in \code{color.query}) in the CS plot. If \code{NULL}, no legend will be drawn.
@@ -514,7 +595,8 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 #' @param basefilename Basename of the graphs if saved in pdf files
 #' @return An object of the S4 Class \code{CSresult}. The CS slot will also contain the top positive and negative scores as well as the top p-values. The GS slot will be empty for Zhang and Gant.
 setMethod("CSanalysis",c("matrix","matrix","CSzhang"),function(refMat,querMat,type="CSzhang",
-				nref=NULL,nquery=NULL,ord.query=TRUE,permute=FALSE,B=100000,ntop.pvalues=20,ntop.scores=20,
+				nref=NULL,nquery=NULL,ord.query=TRUE,ntop.scores=20,
+#				B=100000,ntop.pvalues=20,permute=FALSE,
 				color.query=NULL,
 				legend.names=NULL,legend.cols=NULL,
 				result.available=NULL,plot.type="device",basefilename="analyseZhang"
@@ -526,23 +608,52 @@ setMethod("CSanalysis",c("matrix","matrix","CSzhang"),function(refMat,querMat,ty
 			
 			if(!is.null(result.available)){
 				if(class(result.available) == "CSresult"){
-					result.available <- result.available@object
+					result.available2 <- result.available@object
 				}
 				else{stop("result.available is not of the correct class")}
 			}
+			else{
+				result.available2 <- NULL
+			}
 			
-			out <- analyse_zhang(dataref=refMat,dataquery=querMat,nref=nref,nquery=nquery,ord.query=ord.query,permute=permute,B=B,ntop.pvalues=ntop.values,ntop.scores=ntop.scores,
+			out <- analyse_zhang(dataref=refMat,dataquery=querMat,nref=nref,nquery=nquery,ord.query=ord.query,ntop.pvalues=ntop.values,ntop.scores=ntop.scores,
+#					permute=permute,B=B,ntop.pvalues=ntop.values,
 					basefilename=basefilename,
 					colour.query=colour.query,legend.names=legend.names,legend.cols=legend.cols,legend.x=NULL,legend.y=NULL,
-					result.available=result.available,plot.type=plot.type,
+					result.available=result.available2,plot.type=plot.type,
 					which=c(1))
 			
 			CS.ref <-  data.frame(ZhangScore=rep(1,dim(refMat)[2]))
 			rownames(CS.ref) <- colnames(refMat)
 					
-			CS <- list(CS.query=out$All,CS.ref=CS.ref,CS.top.query=list(TopCS=out$Top,TopPvalues=out$Toppvalues))
+#			CS <- list(CS.query=out$All,CS.ref=CS.ref,CS.top.query=list(TopCS=out$Top,TopPvalues=out$Toppvalues))
+			CS <- list(CS.query=out$All,CS.ref=CS.ref,CS.top.query=out$Top)
 			
-			return(new("CSresult",type="CSzhang",CS=CS,GS=data.frame(),object=out,call=type@call))
+			
+			call.object <- list(match.call=type@call,analysis.pm=list(nref=nref,nquery=nquery,ord.query=ord.query,ntop.scores=ntop.scores))
+			
+			if(!is.null(result.available)){
+				if(!is.null(result.available@permutation.object)){
+					
+					if(identical(result.available@permutation.object$analysis.perm.pm , call.object$analysis.pm   )){
+						warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object slot is unchanged.")
+						return(new("CSresult",type="CSzhang",CS=CS,GS=data.frame(),object=out,permutation.object=result.available@permutation.object,call=call.object))
+						
+					}
+					else{
+						warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object was also deleted due to a different choice of method parameters.")
+						return(new("CSresult",type="CSzhang",CS=CS,GS=data.frame(),object=out,permutation.object=NULL,call=call.object))
+						
+					}
+					
+				}
+				
+				
+			}
+			else{
+				return(new("CSresult",type="CSzhang",CS=CS,GS=data.frame(),object=out,permutation.object=NULL,call=call.object))
+			}
+			
 		})
 
 
