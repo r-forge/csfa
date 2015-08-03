@@ -2,11 +2,13 @@
 
 export(CSanalysis)
 export(CScompare)
+export(CSpermute)
 exportClasses(CSresult)
 exportMethods(CSanalysis)
 import(methods)
 importFrom(FactoMineR,MFA)
 importFrom(FactoMineR,PCA)
+importFrom(elasticnet,arrayspc)
 importFrom(elasticnet,spca)
 importFrom(fabia,extractBic)
 importFrom(fabia,fabia)

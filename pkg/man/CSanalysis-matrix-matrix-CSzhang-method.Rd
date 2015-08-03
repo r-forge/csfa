@@ -7,9 +7,8 @@
 \usage{
 \S4method{CSanalysis}{matrix,matrix,CSzhang}(refMat, querMat,
   type = "CSzhang", nref = NULL, nquery = NULL, ord.query = TRUE,
-  permute = FALSE, B = 1e+05, ntop.pvalues = 20, ntop.scores = 20,
-  color.query = NULL, legend.names = NULL, legend.cols = NULL,
-  result.available = NULL, plot.type = "device",
+  ntop.scores = 20, color.query = NULL, legend.names = NULL,
+  legend.cols = NULL, result.available = NULL, plot.type = "device",
   basefilename = "analyseZhang")
 }
 \arguments{
@@ -24,12 +23,6 @@
 \item{nquery}{\emph{Zhang Parameter:} Number of top up- and downregulated genes in query signature. If \code{NULL}, all rows (genes) are used. (Note that \eqn{nref >= nquery})}
 
 \item{ord.query}{\emph{Zhang Parameter:} Logical value. Should the query signature be treated as ordered?}
-
-\item{permute}{\emph{Zhang Parameter:} Logical value. Should p-values be computed through permutation?}
-
-\item{B}{\emph{Zhang Parameter:} Number of permutations for p-value calculation.}
-
-\item{ntop.pvalues}{\emph{Zhang Parameter:} Number of top p-values to be reported first.}
 
 \item{ntop.scores}{\emph{Zhang Parameter:} Number of top positive and negative CS to be reported first.}
 

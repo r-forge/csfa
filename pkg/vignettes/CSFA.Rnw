@@ -12,6 +12,7 @@
 \usepackage{color}
 \usepackage{easybmat}
 \usepackage{setspace}
+\usepackage{subcaption}
 \usepackage{multirow}
 \usepackage{float}
 \usepackage[english]{babel}
@@ -162,7 +163,8 @@ strong) and negative connected compounds.
 The next CS analysis which is applied is the one using Multiple Factor Analysis
 (MFA) by setting the \texttt{type} to \texttt{"CSmfa"}. Three of the
 available plots were chosen, namely the Reference Loadings, Gene Scores,
-Compound Loadings (Scores) and Compound Profiles (\texttt{which=c(2,4,5)}).\\
+Compound Loadings (Connectivity Scores) and Compound Profiles
+(\texttt{which=c(2,4,5)}).\\
 Note that in the R-code we already preselected which component to investigate
 with \texttt{factor.plot}.
 Further we also already decided which columns of the query matrix we would like
@@ -228,7 +230,55 @@ Zhang and MFA graphs.
 % 23,24,25 -> 29,30,31
 %highlight the connected ones in MFA, look if the same ones (hurrdurr)
 
-\subsection{Compare CS Results}
+\section{Example CS permutation}
+The \texttt{CSFA} package also contains a function called \texttt{CSpermute}.
+With this function it is possible to compute p-values through permutation for
+the MFA and Zhang \& Gant results. \\
+These results will be added to the \verb|CS| slot of both the MFA and ZG
+results. More information is also entered in the \verb|permutation.object| slot. 
+\\ \\
+First, let us apply the permutation on the MFA and ZG result without plotting
+any plots just yet by putting \texttt{which} to \texttt{c()}. The number of
+permutation was chosen to only be 100 in this case. Further, the p-values are
+also adjusted for multiplicity by setting a value for \texttt{method.adjust}
+different than \texttt{"none"}.\\
+(Note: it is possible for MFA results to compute the p-values in a different factor than the one chosen in the CS analysis. This is accomplished through the \texttt{mfa.factor} parameter.)
+
+
+<<CSpermute_compute,eval=FALSE,echo=TRUE,cache=TRUE>>=
+	out_MFA <- CSpermute(refMat,querMat,CSresult=out_MFA,B=100,method.adjust="BH",
+			which=c(),verbose=FALSE)
+	out_ZG <- CSpermute(refMat,querMat,CSresult=out_ZG,B=100,method.adjust="BH",
+			which=c(),verbose=FALSE)
+
+@
+<<cheat1,echo=FALSE>>=
+#save(list="out_MFA",file="figure/out_MFA.RData")
+#save(list="out_ZG",file="figure/out_ZG.RData")
+
+load("figure/out_MFA.RData")
+load("figure/out_ZG.RData")
+@
+
+<<CSpermute_compute2,echo=TRUE,cache=TRUE>>=
+head(out_MFA@CS$CS.query)
+head(out_ZG@CS$CS.query)
+@
+
+\noindent Next, we can actually re-use the updated \texttt{out\_MFA} and
+\texttt{out\_ZG} in \texttt{CSpermute}.
+As long as the number of permutations (\texttt{B}) is not changed, the permutation will not need to computed all over again. 
+This means you can plot the available graphs (\text{which}: 1, volcano plot ; 2, connectivity score compound distribution histogram under null hypothesis with p-value) as many times as needed.
+The parameter \texttt{cmpd.hist} decides which compounds should be used for the second type of plot. 
+If this parameter is not given (\texttt{NULL}), you can interactively choose them on the volcano plot by left-clicking on them (and right-click to stop).
+In the code below, we plot both type of graphs for the MFA result with a pre-determined \texttt{cmpd.hist}.
+
+<<CSpermute_plots,echo=TRUE,eval=TRUE,cache=TRUE,message=FALSE,results='hide',fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSpermute graphs for out_MFA">>=
+out_MFA <- CSpermute(refMat,querMat,out_MFA,B=100,method.adjust="BH",
+		which=c(1,2),cmpd.hist=c(29,105),plot.type="sweave")
+@
+
+\section{Example Compare CS Results}
 Finally, CSFA also provides a way to quickly compare the 2 results on the same
 data.\\
 In the R-code below, we first compare the Zhang and Gant results with the MFA
@@ -251,13 +301,21 @@ comparison plot will be coloring according to these thresholds.
 	corr_MFA_FABIA <- CScompare(out_MFA,out_FABIA,component1.plot=1,component2.plot=1,
 			gene.thresP=c(2,2),gene.thresN=c(-2,-2),plot.type="sweave")
 	
-	corr_ZG_MFA
-	corr_MFA_FABIA
+	corr_ZG_MFA$correlation
+	corr_MFA_FABIA$correlation
 	
 @
 \noindent Note that apart from the scatter plots in Figure \ref{fig:CScompare},
 the function also returns the pearson correlation between the scores.
-%correlation printed
+\\ \\
+Further because both the MFA and ZG contain p-values and adjusted p-values, the
+returned object also contains a small comparison between the number of
+significant p-values. The significancy threshold can be changed with the
+\texttt{threshold.pvalues} parameter and is defaulted to 0.05.
+<<CScompare2,echo=TRUE>>=
+	corr_ZG_MFA$compare.pvalues
+	corr_ZG_MFA$compare.pvalues.adjusted
+@
 
 \newpage
 %\nocite{*}

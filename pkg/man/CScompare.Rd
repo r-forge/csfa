@@ -4,11 +4,12 @@
 \alias{CScompare}
 \title{Compare CS Results.}
 \usage{
-CScompare(CSresult1, CSresult2, component1.plot, component2.plot, which = c(1,
-  2), color.columns = NULL, gene.thresP = NULL, gene.thresN = NULL,
-  thresP.col = c("blue", "light blue"), thresN.col = c("red", "pink"),
-  legend.names = NULL, legend.cols = NULL, legend.pos = "topright",
-  plot.type = "device", basefilename = "CScompare")
+CScompare(CSresult1, CSresult2, component1.plot, component2.plot,
+  threshold.pvalues = 0.05, which = c(1, 2), color.columns = NULL,
+  gene.thresP = NULL, gene.thresN = NULL, thresP.col = c("blue",
+  "light blue"), thresN.col = c("red", "pink"), legend.names = NULL,
+  legend.cols = NULL, legend.pos = "topright", plot.type = "device",
+  basefilename = "CScompare")
 }
 \arguments{
 \item{CSresult1}{First result.}
@@ -18,6 +19,8 @@ CScompare(CSresult1, CSresult2, component1.plot, component2.plot, which = c(1,
 \item{component1.plot}{If you are using a non-Zhang&Gant result, specify the bicluster, factor or principal component which should be used to derive connectivity scores from for the \emph{first} result.}
 
 \item{component2.plot}{If you are using a non-Zhang&Gant result, specify the bicluster, factor or principal component which should be used to derive connectivity scores from for the \emph{second} result.}
+
+\item{threshold.pvalues}{If both CSresult1 and CSresult contain pvalues (and adjusted pvalues), this threshold will be used to compare the number of overlapping significant results.}
 
 \item{which}{Choose one or both plots which should be created. 1: CS Comparison Plot, 2: GS Comparison Plot}
 
@@ -42,7 +45,7 @@ CScompare(CSresult1, CSresult2, component1.plot, component2.plot, which = c(1,
 \item{basefilename}{Basename of the graphs if saved in pdf files}
 }
 \value{
-Vector with correlation between Connectivity Scores (and Gene Scores if available).
+A list object with the vector with correlation between Connectivity Scores (and Gene Scores if available). If both CSresult contain p-values the other list slots are filled with some comparison between the number of significant p-values.
 }
 \description{
 After applying different CSanalysis on the same data, you can compare 2 different results of connectivity scores and gene scores

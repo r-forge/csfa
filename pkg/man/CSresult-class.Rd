@@ -10,14 +10,16 @@ An S4 class in which the results of the Connectivity Scores by Factor Analysis a
 \section{Slots}{
 
 \describe{
-\item{\code{type}}{A character string containing the analysis type}
+\item{\code{type}}{A character string containing the analysis type.}
 
-\item{\code{CS}}{List containing the connectivity scores for the query (and reference loadings)}
+\item{\code{CS}}{List containing the connectivity scores for the query (and reference loadings). If permutation was applied, will also contain p-values.}
 
-\item{\code{GS}}{Dataframe containing the gene scores}
+\item{\code{GS}}{Dataframe containing the gene scores.}
 
-\item{\code{object}}{Object containing the FA or Zhang result}
+\item{\code{object}}{Object containing the FA or Zhang result.}
 
-\item{\code{call}}{The original call of \code{CSanalysis}}
+\item{\code{permutation.object}}{Contains permuted data, CS for permuted data and a dataframe with the p-values (only for MFA and Zhang).}
+
+\item{\code{call}}{List object containing the original call of \code{CSanalysis} as well as the parameters for the chosen method.}
 }}
 

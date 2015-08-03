@@ -24,7 +24,8 @@
 #' @param legend.pos The location of the legend: \code{"bottomright"}, \code{"bottom"}, \code{"bottomleft"}, \code{"left"}, \code{"topleft"}, \code{"top"}, \code{"topright"}, \code{"right"} and \code{"center"}.
 #' @param plot.type How should the plots be outputted? \code{"pdf"} to save them in pdf files, \code{device} to draw them in a graphics device (default), \code{sweave} to use them in a sweave or knitr file.
 #' @param basefilename Basename of the graphs if saved in pdf files
-#' @return Vector with correlation between Connectivity Scores (and Gene Scores if available).
+#' @param threshold.pvalues If both CSresult1 and CSresult contain pvalues (and adjusted pvalues), this threshold will be used to compare the number of overlapping significant results. 
+#' @return A list object with the vector with correlation between Connectivity Scores (and Gene Scores if available). If both CSresult contain p-values the other list slots are filled with some comparison between the number of significant p-values.
 #' @examples
 #' \dontrun{
 #' data("dataSIM",package="CSFA")
@@ -36,7 +37,7 @@
 #' 
 #' CScompare(MFA_analysis,ZHANG_analysis,1)
 #' }
-CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,which=c(1,2),color.columns=NULL,gene.thresP=NULL,gene.thresN=NULL,thresP.col=c("blue","light blue"),thresN.col=c("red","pink"),legend.names=NULL,legend.cols=NULL,legend.pos="topright",plot.type="device",basefilename="CScompare"){
+CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,threshold.pvalues=0.05,which=c(1,2),color.columns=NULL,gene.thresP=NULL,gene.thresN=NULL,thresP.col=c("blue","light blue"),thresN.col=c("red","pink"),legend.names=NULL,legend.cols=NULL,legend.pos="topright",plot.type="device",basefilename="CScompare"){
 	
 	if(class(CSresult1)!="CSresult"){stop("CSresult1 is not of the correct class type")}
 	if(class(CSresult2)!="CSresult"){stop("CSresult2 is not of the correct class type")}
@@ -89,7 +90,20 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,which=
 		cor.temp <- cor.GS
 		names(cor.temp) <- c("GS Correlation")
 	}
-	return(cor.temp)
+#	return(cor.temp)
+		
+	
+	if(!is.null(CSresult1@permutation.object) & !is.null(CSresult2@permutation.object)){
+		
+		list.pval.dataframe <- list(CSresult1@permutation.object$pval.dataframe,CSresult2@permutation.object$pval.dataframe)
+		out_pval_compare <- pvalue2_compare(list.pval.dataframe,threshold=threshold.pvalues)
+				
+		return(list(correlation=cor.temp,compare.pvalues=out_pval_compare$compare.pvalues,compare.pvalues.adjusted=out_pval_compare$compare.pvalues.adjusted,pval.data1=out_pval_compare$list.pval.dataframe[[1]],pval.data2=out_pval_compare$list.pval.dataframe[[2]]))
+		
+	}
+	else{
+		return(list(correlation=cor.temp,compare.pvalues=NULL,compare.pvalues.adjusted=NULL,pval.data1=NULL,pval.data2=NULL))
+	}
 }
 
 
