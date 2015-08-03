@@ -273,7 +273,7 @@ The parameter \texttt{cmpd.hist} decides which compounds should be used for the 
 If this parameter is not given (\texttt{NULL}), you can interactively choose them on the volcano plot by left-clicking on them (and right-click to stop).
 In the code below, we plot both type of graphs for the MFA result with a pre-determined \texttt{cmpd.hist}.
 
-<<CSpermute_plots,echo=TRUE,eval=TRUE,cache=TRUE,message=FALSE,results='hide',fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSpermute graphs for out_MFA">>=
+<<CSpermuteplots,echo=TRUE,eval=TRUE,cache=TRUE,message=FALSE,results='hide',fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSpermute graphs for out_MFA">>=
 out_MFA <- CSpermute(refMat,querMat,out_MFA,B=100,method.adjust="BH",
 		which=c(1,2),cmpd.hist=c(29,105),plot.type="sweave")
 @
