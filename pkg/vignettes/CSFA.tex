@@ -78,7 +78,7 @@
 
 \usepackage{subcaption}
 
-\title{CSFA 0.1 - Vignette}
+\title{CSFA 0.2 - Vignette}
 \date{}
 \author{Ewoud De Troyer}
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -297,10 +297,39 @@ the compound profiles graph (and right-click to stop the selection procedure).
 positive and negative connected compounds are appearing in the Compound Loadings
 plot. However now we also get a plot showing the scores of the genes involved in
 the structure of the first factor in the MFA analysis.\\
-Finally also note that the \texttt{CSanalysis} function automatically prints the
+Also note that the \texttt{CSanalysis} function automatically prints the
 Echoufier Rv Correlation matrix between the Reference, Query and MFA matrix.
 %fig.keep="high",fig.pos='H',fig.show='hold',out.width='9cm',out.height='10cm',fig.align='left'
 %show plots, but also explain how interactivity works
+\\ \\
+We can reuse the \texttt{CSanalysis} function to draw the same or additional
+plots without re-computing the factor analysis. This is done through the
+\texttt{result.available} parameter. Here in Figure \ref{fig:MFA2}, the
+Connectivity Score Ranks are shown.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{6}\hlstd{),}
+                        \hlkwc{factor.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{),}\hlkwc{result.available}\hlstd{=out_MFA)}
+\end{alltt}
+\begin{verbatim}
+## Echoufier Rv Correlation:
+##           Reference     Query       MFA
+## Reference 1.0000000 0.4947578 0.8001384
+## Query     0.4947578 1.0000000 0.9171329
+## MFA       0.8001384 0.9171329 1.0000000
+\end{verbatim}
+\end{kframe}\begin{figure}[H]
+
+
+\includegraphics[width=9cm,height=10cm]{figure/MFA2-1} \hfill{}
+
+\caption[CSanalysis Graphs for CSfma]{CSanalysis Graphs for CSfma\label{fig:MFA2}}
+\end{figure}
+
+
+\end{knitrout}
 
 
 \subsection{FABIA}
@@ -461,22 +490,40 @@ comparison plot will be coloring according to these thresholds.
         \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{correlation}
 \end{alltt}
 \begin{verbatim}
-## CS Correlation 
-##      0.9931169
+##        CS Correlation RankScore Correlation 
+##             0.9931169             0.9116397
 \end{verbatim}
 \begin{alltt}
         \hlstd{corr_MFA_FABIA}\hlopt{$}\hlstd{correlation}
 \end{alltt}
 \begin{verbatim}
-## CS Correlation GS Correlation 
-##     -0.9573119     -0.7752930
+##        CS Correlation        GS Correlation RankScore Correlation 
+##            -0.9573119            -0.7752930             0.8634966
+\end{verbatim}
+\begin{alltt}
+        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{rankcorrelation}
+\end{alltt}
+\begin{verbatim}
+##        CS Rank Correlation RankScore Rank Correlation 
+##                  0.9646826                  0.6048734
+\end{verbatim}
+\begin{alltt}
+        \hlstd{corr_MFA_FABIA}\hlopt{$}\hlstd{rankcorrelation}
+\end{alltt}
+\begin{verbatim}
+##        CS Rank Correlation        GS Rank Correlation 
+##                 -0.5693159                 -0.7996527 
+## RankScore Rank Correlation 
+##                  0.3512829
 \end{verbatim}
 \end{kframe}\begin{figure}[H]
 
 
 \includegraphics[width=9cm,height=10cm]{figure/CScompare-1} 
 \includegraphics[width=9cm,height=10cm]{figure/CScompare-2} 
-\includegraphics[width=9cm,height=10cm]{figure/CScompare-3} \hfill{}
+\includegraphics[width=9cm,height=10cm]{figure/CScompare-3} 
+\includegraphics[width=9cm,height=10cm]{figure/CScompare-4} 
+\includegraphics[width=9cm,height=10cm]{figure/CScompare-5} \hfill{}
 
 \caption[Compare CSresults]{Compare CSresults\label{fig:CScompare}}
 \end{figure}
@@ -484,7 +531,8 @@ comparison plot will be coloring according to these thresholds.
 
 \end{knitrout}
 \noindent Note that apart from the scatter plots in Figure \ref{fig:CScompare},
-the function also returns the pearson correlation between the scores.
+the function also returns the pearson correlation between the (rank of
+the) scores.
 \\ \\
 Further because both the MFA and ZG contain p-values and adjusted p-values, the
 returned object also contains a small comparison between the number of
@@ -512,7 +560,7 @@ significant p-values. The significancy threshold can be changed with the
 \end{knitrout}
 
 \newpage
-%\nocite{*}
+\nocite{*}
 \bibliographystyle{asa}
 \bibliography{connectivityRef}
 

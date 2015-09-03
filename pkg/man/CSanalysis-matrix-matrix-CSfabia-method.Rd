@@ -8,11 +8,11 @@
 \S4method{CSanalysis}{matrix,matrix,CSfabia}(refMat, querMat,
   type = "CSfabia", p = 13, alpha = 0.01, cyc = 500, spl = 0,
   spz = 0.5, non_negative = 0, random = 1, center = 2, norm = 1,
-  scale = 0, lap = 1, nL = 0, lL = 0, bL = 0, which = c(1, 2, 3, 4,
-  5, 6), BC.plot = NULL, column.interest = NULL, color.columns = NULL,
+  scale = 0, lap = 1, nL = 0, lL = 0, bL = 0, which = c(2, 4, 5, 7),
+  BC.plot = NULL, column.interest = NULL, color.columns = NULL,
   row.interest = NULL, gene.thresP = 1, gene.thresN = -1,
   thresP.col = "blue", thresN.col = "red", legend.names = NULL,
-  legend.cols = NULL, result.available = NULL,
+  legend.cols = NULL, CSrank.refplot = FALSE, result.available = NULL,
   basefilename = "analyseFABIA", plot.type = "device")
 }
 \arguments{
@@ -71,6 +71,8 @@
 \item{legend.names}{Option to draw a legend of colored columns in Compound Loadings plot (\code{which=5}). If \code{NULL}, only "References" will be in the legend.}
 
 \item{legend.cols}{Colors to be used in legend in \code{which=5}. If \code{NULL}, only blue for "References is used".}
+
+\item{CSrank.refplot}{Logical value deciding if the CS Rank Scores (\code{which=6}) should also be plotted per reference (instead of only the weighted mean).}
 
 \item{result.available}{You can a previously returned object by \code{CSanalysis} in order to only draw graphs, not recompute the scores.}
 

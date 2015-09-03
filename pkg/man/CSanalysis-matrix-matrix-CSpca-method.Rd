@@ -6,11 +6,11 @@
 \title{"CSpca"}
 \usage{
 \S4method{CSanalysis}{matrix,matrix,CSpca}(refMat, querMat, type = "CSpca",
-  ncp = 5, scale.unit = TRUE, row.w = NULL, col.w = NULL, which = c(1,
-  2, 3, 4, 5), factor.plot = NULL, column.interest = NULL,
-  color.columns = NULL, row.interest = NULL, gene.thresP = 1,
-  gene.thresN = -1, thresP.col = "blue", thresN.col = "red",
-  legend.names = NULL, legend.cols = NULL, result.available = NULL,
+  ncp = 5, scale.unit = TRUE, row.w = NULL, col.w = NULL, which = c(2,
+  4, 6), factor.plot = NULL, column.interest = NULL, color.columns = NULL,
+  row.interest = NULL, gene.thresP = 1, gene.thresN = -1,
+  thresP.col = "blue", thresN.col = "red", legend.names = NULL,
+  legend.cols = NULL, CSrank.refplot = FALSE, result.available = NULL,
   basefilename = "analysePCA", plot.type = "device")
 }
 \arguments{
@@ -28,7 +28,7 @@
 
 \item{col.w}{\emph{PCA Parameter:} An optional column weights (by default, uniform column weights).}
 
-\item{which}{Choose one or more plots to draw. 1: Percentage of variance explained by PC's, 2: Loadings for reference compounds, 3: PC 1 VS PC 2 : Loadings & Genes, 4: Loadings & Genes for PC \code{factor.plot}, 5: Compound (column) Profiles}
+\item{which}{Choose one or more plots to draw. 1: Percentage of variance explained by PC's, 2: Loadings for reference compounds, 3: PC 1 VS PC 2 : Loadings & Genes, 4: Loadings & Genes for PC \code{factor.plot}, 5: Compound (column) Profiles, 6: CS Rank Scores for Factor \code{factor.plot}}
 
 \item{factor.plot}{Which PC (only one) should be investigated? If \code{NULL}, you can choose a PC of interest interactively from reference loadings plot.}
 
@@ -49,6 +49,8 @@
 \item{legend.names}{Option to draw a legend of colored columns in Compound Loadings plot (\code{which=4}). If \code{NULL}, only "References" will be in the legend.}
 
 \item{legend.cols}{Colors to be used in legend in \code{which=4}. If \code{NULL}, only blue for "References is used".}
+
+\item{CSrank.refplot}{Logical value deciding if the CS Rank Scores (\code{which=6}) should also be plotted per reference (instead of only the weighted mean).}
 
 \item{result.available}{You can a previously returned object by \code{CSanalysis} in order to only draw graphs, not recompute the scores.}
 

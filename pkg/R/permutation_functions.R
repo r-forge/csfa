@@ -162,11 +162,12 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 		# Choosing the mfa.factor and giving the proper warning later (namely that CS and GS will be overwritten)
 		
 		if(is.null(mfa.factor)){ # If no factor given, take the one chosen in CSanalysis
-			mfa.factor <- CSresult@call$analysis.pm$factor.select
+			mfa.factor <- CSresult@call$factor.select
 		}
 		
-		if(!is.null(mfa.factor) & (mfa.factor != CSresult@call$analysis.pm$factor.select)){
+		if(!is.null(mfa.factor) & (mfa.factor != CSresult@call$factor.select)){
 			CS.warning <- TRUE # Prepare for warning if mfa.factor is given and different from the one in CSanalysis. CSresult will need to be updated
+			CSresult@call$factor.select <- mfa.factor
 		}
 		else{
 			CS.warning <- FALSE
@@ -304,8 +305,8 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 	
 	##### RETURN OBJECT ######
 	
-	# Also add the method parameters used for this permutation...
-	CSresult@permutation.object$analysis.perm.pm <- CSresult@call$analysis.pm
+#	# Also add the method parameters used for this permutation...
+#	CSresult@permutation.object$analysis.perm.pm <- CSresult@call$analysis.pm
 	
 	return(CSresult)
 	# Contains:

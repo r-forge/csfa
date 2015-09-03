@@ -16,6 +16,8 @@ An S4 class in which the results of the Connectivity Scores by Factor Analysis a
 
 \item{\code{GS}}{Dataframe containing the gene scores.}
 
+\item{\code{CSRankScores}}{Dataframe containing the CS Rank Scores (Not for CSzhang). First column is the weighted mean and the subsequent ones per reference.}
+
 \item{\code{object}}{Object containing the FA or Zhang result.}
 
 \item{\code{permutation.object}}{Contains permuted data, CS for permuted data and a dataframe with the p-values (only for MFA and Zhang).}

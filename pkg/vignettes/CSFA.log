@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2014.10.20)  3 AUG 2015 15:48
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2014.10.20)  3 SEP 2015 17:23
 entering extended mode
 **C:/Users/lucp8394/Documents/StatFiles/CenStat/R*Development/CSFA/pkg/vignette
 s/CSFA.tex
@@ -587,38 +587,50 @@ Underfull \hbox (badness 10000) in paragraph at lines 285--289
  []
 
 [4]
-Underfull \hbox (badness 10000) in paragraph at lines 307--320
+Underfull \hbox (badness 10000) in paragraph at lines 296--309
 
  []
 
+Package color Info: Redefining color shadecolor on input line 311.
 [5 <C:/Users/lucp8394/Documents/StatFiles/CenStat/R Development/CSFA/pkg/vignet
 tes/figure/MFA-1.pdf> <C:/Users/lucp8394/Documents/StatFiles/CenStat/R Developm
 ent/CSFA/pkg/vignettes/figure/MFA-2.pdf> <C:/Users/lucp8394/Documents/StatFiles
 /CenStat/R Development/CSFA/pkg/vignettes/figure/MFA-3.pdf> <C:/Users/lucp8394/
 Documents/StatFiles/CenStat/R Development/CSFA/pkg/vignettes/figure/MFA-4.pdf>]
-Package color Info: Redefining color shadecolor on input line 323.
-<figure/FABIA-1.pdf, id=132, 505.89pt x 505.89pt>
-File: figure/FABIA-1.pdf Graphic file (type pdf)
-<use figure/FABIA-1.pdf>
-Package pdftex.def Info: figure/FABIA-1.pdf used on input line 339.
-(pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
-<figure/FABIA-2.pdf, id=133, 505.89pt x 505.89pt>
-File: figure/FABIA-2.pdf Graphic file (type pdf)
-<use figure/FABIA-2.pdf>
-Package pdftex.def Info: figure/FABIA-2.pdf used on input line 340.
-(pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
-<figure/FABIA-3.pdf, id=134, 505.89pt x 505.89pt>
-File: figure/FABIA-3.pdf Graphic file (type pdf)
-<use figure/FABIA-3.pdf>
-Package pdftex.def Info: figure/FABIA-3.pdf used on input line 341.
+<figure/MFA2-1.pdf, id=134, 505.89pt x 505.89pt>
+File: figure/MFA2-1.pdf Graphic file (type pdf)
+<use figure/MFA2-1.pdf>
+Package pdftex.def Info: figure/MFA2-1.pdf used on input line 326.
 (pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
 
-Overfull \hbox (30.68211pt too wide) in paragraph at lines 339--342
+Underfull \hbox (badness 10000) in paragraph at lines 336--349
+
+ []
+
+Package color Info: Redefining color shadecolor on input line 352.
+<figure/FABIA-1.pdf, id=135, 505.89pt x 505.89pt>
+File: figure/FABIA-1.pdf Graphic file (type pdf)
+<use figure/FABIA-1.pdf>
+Package pdftex.def Info: figure/FABIA-1.pdf used on input line 368.
+(pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
+<figure/FABIA-2.pdf, id=136, 505.89pt x 505.89pt>
+File: figure/FABIA-2.pdf Graphic file (type pdf)
+<use figure/FABIA-2.pdf>
+Package pdftex.def Info: figure/FABIA-2.pdf used on input line 369.
+(pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
+<figure/FABIA-3.pdf, id=137, 505.89pt x 505.89pt>
+File: figure/FABIA-3.pdf Graphic file (type pdf)
+<use figure/FABIA-3.pdf>
+Package pdftex.def Info: figure/FABIA-3.pdf used on input line 370.
+(pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
+
+Overfull \hbox (30.68211pt too wide) in paragraph at lines 368--371
 [][] []
  []
 
-[6]
-Underfull \hbox (badness 10000) in paragraph at lines 354--366
+[6 <C:/Users/lucp8394/Documents/StatFiles/CenStat/R Development/CSFA/pkg/vignet
+tes/figure/MFA2-1.pdf>]
+Underfull \hbox (badness 10000) in paragraph at lines 383--395
 
  []
 
@@ -626,31 +638,31 @@ Underfull \hbox (badness 10000) in paragraph at lines 354--366
 tes/figure/FABIA-1.pdf> <C:/Users/lucp8394/Documents/StatFiles/CenStat/R Develo
 pment/CSFA/pkg/vignettes/figure/FABIA-2.pdf> <C:/Users/lucp8394/Documents/StatF
 iles/CenStat/R Development/CSFA/pkg/vignettes/figure/FABIA-3.pdf>]
-Package color Info: Redefining color shadecolor on input line 369.
-Package color Info: Redefining color shadecolor on input line 381.
-Package color Info: Redefining color shadecolor on input line 418.
-<figure/CSpermuteplots-1.pdf, id=167, 505.89pt x 505.89pt>
+Package color Info: Redefining color shadecolor on input line 398.
+Package color Info: Redefining color shadecolor on input line 410.
+Package color Info: Redefining color shadecolor on input line 447.
+<figure/CSpermuteplots-1.pdf, id=177, 505.89pt x 505.89pt>
 File: figure/CSpermuteplots-1.pdf Graphic file (type pdf)
 <use figure/CSpermuteplots-1.pdf>
-Package pdftex.def Info: figure/CSpermuteplots-1.pdf used on input line 426.
+Package pdftex.def Info: figure/CSpermuteplots-1.pdf used on input line 455.
 (pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
-<figure/CSpermuteplots-2.pdf, id=168, 505.89pt x 505.89pt>
+<figure/CSpermuteplots-2.pdf, id=178, 505.89pt x 505.89pt>
 File: figure/CSpermuteplots-2.pdf Graphic file (type pdf)
 <use figure/CSpermuteplots-2.pdf>
-Package pdftex.def Info: figure/CSpermuteplots-2.pdf used on input line 427.
+Package pdftex.def Info: figure/CSpermuteplots-2.pdf used on input line 456.
 (pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
-<figure/CSpermuteplots-3.pdf, id=169, 505.89pt x 505.89pt>
+<figure/CSpermuteplots-3.pdf, id=179, 505.89pt x 505.89pt>
 File: figure/CSpermuteplots-3.pdf Graphic file (type pdf)
 <use figure/CSpermuteplots-3.pdf>
-Package pdftex.def Info: figure/CSpermuteplots-3.pdf used on input line 428.
+Package pdftex.def Info: figure/CSpermuteplots-3.pdf used on input line 457.
 (pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
 
-Overfull \hbox (30.68211pt too wide) in paragraph at lines 426--429
+Overfull \hbox (30.68211pt too wide) in paragraph at lines 455--458
 [][] []
  []
 
 [8]
-Overfull \hbox (4.97311pt too wide) in paragraph at lines 437--452
+Overfull \hbox (4.97311pt too wide) in paragraph at lines 466--481
 \OT1/cmr/m/n/10 In the R-code be-low, we first com-pare the Zhang and Gant re-s
 ults with the MFA re-sult. With \OT1/cmtt/m/n/10 component2.plot=1
  []
@@ -660,38 +672,58 @@ tes/figure/CSpermuteplots-1.pdf> <C:/Users/lucp8394/Documents/StatFiles/CenStat
 /R Development/CSFA/pkg/vignettes/figure/CSpermuteplots-2.pdf> <C:/Users/lucp83
 94/Documents/StatFiles/CenStat/R Development/CSFA/pkg/vignettes/figure/CSpermut
 eplots-3.pdf>]
-Package color Info: Redefining color shadecolor on input line 454.
-<figure/CScompare-1.pdf, id=198, 505.89pt x 505.89pt>
+Package color Info: Redefining color shadecolor on input line 483.
+<figure/CScompare-1.pdf, id=208, 505.89pt x 505.89pt>
 File: figure/CScompare-1.pdf Graphic file (type pdf)
 <use figure/CScompare-1.pdf>
-Package pdftex.def Info: figure/CScompare-1.pdf used on input line 477.
+Package pdftex.def Info: figure/CScompare-1.pdf used on input line 522.
 (pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
-<figure/CScompare-2.pdf, id=199, 505.89pt x 505.89pt>
+<figure/CScompare-2.pdf, id=209, 505.89pt x 505.89pt>
 File: figure/CScompare-2.pdf Graphic file (type pdf)
 <use figure/CScompare-2.pdf>
-Package pdftex.def Info: figure/CScompare-2.pdf used on input line 478.
+Package pdftex.def Info: figure/CScompare-2.pdf used on input line 523.
 (pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
-<figure/CScompare-3.pdf, id=200, 505.89pt x 505.89pt>
+<figure/CScompare-3.pdf, id=210, 505.89pt x 505.89pt>
 File: figure/CScompare-3.pdf Graphic file (type pdf)
 <use figure/CScompare-3.pdf>
-Package pdftex.def Info: figure/CScompare-3.pdf used on input line 479.
+Package pdftex.def Info: figure/CScompare-3.pdf used on input line 524.
+(pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
+<figure/CScompare-4.pdf, id=211, 505.89pt x 505.89pt>
+File: figure/CScompare-4.pdf Graphic file (type pdf)
+<use figure/CScompare-4.pdf>
+Package pdftex.def Info: figure/CScompare-4.pdf used on input line 525.
+(pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
+<figure/CScompare-5.pdf, id=212, 505.89pt x 505.89pt>
+File: figure/CScompare-5.pdf Graphic file (type pdf)
+<use figure/CScompare-5.pdf>
+Package pdftex.def Info: figure/CScompare-5.pdf used on input line 526.
 (pdftex.def)             Requested size: 256.07838pt x 284.53154pt.
 
-Overfull \hbox (30.68211pt too wide) in paragraph at lines 477--480
+Overfull \hbox (30.68211pt too wide) in paragraph at lines 522--527
 [][] []
  []
 
-[10]
-Package color Info: Redefining color shadecolor on input line 494.
 
-Underfull \hbox (badness 10000) in paragraph at lines 486--494
-
+Overfull \hbox (30.68211pt too wide) in paragraph at lines 522--527
+[] []
  []
+
+[10]
+Overfull \vbox (146.35878pt too high) has occurred while \output is active []
 
 [11 <C:/Users/lucp8394/Documents/StatFiles/CenStat/R Development/CSFA/pkg/vigne
 ttes/figure/CScompare-1.pdf> <C:/Users/lucp8394/Documents/StatFiles/CenStat/R D
 evelopment/CSFA/pkg/vignettes/figure/CScompare-2.pdf> <C:/Users/lucp8394/Docume
-nts/StatFiles/CenStat/R Development/CSFA/pkg/vignettes/figure/CScompare-3.pdf>]
+nts/StatFiles/CenStat/R Development/CSFA/pkg/vignettes/figure/CScompare-3.pdf> 
+<C:/Users/lucp8394/Documents/StatFiles/CenStat/R Development/CSFA/pkg/vignettes
+/figure/CScompare-4.pdf> <C:/Users/lucp8394/Documents/StatFiles/CenStat/R Devel
+opment/CSFA/pkg/vignettes/figure/CScompare-5.pdf>]
+Package color Info: Redefining color shadecolor on input line 542.
+
+Underfull \hbox (badness 10000) in paragraph at lines 533--542
+
+ []
+
 [12]
 ("C:\Users\lucp8394\Documents\StatFiles\CenStat\R Development\CSFA\pkg\vignette
 s\CSFA.bbl")
@@ -699,26 +731,26 @@ s\CSFA.bbl")
 Package caption Warning: Unused \captionsetup[sub] on input line 80.
 See the caption package documentation for explanation.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 520.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 568.
 [13]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 520.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 568.
 
 ("C:\Users\lucp8394\Documents\StatFiles\CenStat\R Development\CSFA\pkg\vignette
 s\CSFA.aux")
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 520.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 520.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 568.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 568.
 Package rerunfilecheck Info: File `CSFA.out' has not changed.
 (rerunfilecheck)             Checksum: FA3AFFCADC70352022E03C44F7AC6F7D;435.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 520.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 568.
  ) 
 Here is how much of TeX's memory you used:
- 8681 strings out of 493705
- 128246 string characters out of 3144560
- 233283 words of memory out of 3000000
- 11827 multiletter control sequences out of 15000+200000
+ 8706 strings out of 493705
+ 128771 string characters out of 3144560
+ 233512 words of memory out of 3000000
+ 11846 multiletter control sequences out of 15000+200000
  12636 words of font info for 49 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
- 42i,28n,40p,426b,387s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 42i,28n,40p,426b,368s stack positions out of 5000i,500n,10000p,200000b,50000s
 <C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Pr
 ogram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Program Fi
 les/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Program Files/MiKT
@@ -729,9 +761,9 @@ amsfonts/cm/cmr12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/
 cm/cmr17.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmr7.p
 fb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/P
 rogram Files/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on CSFA.pdf (13 pages, 474155 bytes).
+Output written on CSFA.pdf (13 pages, 500809 bytes).
 PDF statistics:
- 286 PDF objects out of 1000 (max. 8388607)
- 34 named destinations out of 1000 (max. 500000)
- 140 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 317 PDF objects out of 1000 (max. 8388607)
+ 37 named destinations out of 1000 (max. 500000)
+ 155 words of extra memory for PDF output out of 10000 (max. 10000000)
 

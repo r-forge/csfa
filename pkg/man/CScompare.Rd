@@ -5,7 +5,7 @@
 \title{Compare CS Results.}
 \usage{
 CScompare(CSresult1, CSresult2, component1.plot, component2.plot,
-  threshold.pvalues = 0.05, which = c(1, 2), color.columns = NULL,
+  threshold.pvalues = 0.05, which = c(1, 2, 3), color.columns = NULL,
   gene.thresP = NULL, gene.thresN = NULL, thresP.col = c("blue",
   "light blue"), thresN.col = c("red", "pink"), legend.names = NULL,
   legend.cols = NULL, legend.pos = "topright", plot.type = "device",
@@ -22,7 +22,7 @@ CScompare(CSresult1, CSresult2, component1.plot, component2.plot,
 
 \item{threshold.pvalues}{If both CSresult1 and CSresult contain pvalues (and adjusted pvalues), this threshold will be used to compare the number of overlapping significant results.}
 
-\item{which}{Choose one or both plots which should be created. 1: CS Comparison Plot, 2: GS Comparison Plot}
+\item{which}{Choose one or both plots which should be created. 1: CS Comparison Plot, 2: GS Comparison Plot, 3: CSRankScores (Normal CS for CSzhang) Comparison Plot}
 
 \item{color.columns}{Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.}
 
@@ -45,7 +45,7 @@ CScompare(CSresult1, CSresult2, component1.plot, component2.plot,
 \item{basefilename}{Basename of the graphs if saved in pdf files}
 }
 \value{
-A list object with the vector with correlation between Connectivity Scores (and Gene Scores if available). If both CSresult contain p-values the other list slots are filled with some comparison between the number of significant p-values.
+A list object with the vector with (rank) correlation between Connectivity Scores (and Gene Scores if available). If both CSresult contain p-values the other list slots are filled with some comparison between the number of significant p-values.
 }
 \description{
 After applying different CSanalysis on the same data, you can compare 2 different results of connectivity scores and gene scores
