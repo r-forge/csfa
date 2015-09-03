@@ -77,14 +77,18 @@ analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE
 ##			-3: Factor 'factor.plot' VS Factor '?' : Loadings & Genes
 ##			-4: Loadings & Genes for Factor 'factor.plot'
 ##			-5: Compound Profiles (Select if necessary)
+##			-6: CS Rank Scores for 'factor.plot'
 
 analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=5,name.group=NULL,num.group.sup=NULL,graph=FALSE,weight.col.mfa=NULL,row.w=NULL,axes=c(1,2),tab.comp=NULL,
 				basefilename="analyseMFA",
 				factor.plot=1,column.interest=NULL,row.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
 				colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
 				result.available=NULL,plot.type="pdf",
+				CSrank.refplot=FALSE,
 				which=c(1,2,3,4,5)){
 	
+			
+				
 	## Plot-in and -out functions
 	plot.in <- function(plot.type,name){
 		if(plot.type=="pdf"){pdf(name)}
@@ -124,7 +128,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	
 	if(2 %in% which){
 		## PLOT: Loadings for reference compounds -> select which PC to use if factor.plot is NOT given
-		plot.in(plot.type,paste0(basefilename,"_MFA_RefLoadings"))
+		plot.in(plot.type,paste0(basefilename,"_MFA_RefLoadings.pdf"))
 		plot(0,0,type="n",main=paste0("Loadings for Ref ",paste(ref.index,collapse=",")),xlab="Factor Index",ylab="Loadings",ylim=c(min(loadings[ref.index,]),max(loadings[ref.index,])),xlim=c(1,dim(loadings)[2]))
 		for(i.ref in ref.index){
 			points(c(1:dim(loadings)[2]),loadings[i.ref,],col=i.ref)
@@ -136,7 +140,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	
 	
 	## Selecting the factor.plot
-	if((3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) ){
+	if((3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6 %in% which)){
 		if(is.null(factor.plot)){
 			if(plot.type=="pdf" | !(2 %in% which)){
 				dev.new()
@@ -324,9 +328,23 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 		plot.out(plot.type)
 	}
 	
+	
+	if(6 %in% which){
+		
+		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename))
+				
+		names(out_CS_rank) <- paste0("Factor",factor.plot)
+		
+	}
+	else{
+		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=FALSE))
+		names(out_CS_rank) <- paste0("Factor",factor.plot)
+		
+	}
+	
 	## Returning the MFA result for further use
 	
-	out <- list(factor.select=factor.plot,result=resMFA)	
+	out <- list(factor.select=factor.plot,result=resMFA,CSRank=out_CS_rank)	
 	return(out)
 	
 
@@ -339,6 +357,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 ##			-3: PC 'factor.plot' VS PC '?' : Loadings & Genes
 ##			-4: Loadings & Genes for PC 'factor.plot'
 ##			-5: Compound Profiles (Select if necessary)
+##			-6: CS Rank Scores for 'factor.plot'
 
 
 
@@ -348,7 +367,8 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		basefilename="analysePCA",
 		ref.index=1,factor.plot=NULL,column.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
 		colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
-		result.available=NULL,plot.type="pdf",which=c(1,2,3,4,5)){
+		CSrank.refplot=FALSE,
+		result.available=NULL,plot.type="pdf",which=c(1,2,3,4,5,6)){
 	
 	## Checking reference index is correct
 	if(length(ref.index)>1){stop("There can only be 1 reference compound.",call.=FALSE)}
@@ -393,7 +413,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 	}
 	
 	## Selecting the factor.plot
-	if((3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) ){
+	if((3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6%in%which) ){
 		if(is.null(factor.plot)){
 			if(plot.type=="pdf" | !(2 %in% which)){
 				dev.new()
@@ -555,9 +575,21 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		plot.out(plot.type)
 	}
 	
+	if(6 %in% which){
+		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="PC",plot=TRUE,plot.type=plot.type,basefilename=basefilename))
+		names(out_CS_rank) <- paste0("Factor",factor.plot)
+		
+		
+	}
+	else{
+		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="PC",plot=FALSE))
+		names(out_CS_rank) <- paste0("Factor",factor.plot)
+		
+	}
+	
 	## Return the result of PCA
 		
-	out <- list(factor.select=factor.plot,result=resPCA)	
+	out <- list(factor.select=factor.plot,result=resPCA,CSRank=out_CS_rank)	
 	return(out)
 	
 	
@@ -713,6 +745,8 @@ analyse_Zhang_MFAPCA <- function(data,resZhang,resPCA=NULL,resMFA=NULL,ressparse
 ##			-4:  Genes for Factor 'BC.Plot'  (These can be multiple)
 ##			-5: Loadings for Factor 'BC.plot'
 ##			-6: Compound Profiles (Select if necessary)
+##			-7: CS Rank Scores for 'BC.plot'
+
 
 
 analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negative=0,random=1.0,center=2,norm=1,scale=0.0,lap=1.0,nL=0,lL=0,bL=0,
@@ -722,6 +756,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 					column.interest=NULL,row.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
 					colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
 					result.available=NULL,plot.type="pdf",
+					CSrank.refplot=FALSE,
 					which=c(1,2,3,4,5,6)){
 	
 			
@@ -783,7 +818,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 		
 		 
 		## Select Biclusters from 'loadings for reference compounds' (redraw if necessary)
-		if((3 %in% which) | (4 %in% which)| (5 %in% which) | (is.null(column.interest)&(6 %in% which)) | ((6 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) ){
+		if((3 %in% which) | (4 %in% which)| (5 %in% which) | (is.null(column.interest)&(6 %in% which)) | ((6 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (7 %in% which) ){
 			
 			if(is.null(BC.plot)){
 				if(plot.type=="pdf" | !(2 %in% which)){
@@ -1032,9 +1067,32 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 
 			
 		}
+		
+		
+		
+		if(7%in%which){
+			out_CS_rank <- replicate(length(BC.plot),list)
+			
+			for(i.BC in c(1:length(BC.plot))){
+				out_CS_rank[[i.BC]] <- CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=BC.plot[i.BC],type.component="BC",plot=TRUE,plot.type=plot.type,basefilename=basefilename)
+				
+			}
+			names(out_CS_rank) <- paste0("BC",BC.plot)
+			
+		}
+		else{
+			out_CS_rank <- replicate(length(BC.plot),list)
+					
+			for(i.BC in c(1:length(BC.plot))){
+				out_CS_rank[[i.BC]] <- CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=BC.plot[i.BC],type.component="BC",plot=FALSE)
+				
+			}
+			names(out_CS_rank) <- paste0("BC",BC.plot)
+			
+		}
 	
 		
-	out <- list(BC.select=BC.plot,result=resFAB)	
+	out <- list(BC.select=BC.plot,result=resFAB,CSRank=out_CS_rank)	
 	return(out)
 }
 
@@ -1476,11 +1534,14 @@ analyse_Zhang_fabia <- function(data,resZhang,resFAB=NULL,
 ##			-3: Factor 'factor.plot' VS Factor '?' : Loadings & Genes
 ##			-4: Loadings & Genes for Factor 'factor.plot'
 ##			-5: Compound Profiles (Select if necessary)
+##			-6: CS Rank Scores for 'factor.plot'
+
 
 analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("penalty","varnum"),use.corr=FALSE,lambda=1e-6,max.iter=200,trace=FALSE,eps.conv=1e-3,
 		basefilename="analyseMFA",ref.index=c(1),sparse.dim=2,
 		factor.plot=1,column.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
 		colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
+		CSrank.refplot=FALSE,
 		result.available=NULL,plot.type="pdf",
 		which=c(1,2,3,4,5)){
 	
@@ -1567,7 +1628,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 	
 	
 	## Selecting the factor.plot
-	if((3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) ){
+	if((3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6 %in% which) ){
 		if(is.null(factor.plot)){
 			if(plot.type=="pdf" | !(2 %in% which)){
 				dev.new()
@@ -1742,13 +1803,109 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		plot.out(plot.type)
 	}
 	
+	if(6 %in% which){
+		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename))
+		names(out_CS_rank) <- paste0("Factor",factor.plot)
+		
+		
+	}
+	else{
+		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=FALSE))
+		names(out_CS_rank) <- paste0("Factor",factor.plot)
+		
+	}
+	
+	
+	
 	## Returning the MFA result for further use
 	
 	resMFA$scores <- scores
-	out <- list(factor.select=factor.plot,result=resMFA)	
+	out <- list(factor.select=factor.plot,result=resMFA,CSRank=out_CS_rank)	
 	return(out)
 	
 	
 }
 
 
+
+CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings_names=NULL,component.plot,type.component="Factor",plot=TRUE,plot.type="pdf",basefilename="base"){
+	
+	## Plot-in and -out functions
+	plot.in <- function(plot.type,name){
+		if(plot.type=="pdf"){pdf(name)}
+		if(plot.type=="device"){dev.new()}
+		if(plot.type=="sweave"){}
+	}
+	plot.out <- function(plot.type){if(plot.type=="pdf"){dev.off()}}
+	
+	loadings <- loadings[,component.plot]
+	names <- loadings_names
+	
+	
+	SingleCS.matrix <- matrix(0,nrow=length(loadings[-ref.index]),ncol=length(ref.index))
+	colnames(SingleCS.matrix) <- rep("",length(ref.index))
+	
+	avg_query2 <- mean(loadings[-ref.index]^2)
+	
+	for(i.ref in 1:length(ref.index)){
+		
+		ref.loading <- loadings[ref.index[i.ref]]
+		temp <- sapply(loadings[-ref.index],FUN=function(x){
+											
+					sign.temp <- ifelse(sign(ref.loading)==sign(x),1,-1)
+						
+					if(ref.loading^2 >= x^2){
+						return(
+								((x^2 - avg_query2)^2/(ref.loading^2 - avg_query2)^2)*sign.temp)
+					
+					}
+					else{
+						return(
+								((ref.loading^2 - avg_query2)^2/(x^2 - avg_query2)^2)*sign.temp)
+							
+					}
+					
+					
+			})
+		SingleCS.matrix[,i.ref] <- temp
+		colnames(SingleCS.matrix)[i.ref] <- paste0(names[ref.index[i.ref]]," (Ref ",i.ref,")")
+	}
+	
+	weights <- loadings[ref.index]^2
+	SingleCS.vector <- apply(SingleCS.matrix,MARGIN=1,FUN=weighted.mean,w=weights)
+	
+	if(plot){
+		
+		plot.in(plot.type,paste0(basefilename,"_CSRank.pdf"))
+		if(ref.plot){
+			col.plots <- ifelse((length(ref.index)+1)%%2 == 0, (length(ref.index)+1)%/%2, (length(ref.index)+1)%/%2 +1 )
+			par(mfrow=c(2,col.plots))
+			#dev.new()
+			# Plot for each reference
+			for(i.ref in 1:length(ref.index)){
+				plot(1:dim(SingleCS.matrix)[1],SingleCS.matrix[,i.ref],col=color.columns[-ref.index],bg="grey",pch=21,main=paste0("Reference ",i.ref," (Cmpd ",names[ref.index[i.ref]],")"))
+				text(1:dim(SingleCS.matrix)[1],SingleCS.matrix[,i.ref],names[-ref.index],col=color.columns[-ref.index],pos=2)
+			}
+			
+			
+		}
+		else{
+			par(mfrow=c(1,1))
+			#dev.new()
+		}
+			
+		## Plot weighted for references
+		main.temp <- ifelse(ref.plot,"CS Rank Score (Weighted Mean)","CS Rank Score")
+		plot(SingleCS.vector,col=color.columns[-ref.index],bg="grey",pch=21,main=paste0(type.component," ",component.plot," - ",main.temp))
+		text(SingleCS.vector,labels=names[-ref.index],col=color.columns[-ref.index],pos=2)
+		plot.out(plot.type)
+	}
+	
+	
+	out <- as.data.frame(cbind(SingleCS.vector,SingleCS.matrix))
+	rownames(out) <- names[-ref.index]
+	colnames(out)[1] <- "CSRankScores"
+	
+	
+	return(out)
+}

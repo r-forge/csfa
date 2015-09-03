@@ -6,11 +6,11 @@
 \title{"CSmfa"}
 \usage{
 \S4method{CSanalysis}{matrix,matrix,CSmfa}(refMat, querMat, type = "CSmfa",
-  ncp = 5, weight.col.mfa = NULL, row.w = NULL, which = c(1, 2, 3, 4,
-  5), factor.plot = NULL, column.interest = NULL, color.columns = NULL,
+  ncp = 5, weight.col.mfa = NULL, row.w = NULL, which = c(2, 4, 6),
+  factor.plot = NULL, column.interest = NULL, color.columns = NULL,
   row.interest = NULL, gene.thresP = 1, gene.thresN = -1,
   thresP.col = "blue", thresN.col = "red", legend.names = NULL,
-  legend.cols = NULL, result.available = NULL,
+  legend.cols = NULL, CSrank.refplot = FALSE, result.available = NULL,
   basefilename = "analyseMFA", plot.type = "device")
 }
 \arguments{
@@ -26,7 +26,7 @@
 
 \item{row.w}{\emph{MFA Parameter:} An optional row weights (by default, a vector of 1 for uniform row weights).}
 
-\item{which}{Choose one or more plots to draw. 1: Percentage of variance explained by factors, 2: Loadings for reference compounds, 3: Factor 1 VS Factor 2 : Loadings & Genes, 4: Loadings & Genes for Factor \code{factor.plot}, 5: Compound (column) Profiles}
+\item{which}{Choose one or more plots to draw. 1: Percentage of variance explained by factors, 2: Loadings for reference compounds, 3: Factor 1 VS Factor 2 : Loadings & Genes, 4: Loadings & Genes for Factor \code{factor.plot}, 5: Compound (column) Profiles, 6: CS Rank Scores for Factor \code{factor.plot}}
 
 \item{factor.plot}{Which factor (only one) should be investigated? If \code{NULL}, you can choose a factor of interest interactively from reference loadings plot.}
 
@@ -47,6 +47,8 @@
 \item{legend.names}{Option to draw a legend of colored columns in Compound Loadings plot (\code{which=4}). If \code{NULL}, only "References" will be in the legend.}
 
 \item{legend.cols}{Colors to be used in legend in \code{which=4}. If \code{NULL}, only blue for "References is used".}
+
+\item{CSrank.refplot}{Logical value deciding if the CS Rank Scores (\code{which=6}) should also be plotted per reference (instead of only the weighted mean).}
 
 \item{result.available}{You can a previously returned object by \code{CSanalysis} in order to only draw graphs, not recompute the scores.}
 

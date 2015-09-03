@@ -7,11 +7,11 @@
 \usage{
 \S4method{CSanalysis}{matrix,matrix,CSsmfa}(refMat, querMat, type = "Csmfa",
   K = 15, para, lambda = 1e-06, sparse.dim = 2, sparse = "penalty",
-  max.iter = 200, eps.conv = 0.001, which = c(1, 2, 3, 4, 5),
+  max.iter = 200, eps.conv = 0.001, which = c(2, 4, 6),
   factor.plot = NULL, column.interest = NULL, color.columns = NULL,
   row.interest = NULL, gene.thresP = 1, gene.thresN = -1,
   thresP.col = "blue", thresN.col = "red", legend.names = NULL,
-  legend.cols = NULL, result.available = NULL,
+  legend.cols = NULL, CSrank.refplot = FALSE, result.available = NULL,
   basefilename = "analysesMFA", plot.type = "device")
 }
 \arguments{
@@ -27,7 +27,7 @@
 
 \item{lambda}{\emph{sMFA Parameters:} Quadratic penalty parameter. Default value is 1e-6. If the target dimension of the sparsness is higher than the other dimension (p > n), it is advised to put \code{lambda} to \code{Inf} which uses the \code{arrayspc} algorithm optimized for this case. For the other case, p < n, a zero or positive \code{lambda} is sufficient and will utilize the normal \code{spca} algorithm.}
 
-\item{sparse.dim}{\emph{sMFA Parameters:} Which dimension should be sparse? 1: Rows, 2: Columns (default)}
+\item{sparse.dim}{\emph{sMFA Parameters:} Which dimension should be sparse? 1: Rows, 2: Columns (default) (Note: For Connectivity Scores it is advised to apply sparsity on the compounds/columns)}
 
 \item{sparse}{\emph{sMFA Parameters (\code{lambda < Inf} only):} If \code{sparse="penalty"}, \code{para} is a vector of 1-norm penalty parameters. If \code{sparse="varnum"}, \code{para} defines the number of sparse loadings to be obtained.}
 
@@ -56,6 +56,8 @@
 \item{legend.names}{Option to draw a legend of colored columns in Compound Loadings plot (\code{which=4}). If \code{NULL}, only "References" will be in the legend.}
 
 \item{legend.cols}{Colors to be used in legend in \code{which=4}. If \code{NULL}, only blue for "References is used".}
+
+\item{CSrank.refplot}{Logical value deciding if the CS Rank Scores (\code{which=6}) should also be plotted per reference (instead of only the weighted mean).}
 
 \item{result.available}{You can a previously returned object by \code{CSanalysis} in order to only draw graphs, not recompute the scores.}
 
