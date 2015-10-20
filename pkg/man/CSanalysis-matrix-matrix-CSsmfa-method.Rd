@@ -35,7 +35,7 @@
 
 \item{eps.conv}{\emph{sMFA Parameters:} Convergence criterion.}
 
-\item{which}{Choose one or more plots to draw. 1: Percentage of variance explained by PC's, 2: Loadings for reference compounds, 3: Factor 1 VS PC Factor 2 : Loadings & Genes, 4: Loadings & Genes for Factor \code{factor.plot}, 5: Compound (column) Profiles}
+\item{which}{Choose one or more plots to draw. 1: Percentage of variance explained by PC's, 2: Loadings for reference compounds, 3: Factor 1 VS PC Factor 2 : Loadings & Genes, 4: Loadings & Genes for Factor \code{factor.plot}, 5: Compound (column) Profiles, 6: CS Rank Scores for Factor \code{factor.plot}}
 
 \item{factor.plot}{Which factor (only one) should be investigated? If \code{NULL}, you can choose a factor of interest interactively from reference loadings plot.}
 

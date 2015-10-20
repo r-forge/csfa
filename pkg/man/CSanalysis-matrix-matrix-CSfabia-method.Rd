@@ -50,7 +50,7 @@
 
 \item{bL}{\emph{Fabia Parameter:} cycle at which the nL or lL maximum starts; default = 0 (start at the beginning)}
 
-\item{which}{Choose one or more plots to draw. 1: Information Content of Biclusters, 2: Loadings for reference compounds, 3: Bicluster \code{BC1.plot} VS Bicluster \code{BC2.plot} : Loadings & Genes, 4: Gene Scores for Bicluster \code{BC.Plot}, 5: Loadings for Factor \code{BC.plot}, 6: Column (compound) profiles}
+\item{which}{Choose one or more plots to draw. 1: Information Content of Biclusters, 2: Loadings for reference compounds, 3: Bicluster \code{BC1.plot} VS Bicluster \code{BC2.plot} : Loadings & Genes, 4: Gene Scores for Bicluster \code{BC.Plot}, 5: Loadings for Factor \code{BC.plot}, 6: Column (compound) profiles, 7: CS Rank Scores for Factor \code{BC.plot}}
 
 \item{BC.plot}{Which biclusters should be investigated? Can be a vector of multiple (e.g. \code{c(1,3,5)}). If \code{NULL}, you can choose biclusters of interest interactively from reference loadings plot.}
 
