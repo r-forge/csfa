@@ -1857,11 +1857,17 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 					if(ref.loading^2 >= x^2){
 						return(
 								((x^2 - avg_query2)^2/(ref.loading^2 - avg_query2)^2)*sign.temp)
+#								((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp)
+#								((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp)
+								
 					
 					}
 					else{
 						return(
 								((ref.loading^2 - avg_query2)^2/(x^2 - avg_query2)^2)*sign.temp)
+#								((ref.loading^2 - avg_query2^2)^2/(x^2 - avg_query2^2)^2)*sign.temp)
+#								((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp)
+								
 							
 					}
 					
@@ -1883,7 +1889,7 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 			#dev.new()
 			# Plot for each reference
 			for(i.ref in 1:length(ref.index)){
-				plot(1:dim(SingleCS.matrix)[1],SingleCS.matrix[,i.ref],col=color.columns[-ref.index],bg="grey",pch=21,main=paste0("Reference ",i.ref," (Cmpd ",names[ref.index[i.ref]],")"))
+				plot(1:dim(SingleCS.matrix)[1],SingleCS.matrix[,i.ref],xlab="Compound Index",ylab="CS Rankscore",col=color.columns[-ref.index],bg="grey",pch=21,main=paste0("Reference ",i.ref," (Cmpd ",names[ref.index[i.ref]],")"))
 				text(1:dim(SingleCS.matrix)[1],SingleCS.matrix[,i.ref],names[-ref.index],col=color.columns[-ref.index],pos=2)
 			}
 			
@@ -1896,7 +1902,7 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 			
 		## Plot weighted for references
 		main.temp <- ifelse(ref.plot,"CS Rank Score (Weighted Mean)","CS Rank Score")
-		plot(SingleCS.vector,col=color.columns[-ref.index],bg="grey",pch=21,main=paste0(type.component," ",component.plot," - ",main.temp))
+		plot(SingleCS.vector,col=color.columns[-ref.index],xlab="Compound Index",ylab="CS Rankscore",bg="grey",pch=21,main=paste0(type.component," ",component.plot," - ",main.temp))
 		text(SingleCS.vector,labels=names[-ref.index],col=color.columns[-ref.index],pos=2)
 		plot.out(plot.type)
 	}

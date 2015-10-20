@@ -21,7 +21,7 @@
 #' @param verbose If \code{TRUE}, progression dots of the permutation analysis will be printed.
 #' @param querMat.Perm Possible to provide user-created permuted querMat data. Should be a list object of B times permuted querMat matrices.
 #' @param save.querMat.Perm If \code{TRUE}, the list of permuted querMat matrices will be saved in the permutation.object slot of the CSresult.
-#' @param which Choose which plot to draw. 1: A volcano plot of the -log(p-values) versus the observed connection scores. 2: A histogram of the permuted connection scores under the null hypothesis for a specific compound. A vertical line(s) is added for the observed CS and its p-value. The \code{cmpd.hist} parameter determines which compounds are drawn like this.
+#' @param which Choose which plot to draw. 1: A volcano plot of the -log(p-values) versus the observed connection scores. 2: A histogram of the permuted connection scores under the null hypothesis for a specific compound. A vertical line(s) is added for the observed CS and its p-value. The \code{cmpd.hist} parameter determines which compounds are drawn like this. 3: Analog to \code{which=1}, but for CSRankScores. 4: Analog to \code{which=2}, but for CSRankScores.
 #' @param cmpd.hist Decides which compounds are plotted for the histogram distribution under null hypothesis (\code{which=2}). If \code{NULL}, you can select which compounds you want interactively on the volcano plot.
 #' @param plot.type How should the plots be outputted? \code{"pdf"} to save them in pdf files, \code{device} to draw them in a graphics device (default), \code{sweave} to use them in a sweave or knitr file.
 #' @param color.columns Option to color the compounds on the volcano plot (\code{which=1}). Should be a vector of colors with the length of number of references and queries together.
@@ -177,7 +177,15 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 	# Note: pvalues will always be re-computed to allow for different mfa.factor
 	pval.dataframe <- pvalue_compute(obs.result=CSresult,list.h0.result=permutation.object$CS.Perm,mfa.factor=mfa.factor,method.adjust=method.adjust)
 	
+#	# Getting Pvalues from CS and CSrank
+#	pval.dataframe.temp <- pvalue_compute(obs.result=CSresult,list.h0.result=permutation.object$CS.Perm,mfa.factor=mfa.factor,method.adjust=method.adjust)
+#	pval.dataframe <- pval.dataframe.temp[[1]]
+#	pval.dataframe.rank <- pval.dataframe.temp[[2]]
+	
 	permutation.object$pval.dataframe <- pval.dataframe
+#	permutation.object$CS.pval.dataframe <- pval.dataframe
+#	permutation.object$CSRank.pval.dataframe <- pval.dataframe.rank
+	
 	
 	CSresult@permutation.object <- permutation.object # Saving the updated permutation.object in CSresult
 		
@@ -225,10 +233,11 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 		
 		
 		CS <- CSresult@CS
+#		CSRankScores <- CSresult@CSRankScores
 		
 		if(CS.warning){
 			# If warning, re-extract CS and GS 
-			warning("Due to choice of mfa.factor, the CS and GS slot in CSresult will be overwritten with another factor. ")
+			warning("Due to choice of mfa.factor, the CS, CSRankScores and GS slot in CSresult will be overwritten with another factor. ")
 						
 			loadings <- CSresult@object$quanti.var$coord	
 			scores <- CSresult@object$ind$coord			
@@ -248,17 +257,29 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 			colnames(GS) <- sapply(mfa.factor,FUN=function(x){paste0("Factor",x)})
 					
 			CSresult@GS <- GS
+			
+#			CSRankScores <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(cbind(refMat,querMat)),component.plot=mfa.factor,type.component="Factor",plot=FALSE))
+#			names(CSRankScores) <- paste0("Factor",mfa.factor)
+			
+			
 		}
 		# Add p-values to CS slot			
 		CS$CS.ref$pvalues <- pval.dataframe$pvalues[ref.index]
 		CS$CS.query$pvalues <- pval.dataframe$pvalues[-ref.index]
+		
+#		# CHANGE LATER IF MULTIPLE CSRANKSCORES!! (Like fabia with multiple BC's)
+#		CSRankScores[1]$CSRankScores$pvalues <- pval.dataframe.rank$pvalues.rank
+		
 			
 		if(method.adjust!="none"){
 			CS$CS.ref$pvalues.adjusted <- pval.dataframe$pvalues.adjusted[ref.index]
 			CS$CS.query$pvalues.adjusted <- pval.dataframe$pvalues.adjusted[-ref.index]
+			
+#			CSRankScores[1]$CSRankScores$pvalues.adjusted <- pval.dataframe.rank$pvalues.adjusted.rank
 		}
 		
 		CSresult@CS <- CS
+#		CSresult@CSRankScores <- CSRankScores
 	}
 			
 		
@@ -301,6 +322,42 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 		hist.drawn <- TRUE
 	}
 	
+#	## SAME PLOTS FOR CSRANKSCORES
+#	
+#	hist.drawn.rank <- FALSE
+#	
+#	# Volcano plot
+#	if(3 %in% which){
+#		
+#		if((4 %in% which) & (is.null(cmpd.hist))){
+#			# Volcano plot with selecting compounds
+#			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe.rank,type=type,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,make.hist=TRUE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot_CSRankScores"))
+#			
+#			hist.drawn.rank <- TRUE
+#		}else{
+#			# Volcano plots without selecting compounds
+#			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe.rank,type=type,color.columns=color.columns,list.h0.result=NULL,make.hist=FALSE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot_CSRankScores"))
+#			
+#		}
+#		
+#	}
+#	
+#	
+#	# Histogram plot
+#	if((4 %in% which) & !hist.drawn.rank){
+#		if(is.null(cmpd.hist)){
+#			#volc with plot device
+#			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe.rank,type=type,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,make.hist=TRUE,plot.type="device",plot.type.hist=plot.type,basefilename=paste0(basefilename,"_CSRankScores"))
+#			
+#		}else{
+#			# just hist
+#			pvalue_hist(pval.dataframe=permutation.object$pval.dataframe.rank[cmpd.hist,],list.h0.result=permutation.object$CS.Perm,type=type,plot.type=plot.type,basefilename=paste0(basefilename,"_histogram_CSRankScores"))
+#			
+#		}
+#		
+#		hist.drawn.rank <- TRUE
+#	}
+#	
 	
 	
 	##### RETURN OBJECT ######
@@ -319,7 +376,7 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 
 
 # add adjusted pvalues
-pvalue_compute <- function(obs.result,list.h0.result,cmpd.index=NULL,mfa.factor=1,method.adjust=c("none","holm","hochberg","hommel","bonferroni","BH","BY","fdr")){
+pvalue_compute <- function(obs.result,list.h0.result,ref.index=1,cmpd.index=NULL,mfa.factor=1,method.adjust=c("none","holm","hochberg","hommel","bonferroni","BH","BY","fdr")){
 	if(class(obs.result)!="CSresult"){stop("obs.result is not a \"CSresult\" class object")}
 	
 	type <- obs.result@type
@@ -354,6 +411,8 @@ pvalue_compute <- function(obs.result,list.h0.result,cmpd.index=NULL,mfa.factor=
 	
 	if(type=="CSmfa"){
 		
+		
+		# Prep for CS pvalues
 		obs.scores <- obs.result@object$quanti.var$coord[,mfa.factor]
 		
 		if(is.null(cmpd.index)){cmpd.index <- c(1:length(obs.scores))}
@@ -364,11 +423,26 @@ pvalue_compute <- function(obs.result,list.h0.result,cmpd.index=NULL,mfa.factor=
 		temp.pval2 <- c()
 		temp.obs <- c()
 		
+#		# Prep for CSrank pvalues
+#		obs.scores.rank <- CSrank(obs.result@object$quanti.var$coord,ref.index=ref.index,plot=FALSE,component.plot=mfa.factor)$CSRankScores
+#		list.h0.result.rank <- lapply(list.h0.result,FUN=function(x){
+#					return(CSrank(as.data.frame(x),ref.index=ref.index,plot=FALSE,component.plot=1)$CSRankScores)
+#				})
+#		
+#		pval.dataframe.rank<- data.frame(Cmpd=names(obs.scores)[cmpd.index],cmpd.index=cmpd.index)
+#		temp.pval.rank <- c()
+#		temp.pval1.rank <- c()
+#		temp.pval2.rank <- c()
+#		temp.obs.rank <- c()
+		
+		
 		for(i.cmpd in cmpd.index){
+			
+			## P-values of CS
 			
 			h0.data <- unlist(lapply(list.h0.result,FUN=function(x){return(x[i.cmpd])}))
 			obs <- obs.scores[i.cmpd]
-			
+						
 			# PROBLEM WITH MFA: Solution 2-sided p-value? (FOR MFA SIGN ALSO NOT ALWAYS POS OR NEG CONN, DEPENDS ON DATA!!!!!)
 			pvalue1 <- ifelse(obs>=0 ,sum(h0.data>obs)/(length(h0.data)+1), sum(h0.data<obs)/(length(h0.data)+1))
 			pvalue2 <- ifelse(obs>=0 ,sum(h0.data<(-obs))/(length(h0.data)+1), sum(h0.data>(-obs))/(length(h0.data)+1))
@@ -378,6 +452,20 @@ pvalue_compute <- function(obs.result,list.h0.result,cmpd.index=NULL,mfa.factor=
 			temp.pval <- c(temp.pval,pvalue1+pvalue2)
 			temp.obs <- c(temp.obs,obs)
 			
+#			# P-values of CSRank
+#	
+#			# ONLY 1-SIDED p_VALUE OKAY?
+#			h0.data.rank <- unlist(lapply(list.h0.result.rank,FUN=function(x){return(x[i.cmpd])}))
+#			obs.rank <- obs.scores.rank[i.cmpd]
+#			
+#			pvalue1.rank <- ifelse(obs.rank>=0,sum(h0.data.rank>obs.rank)/(length(h0.data.rank)+1), sum(h0.data.rank<obs.rank)/(length(h0.data.rank)+1))
+##			pvalue2.rank <- ifelse()
+#			
+#			temp.pval1.rank <- c(temp.pval1.rank,pvalue1.rank)
+##			temp.pval2.rank <- c(temp.pval2.rank,pvalue2.rank)
+##			temp.pval.rank <- c(temp.pval.rank,pvalue1.rank+pvalue2.rank)
+#			temp.obs.rank <- c(temp.obs.rank,obs.rank)
+			
 		}
 		pval.dataframe$pvalues <- temp.pval
 		pval.dataframe$pvalue1 <- temp.pval1
@@ -385,8 +473,15 @@ pvalue_compute <- function(obs.result,list.h0.result,cmpd.index=NULL,mfa.factor=
 		if(method.adjust!="none"){pval.dataframe$pvalues.adjusted <- p.adjust(temp.pval,method=method.adjust)}
 		pval.dataframe$observed <- temp.obs
 		
+#		pval.dataframe.rank$pvalues.rank <- temp.pval1.rank
+##		pval.dataframe.rank$pvalue1.rank <- temp.pval1.rank
+##		pval.dataframe.rank$pvalue2.rank <- temp.pval2.rank
+#		if(method.adjust!="none"){pval.dataframe.rank$pvalues.adjusted.rank <- p.adjust(temp.pval.rank,method=method.adjust)}
+#		pval.dataframe.rank$observed.rank <- temp.obs.rank
+		
 		
 		return(pval.dataframe)
+#		return(list(pval.dataframe,pval.dataframe.rank))
 		
 	}
 }

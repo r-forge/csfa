@@ -65,8 +65,20 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 	axename2 <- CSGS2$axename
 		
 	if(is.null(color.columns)){color.columns <- c(rep("blue",refdim1),rep("black",querdim1))} else {color.columns <- color.columns}
-	if(is.null(legend.names)){legend.names <- c("References")}
-	if(is.null(legend.cols)){legend.cols <- c("blue")}
+	if(is.null(legend.names)){
+		legend.names <- c("References")
+		legend.names.rank <- c()
+	}
+	else{
+		legend.names.rank <- legend.names
+	}
+	if(is.null(legend.cols)){
+		legend.cols <- c("blue")
+		legend.cols.rank <- c()
+	}
+	else{
+		legend.cols.rank <- legend.cols
+	}
 	
 	
 	if(1%in%which){cor.CS <- compare.CS.plot(loadings1=loadings1,loadings2=loadings2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,nref=refdim1,color.columns=color.columns,legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=basefilename)}else{cor.CS <- NULL}
@@ -80,8 +92,9 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 	if(3%in%which){
 		rankscores1 <- CSGS1$CSRank
 		rankscores2 <- CSGS2$CSRank
+		names(rankscores1) <- names(rankscores2) <- names(loadings1)[-c(1:refdim1)]
 		
-		cor.CSRank <- compare.CSRank.plot(rankscores1=rankscores1,rankscores2=rankscores2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,color.columns=color.columns,legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=basefilename)
+		cor.CSRank <- compare.CSRank.plot(rankscores1=rankscores1,rankscores2=rankscores2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,color.columns=color.columns[-c(1:refdim1)],legend.names=legend.names.rank,legend.cols=legend.cols.rank,legend.pos=legend.pos,plot.type=plot.type,basefilename=basefilename)
 		
 	}
 	else{

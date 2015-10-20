@@ -127,7 +127,7 @@ setMethod('CSanalysis', c('matrix','matrix','character'),
 #' @param nL \emph{Fabia Parameter:} maximal number of biclusters at which a row element can participate; default = 0 (no limit)
 #' @param lL \emph{Fabia Parameter:} maximal number of row elements per bicluster; default = 0 (no limit)
 #' @param bL \emph{Fabia Parameter:} cycle at which the nL or lL maximum starts; default = 0 (start at the beginning)
-#' @param which Choose one or more plots to draw. 1: Information Content of Biclusters, 2: Loadings for reference compounds, 3: Bicluster \code{BC1.plot} VS Bicluster \code{BC2.plot} : Loadings & Genes, 4: Gene Scores for Bicluster \code{BC.Plot}, 5: Loadings for Factor \code{BC.plot}, 6: Column (compound) profiles
+#' @param which Choose one or more plots to draw. 1: Information Content of Biclusters, 2: Loadings for reference compounds, 3: Bicluster \code{BC1.plot} VS Bicluster \code{BC2.plot} : Loadings & Genes, 4: Gene Scores for Bicluster \code{BC.Plot}, 5: Loadings for Factor \code{BC.plot}, 6: Column (compound) profiles, 7: CS Rank Scores for Factor \code{BC.plot}
 #' @param BC.plot Which biclusters should be investigated? Can be a vector of multiple (e.g. \code{c(1,3,5)}). If \code{NULL}, you can choose biclusters of interest interactively from reference loadings plot.
 #' @param column.interest Numeric vector of indices of query columns which should be in the compound profiles plot (\code{which=6}). If \code{NULL}, you can interactively select genes on the Gene Scores plot.
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
@@ -526,7 +526,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 #' @param sparse \emph{sMFA Parameters (\code{lambda < Inf} only):} If \code{sparse="penalty"}, \code{para} is a vector of 1-norm penalty parameters. If \code{sparse="varnum"}, \code{para} defines the number of sparse loadings to be obtained.
 #' @param max.iter \emph{sMFA Parameters:} Maximum number of iterations.
 #' @param eps.conv \emph{sMFA Parameters:} Convergence criterion.
-#' @param which Choose one or more plots to draw. 1: Percentage of variance explained by PC's, 2: Loadings for reference compounds, 3: Factor 1 VS PC Factor 2 : Loadings & Genes, 4: Loadings & Genes for Factor \code{factor.plot}, 5: Compound (column) Profiles
+#' @param which Choose one or more plots to draw. 1: Percentage of variance explained by PC's, 2: Loadings for reference compounds, 3: Factor 1 VS PC Factor 2 : Loadings & Genes, 4: Loadings & Genes for Factor \code{factor.plot}, 5: Compound (column) Profiles, 6: CS Rank Scores for Factor \code{factor.plot}
 #' @param factor.plot Which factor (only one) should be investigated? If \code{NULL}, you can choose a factor of interest interactively from reference loadings plot.
 #' @param column.interest Numeric vector of indices of query columns which should be in the compound profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes on the Gene Scores plot.
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
