@@ -1,0 +1,46 @@
+\begin{thebibliography}{6}
+\newcommand{\enquote}[1]{``#1''}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{Abdi et~al.(2013)Abdi, Williams, and Valentin}]{Abdi2013}
+Abdi, H., Williams, L.~J., and Valentin, D. (2013), \enquote{Multiple factor
+  analysis: principal component analysis for multitable and multiblock data
+  sets,} \textit{WIREs Comput Stat}, 1--31.
+
+\bibitem[{Hochreiter et~al.(2010)Hochreiter, Bodenhoger, Heusel, Mayr,
+  Mitterecker, Kasim, Khamiakova, Sanden, Lin, Talloen, Bijnens, Shkedy, and
+  Clevert}]{Hochreiter2010}
+Hochreiter, S., Bodenhoger, U., Heusel, M., Mayr, A., Mitterecker, A., Kasim,
+  A., Khamiakova, T., Sanden, S., Lin, D., Talloen, W., Bijnens, G\"{o}hlmann,
+  H., Shkedy, Z., and Clevert, D.-A. (2010), \enquote{FABIA: Factor Analysis
+  for Bicluster acquisition,} \textit{Bioinformatics}, 26, 1520--1527.
+
+\bibitem[{Khamiakova(2013)}]{Khamiakova2013}
+Khamiakova, T. (2013), \enquote{Statistical Methods for Analysis of High
+  Throughput Experiments in Early Drug Development,} Ph.D. thesis, Hasselt
+  University.
+
+\bibitem[{Lamb et~al.(2006)Lamb, Crawford, Peck, Modell, Blat, Wrobel, Lerner,
+  Brunet, Subramanian, Ross, Reich, Hieronymus, Wei, Armstrong, Haggarty,
+  Clemons, Wei, Carr, Lander, and Golub}]{Lamb2006}
+Lamb, J., Crawford, E.~D., Peck, D., Modell, J.~D., Blat, I.~C., Wrobel, M.~J.,
+  Lerner, J., Brunet, J.-P., Subramanian, A., Ross, K.~N., Reich, M.,
+  Hieronymus, H., Wei, G., Armstrong, S.~A., Haggarty, S.~J., Clemons, P.~A.,
+  Wei, R., Carr, A., Lander, E.~S., and Golub, T.~R. (2006), \enquote{The
+  Connectivity Map: Using Gene-Expression Signatures to Connect Small
+  Molecules, Genes, and Disease,} \textit{Science}, 313, 1929--1934.
+
+\bibitem[{Verbist et~al.(2015)Verbist, Klambauer, Vervoort, Talloen, {The QSTAR
+  Consortium}, Shkedy, Thas, Bender, G\"ohlmann, and Hochreiter}]{Verbist2015}
+Verbist, B., Klambauer, G., Vervoort, L., Talloen, W., {The QSTAR Consortium},
+  Shkedy, Z., Thas, O., Bender, A., G\"ohlmann, H., and Hochreiter, S. (2015),
+  \enquote{Using transcriptomics to guide lead optimization in drug discovery
+  projects: Lessons learned from the QSTAR project,} \textit{Drug Discovery
+  Today}, 0, 1--9.
+
+\bibitem[{Zhang and Gant(2008)}]{Zhang2008}
+Zhang, S.-D. and Gant, T.~W. (2008), \enquote{A simple and robust method for
+  connecting small-molecule drugs using gene-expression signatures,}
+  \textit{BMC Bioinformatics}, 9, 10.
+
+\end{thebibliography}
