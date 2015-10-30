@@ -9,10 +9,11 @@
   type = "CSfabia", p = 13, alpha = 0.01, cyc = 500, spl = 0,
   spz = 0.5, non_negative = 0, random = 1, center = 2, norm = 1,
   scale = 0, lap = 1, nL = 0, lL = 0, bL = 0, which = c(2, 4, 5, 7),
-  BC.plot = NULL, column.interest = NULL, color.columns = NULL,
-  row.interest = NULL, gene.thresP = 1, gene.thresN = -1,
-  thresP.col = "blue", thresN.col = "red", legend.names = NULL,
-  legend.cols = NULL, CSrank.refplot = FALSE, result.available = NULL,
+  BC.plot = NULL, column.interest = NULL, row.interest = NULL,
+  profile.type = "gene", color.columns = NULL, gene.highlight = NULL,
+  gene.thresP = 1, gene.thresN = -1, thresP.col = "blue",
+  thresN.col = "red", legend.names = NULL, legend.cols = NULL,
+  CSrank.refplot = FALSE, result.available = NULL,
   basefilename = "analyseFABIA", plot.type = "device")
 }
 \arguments{
@@ -50,15 +51,19 @@
 
 \item{bL}{\emph{Fabia Parameter:} cycle at which the nL or lL maximum starts; default = 0 (start at the beginning)}
 
-\item{which}{Choose one or more plots to draw. 1: Information Content of Biclusters, 2: Loadings for reference compounds, 3: Bicluster \code{BC1.plot} VS Bicluster \code{BC2.plot} : Loadings & Genes, 4: Gene Scores for Bicluster \code{BC.Plot}, 5: Loadings for Factor \code{BC.plot}, 6: Column (compound) profiles, 7: CS Rank Scores for Factor \code{BC.plot}}
+\item{which}{Choose one or more plots to draw:\cr 1. Information Content of Biclusters \cr 2. Loadings for reference compounds\cr 3. Bicluster \code{BC1.plot} VS Bicluster \code{BC2.plot} : Loadings & Genes\cr 4. Gene Scores for Bicluster \code{BC.Plot}\cr 5. Loadings for Factor \code{BC.plot}\cr 6. Profile plot (see \code{profile.type})\cr 7. CS Rank Scores for Factor \code{BC.plot}}
 
 \item{BC.plot}{Which biclusters should be investigated? Can be a vector of multiple (e.g. \code{c(1,3,5)}). If \code{NULL}, you can choose biclusters of interest interactively from reference loadings plot.}
 
-\item{column.interest}{Numeric vector of indices of query columns which should be in the compound profiles plot (\code{which=6}). If \code{NULL}, you can interactively select genes on the Gene Scores plot.}
+\item{column.interest}{Numeric vector of indices of query columns which should be in the profiles plots (\code{which=6}). If \code{NULL}, you can interactively select genes on the Compound Loadings plot (\code{which=5}).}
+
+\item{row.interest}{Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=6}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).}
+
+\item{profile.type}{Type of \code{which=6} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})}
 
 \item{color.columns}{Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.}
 
-\item{row.interest}{Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.}
+\item{gene.highlight}{Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.}
 
 \item{gene.thresP}{Threshold for genes with a high score (\code{which=4}).}
 

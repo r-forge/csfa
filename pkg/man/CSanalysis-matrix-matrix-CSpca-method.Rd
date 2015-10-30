@@ -7,10 +7,11 @@
 \usage{
 \S4method{CSanalysis}{matrix,matrix,CSpca}(refMat, querMat, type = "CSpca",
   ncp = 5, scale.unit = TRUE, row.w = NULL, col.w = NULL, which = c(2,
-  4, 6), factor.plot = NULL, column.interest = NULL, color.columns = NULL,
-  row.interest = NULL, gene.thresP = 1, gene.thresN = -1,
-  thresP.col = "blue", thresN.col = "red", legend.names = NULL,
-  legend.cols = NULL, CSrank.refplot = FALSE, result.available = NULL,
+  4, 6), factor.plot = NULL, column.interest = NULL, row.interest = NULL,
+  profile.type = "gene", color.columns = NULL, gene.highlight = NULL,
+  gene.thresP = 1, gene.thresN = -1, thresP.col = "blue",
+  thresN.col = "red", legend.names = NULL, legend.cols = NULL,
+  CSrank.refplot = FALSE, result.available = NULL,
   basefilename = "analysePCA", plot.type = "device")
 }
 \arguments{
@@ -28,15 +29,19 @@
 
 \item{col.w}{\emph{PCA Parameter:} An optional column weights (by default, uniform column weights).}
 
-\item{which}{Choose one or more plots to draw. 1: Percentage of variance explained by PC's, 2: Loadings for reference compounds, 3: PC 1 VS PC 2 : Loadings & Genes, 4: Loadings & Genes for PC \code{factor.plot}, 5: Compound (column) Profiles, 6: CS Rank Scores for Factor \code{factor.plot}}
+\item{which}{Choose one or more plots to draw\cr 1. Percentage of variance explained by PC's\cr 2. Loadings for reference compounds\cr 3. PC 1 VS PC 2 : Loadings & Genes\cr 4. Loadings & Genes for PC \code{factor.plot}\cr 5. Profile plot (see \code{profile.type})\cr 6. CS Rank Scores for Factor \code{factor.plot}}
 
 \item{factor.plot}{Which PC (only one) should be investigated? If \code{NULL}, you can choose a PC of interest interactively from reference loadings plot.}
 
-\item{column.interest}{Numeric vector of indices of query columns which should be in the compound profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes on the Gene Scores plot.}
+\item{column.interest}{Numeric vector of indices of query columns which should be in the profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes on the Compound Loadings plot (\code{which=4}).}
+
+\item{row.interest}{Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=5}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).}
+
+\item{profile.type}{Type of \code{which=5} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})}
 
 \item{color.columns}{Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.}
 
-\item{row.interest}{Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.}
+\item{gene.highlight}{Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.}
 
 \item{gene.thresP}{Threshold for genes with a high score (\code{which=4}).}
 

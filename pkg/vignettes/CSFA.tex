@@ -78,7 +78,7 @@
 
 \usepackage{subcaption}
 
-\title{CSFA 0.3 - Vignette}
+\title{CSFA 0.4 - Vignette}
 \date{}
 \author{Ewoud De Troyer}
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -262,15 +262,17 @@ you want to observe in the {\it "Loadings for Ref..."} plot. After all, this gra
 your main guideline on which factor is capturing the structure of your reference
 set of signatures. As shown in Figure \ref{fig:MFA} below, this is clearly the
 first factor. \\
-Next, the \texttt{column.interest} parameter can be chosen in the {\it "Compound
-Loadings"} plot. You can left-click on multiple compounds you wish to draw in
-the compound profiles graph (and right-click to stop the selection procedure). 
+Next, in order to drawn compound profiles, set \texttt{profile.type} to
+\texttt{"cmpd"}. The \texttt{column.interest} parameter for this plot can also
+be chosen in the {\it "Compound Loadings"} plot (instead of simply providing it
+to \texttt{CSanalysis} beforehand). You can left-click on multiple compounds you wish to draw in the compound profiles graph (and right-click to stop the selection procedure). 
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{4}\hlstd{,}\hlnum{5}\hlstd{),}
-                        \hlkwc{factor.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{))}
+\hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{4}\hlstd{,}\hlnum{5}\hlstd{),}
+                \hlkwc{profile.type}\hlstd{=}\hlstr{"cmpd"}\hlstd{,}\hlkwc{gene.thresP}\hlstd{=}\hlnum{2.3}\hlstd{,}\hlkwc{gene.thresN}\hlstd{=}\hlopt{-}\hlnum{2.3}\hlstd{,}\hlkwc{factor.plot}\hlstd{=}\hlnum{1}\hlstd{,}
+                \hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{21}\hlstd{,}\hlnum{22}\hlstd{,}\hlnum{23}\hlstd{))}
 \end{alltt}
 \begin{verbatim}
 ## Echoufier Rv Correlation:
@@ -302,8 +304,8 @@ Echoufier Rv Correlation matrix between the Reference, Query and MFA matrix.
 %fig.keep="high",fig.pos='H',fig.show='hold',out.width='9cm',out.height='10cm',fig.align='left'
 %show plots, but also explain how interactivity works
 \\ \\
-We can reuse the \texttt{CSanalysis} function to draw the same or additional
-plots without re-computing the factor analysis. This is done through the
+We can also reuse the \texttt{CSanalysis} function to draw the same or
+additional plots without re-computing the factor analysis. This is done through the
 \texttt{result.available} parameter. Here in Figure \ref{fig:MFA2}, the
 Connectivity Score Ranks are shown.
 
@@ -330,6 +332,37 @@ Connectivity Score Ranks are shown.
 
 
 \end{knitrout}
+\noindent Another example would be to draw gene profiles. Now alongside the
+manual or interactive selected \texttt{column.interest}, you can also manual
+select which genes should be used with \texttt{row.interest}. If not provided
+this is also done interactively in the gene score plot. In this graph, the
+x-axis contains all compounds, starting with the reference and selected ones.
+The others are the ordered in decreasing CScore.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{5}\hlstd{),}
+                        \hlkwc{profile.type}\hlstd{=}\hlstr{"gene"}\hlstd{,}\hlkwc{factor.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{),}
+                        \hlkwc{row.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{846}\hlstd{,}\hlnum{871}\hlstd{,}\hlnum{4}\hlstd{,}\hlnum{6}\hlstd{),}\hlkwc{result.available}\hlstd{=out_MFA)}
+\end{alltt}
+\begin{verbatim}
+## Echoufier Rv Correlation:
+##           Reference     Query       MFA
+## Reference 1.0000000 0.4947578 0.8001384
+## Query     0.4947578 1.0000000 0.9171329
+## MFA       0.8001384 0.9171329 1.0000000
+\end{verbatim}
+\end{kframe}\begin{figure}[H]
+
+
+\includegraphics[width=9cm,height=10cm]{figure/MFA3-1} \hfill{}
+
+\caption[CSanalysis Graphs for CSfma]{CSanalysis Graphs for CSfma\label{fig:MFA3}}
+\end{figure}
+
+
+\end{knitrout}
+
 
 
 \subsection{FABIA}

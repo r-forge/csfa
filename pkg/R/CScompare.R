@@ -158,7 +158,7 @@ get.CS.GS <- function(CSresult,component.plot){
 		return(list(CS=loadings,GS=scores,name="MFA",axename=paste0("MFA Factor ",component.plot),CSRank=rankscores))
 	}
 	else if(type =="CSpca"){
-		loadings <- CSresult@object$var$coord[,component.plot]
+		loadings <- CSresult@object$var$cor[,component.plot]
 		scores <- CSresult@object$ind$coord[,component.plot]
 		rankscores <- CSrank(CSresult@object$var$coord,1:dim(CSresult@CS$CS.ref)[1],plot=FALSE,component.plot=component.plot)[,1]
 		

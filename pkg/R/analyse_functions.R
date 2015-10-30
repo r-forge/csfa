@@ -10,6 +10,14 @@
 ###### ZHANG ANALYSIS
 ## which:	- 1: Zhang Scores
 
+#### NOTES !!!
+# MFA -> QUANTI.VAR$COR
+# PCA -> VAR$COR (NOT COORD) 
+# (coord are the standardized coefficients. For mfa the cor and coord are the same due to the standardizing of the data beforehand, namely the weighting)
+
+
+
+
 analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE,permute=FALSE,B=100000,ntop.pvalues=20,ntop.scores=20,
 					basefilename="analyseZhang",
 					#column.interest=NULL,
@@ -84,7 +92,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 				factor.plot=1,column.interest=NULL,row.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
 				colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
 				result.available=NULL,plot.type="pdf",
-				CSrank.refplot=FALSE,
+				CSrank.refplot=FALSE,gene.highlight=NULL,profile.type="gene",
 				which=c(1,2,3,4,5)){
 	
 			
@@ -140,7 +148,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	
 	
 	## Selecting the factor.plot
-	if((3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6 %in% which)){
+	if(is.null(factor.plot) | (3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6 %in% which)){
 		if(is.null(factor.plot)){
 			if(plot.type=="pdf" | !(2 %in% which)){
 				dev.new()
@@ -211,15 +219,15 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 		}
 		
 		# highlighting genes
-		if(!is.null(row.interest)){
-			if(class(row.interest)=="numeric"){
-				col.temp[row.interest] <- "green"
+		if(!is.null(gene.highlight)){
+			if(class(gene.highlight)=="numeric"){
+				col.temp[gene.highlight] <- "green"
 			}
-			if(class(row.interest)=="list"){
-				if(length(row.interest)>5){stop("Too many different row.interest",call.=FALSE)}
+			if(class(gene.highlight)=="list"){
+				if(length(gene.highlight)>5){stop("Too many different gene.highlight",call.=FALSE)}
 				col.pool <- c("green","deeppink","darkorchid4","gold3","tan1")
-				for(i.list in 1:length(row.interest)){
-					col.temp[row.interest[[i.list]]] <- col.pool[i.list]
+				for(i.list in 1:length(gene.highlight)){
+					col.temp[gene.highlight[[i.list]]] <- col.pool[i.list]
 				}
 			}
 		}
@@ -237,8 +245,62 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 		if(!is.null(gene.thresP)){abline(gene.thresP,0,lty=3)}
 		if(!is.null(gene.thresN)){abline(gene.thresN,0,lty=3)}
 		plot.out(plot.type)
+	}
 	
+	## SELECTING THE GENES OF INTEREST (replot in device if necessary)
+	genes_interest <- row.interest #make the object in case of a cmpd profile
 	
+	if(5 %in% which & profile.type=="gene"){
+		if(is.null(row.interest)){
+			if(plot.type=="pdf" | !(4 %in% which)){
+				bg.temp <-  col.temp <- rep("grey",length(scores[,factor.plot]))
+				if(!is.null(gene.thresP)){
+					temp.boolean <- (scores[,factor.plot]>=gene.thresP)
+					bg.temp[temp.boolean] <- thresP.col
+					col.temp[temp.boolean] <- thresP.col
+				}
+				if(!is.null(gene.thresN)){
+					temp.boolean <- (scores[,factor.plot]<=gene.thresN)
+					bg.temp[temp.boolean] <- thresN.col
+					col.temp[temp.boolean] <- thresN.col
+				}
+				
+				# highlighting genes
+				if(!is.null(gene.highlight)){
+					if(class(gene.highlight)=="numeric"){
+						col.temp[gene.highlight] <- "green"
+					}
+					if(class(gene.highlight)=="list"){
+						if(length(gene.highlight)>5){stop("Too many different gene.highlight",call.=FALSE)}
+						col.pool <- c("green","deeppink","darkorchid4","gold3","tan1")
+						for(i.list in 1:length(gene.highlight)){
+							col.temp[gene.highlight[[i.list]]] <- col.pool[i.list]
+						}
+					}
+				}
+				dev.new()
+				plot(c(1:length(scores[,factor.plot])),scores[,factor.plot],  type="p",
+						xlab="Gene Index", 
+						ylab="Gene Factor Scores",
+						pch=21,
+						bg=bg.temp,
+						col=col.temp,
+						cex=1,main=paste0("Factor ",factor.plot," - Gene Factor Scores")
+				)
+				text(c(1:length(scores[,factor.plot])),scores[,factor.plot], rownames(data),	pos=1,	cex=0.5,	col=col.temp)
+				if(!is.null(gene.thresP)){abline(gene.thresP,0,lty=3)}
+				if(!is.null(gene.thresN)){abline(gene.thresN,0,lty=3)}
+			}
+			cat("Select as many genes as desired with left mouse button. Right-click to end selection procedure.\n\n")
+			genes_interest <- identify(c(1:length(scores[,factor.plot])),scores[,factor.plot],n=999,plot=TRUE,labels=rownames(data))
+			
+		}
+		else{
+			genes_interest <- row.interest
+		}
+	}
+	
+	if(4 %in% which){
 		## PLOT: Compound Loadings of 'factor.plot'
 		plot.in(plot.type,paste0(basefilename,"_MFALoadings.pdf"))
 		par(mfrow=c(1,1))
@@ -286,46 +348,12 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	}
 	
 	if( 5 %in% which){
-		## PLOT: Profiles of Compounds of interest + reference compounds on top. (Note: Here multiple ref possible)
-		# Re-order the genes first if thresholds have been set for the gene score.
-		order.genes <- c(1:dim(data)[1])
-		order.temp <- c()
-		col.labels <- rep("black",dim(data)[1])
-		
-		if(!is.null(gene.thresP)){
-			boolean_P <- (scores[,factor.plot]>=gene.thresP)
-			order.temp <- c(order.temp,order.genes[boolean_P])
-			col.labels[boolean_P] <- thresP.col
-		}
-		else{
-			boolean_P <- rep(FALSE,dim(data)[1])
-		}
-		if(!is.null(gene.thresN)){
-			boolean_N <- (scores[,factor.plot]<=gene.thresN)
-			order.temp <- c(order.temp,order.genes[boolean_N])
-			col.labels[boolean_N] <- thresN.col
-		}
-		else{
-			boolean_N <- rep(FALSE,dim(data)[1])
-		}
-		
-		order.temp <- c(order.temp,order.genes[!boolean_P & !boolean_N])
-		col.labels <- col.labels[order.temp]
-		
-		
-		plot.in(plot.type,paste0(basefilename,"_MFA_Profiles.pdf"))
-		plot(-1,0,type="n",main="Gene Expression for Compound Profiles",xaxt='n',xlab="Gene Index",ylab="Gene Expression",xlim=c(-(0.1*dim(data)[1]),dim(data)[1]),ylim=c(min(data),max(data)))
-		axis(1,at=c(1:dim(data)[1]),labels=FALSE)
-		mtext(rownames(data)[order.temp],col=col.labels,at=c(1:dim(data)[1]),las=3,line=1,side=1)
-		for(i.cmpd in cmpds_interest){
-			lines(c(1:length(data[,i.cmpd])),data[order.temp,i.cmpd],col="grey")
-			text(1,data[order.temp[1],i.cmpd],colnames(data)[i.cmpd],col="grey",pos=2)
-		}
-		for(i.ref in ref.index){
-			lines(c(1:length(data[,i.ref])),data[order.temp,i.ref],col="blue")
-			text(1,data[order.temp[1],i.ref],colnames(data)[i.ref],col="blue",pos=2)
-		}
-		plot.out(plot.type)
+		## PLOT: Profiles Plot
+		CSprofiles(data=data,ref_index=ref.index,gene.select=genes_interest,cmpd.select=cmpds_interest,profile.type=profile.type,
+				cmpd.loadings=loadings,gene.scores=scores,component.plot=factor.plot,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
+				basefilename=basefilename,plot.type=plot.type,thresP.col=thresP.col,thresN.col=thresN.col,main.base=paste0("MFA Factor ",factor.plot))
+			
+
 	}
 	
 	
@@ -367,7 +395,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		basefilename="analysePCA",
 		ref.index=1,factor.plot=NULL,column.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
 		colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
-		CSrank.refplot=FALSE,
+		CSrank.refplot=FALSE,gene.highlight=NULL,profile.type="gene",row.interest=NULL,
 		result.available=NULL,plot.type="pdf",which=c(1,2,3,4,5,6)){
 	
 	## Checking reference index is correct
@@ -399,7 +427,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 	}
 	
 	##
-	loadings <- resPCA$var$coord
+	loadings <- resPCA$var$cor
 	scores <- resPCA$ind$coord
 	if(!is.null(colour.columns)){groupCol <- colour.columns} else { groupCol <- "black"}
 	
@@ -413,7 +441,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 	}
 	
 	## Selecting the factor.plot
-	if((3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6%in%which) ){
+	if(is.null(factor.plot)|(3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6%in%which) ){
 		if(is.null(factor.plot)){
 			if(plot.type=="pdf" | !(2 %in% which)){
 				dev.new()
@@ -474,6 +502,20 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 			col.temp[temp.boolean] <- thresN.col
 		}
 		
+		# highlighting genes
+		if(!is.null(gene.highlight)){
+			if(class(gene.highlight)=="numeric"){
+				col.temp[gene.highlight] <- "green"
+			}
+			if(class(gene.highlight)=="list"){
+				if(length(gene.highlight)>5){stop("Too many different gene.highlight",call.=FALSE)}
+				col.pool <- c("green","deeppink","darkorchid4","gold3","tan1")
+				for(i.list in 1:length(gene.highlight)){
+					col.temp[gene.highlight[[i.list]]] <- col.pool[i.list]
+				}
+			}
+		}
+		
 		plot.in(plot.type,paste0(basefilename,"_PCAFactors.pdf"))
 		plot(c(1:length(scores[,factor.plot])),scores[,factor.plot],  type="p",
 				xlab="Gene Index", 
@@ -487,7 +529,60 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		if(!is.null(gene.thresP)){abline(gene.thresP,0,lty=3)}
 		if(!is.null(gene.thresN)){abline(gene.thresN,0,lty=3)}
 		plot.out(plot.type)
+	}
 	
+	## SELECTING THE GENES OF INTEREST (replot in device if necessary)
+	if(5 %in% which & profile.type=="gene"){
+		if(is.null(row.interest)){
+			if(plot.type=="pdf" | !(4 %in% which)){
+				dev.new()
+				bg.temp <-  col.temp <- rep("grey",length(scores[,factor.plot]))
+				if(!is.null(gene.thresP)){
+					temp.boolean <- (scores[,factor.plot]>=gene.thresP)
+					bg.temp[temp.boolean] <- thresP.col
+					col.temp[temp.boolean] <- thresP.col
+				}
+				if(!is.null(gene.thresN)){
+					temp.boolean <- (scores[,factor.plot]<=gene.thresN)
+					bg.temp[temp.boolean] <- thresN.col
+					col.temp[temp.boolean] <- thresN.col
+				}
+				
+				# highlighting genes
+				if(!is.null(gene.highlight)){
+					if(class(gene.highlight)=="numeric"){
+						col.temp[gene.highlight] <- "green"
+					}
+					if(class(gene.highlight)=="list"){
+						if(length(gene.highlight)>5){stop("Too many different gene.highlight",call.=FALSE)}
+						col.pool <- c("green","deeppink","darkorchid4","gold3","tan1")
+						for(i.list in 1:length(gene.highlight)){
+							col.temp[gene.highlight[[i.list]]] <- col.pool[i.list]
+						}
+					}
+				}
+				plot(c(1:length(scores[,factor.plot])),scores[,factor.plot],  type="p",
+						xlab="Gene Index", 
+						ylab="Gene Factor Scores",
+						pch=21,
+						bg=bg.temp,
+						col=col.temp,
+						cex=1,main=paste0("PC ",factor.plot," - Gene Factor Scores")
+				)
+				text(c(1:length(scores[,factor.plot])),scores[,factor.plot], rownames(data),	pos=1,	cex=0.5,	col=col.temp)
+				if(!is.null(gene.thresP)){abline(gene.thresP,0,lty=3)}
+				if(!is.null(gene.thresN)){abline(gene.thresN,0,lty=3)}
+			}
+			cat("Select as many genes as desired with left mouse button. Right-click to end selection procedure.\n\n")
+			genes_interest <- identify(c(1:length(scores[,factor.plot])),scores[,factor.plot],n=999,plot=TRUE,labels=rownames(data))
+			
+		}
+		else{
+			genes_interest <- row.interest
+		}
+	}
+	
+	if(4 %in% which){
 	
 		## PLOT: Compound Loadings of 'factor.plot'
 		plot.in(plot.type,paste0(basefilename,"_PCALoadings.pdf"))
@@ -535,44 +630,13 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		}
 	}
 	
-	if(5 %in% which){
-		## PLOT: Profiles of Compounds of interest + reference compounds on top. (Note: Here only 1 ref)
-		# Re-order the genes first if thresholds have been set for the gene score.
-		order.genes <- c(1:dim(data)[1])
-		order.temp <- c()
-		col.labels <- rep("black",dim(data)[1])
+	if( 5 %in% which){
+		## PLOT: Profiles Plot
+		CSprofiles(data=data,ref_index=ref.index,gene.select=genes_interest,cmpd.select=cmpds_interest,profile.type=profile.type,
+				cmpd.loadings=loadings,gene.scores=scores,component.plot=factor.plot,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
+				basefilename=basefilename,plot.type=plot.type,thresP.col=thresP.col,thresN.col=thresN.col,main.base=paste0("PCA PC ",factor.plot))
 		
-		if(!is.null(gene.thresP)){
-			boolean_P <- (scores[,factor.plot]>=gene.thresP)
-			order.temp <- c(order.temp,order.genes[boolean_P])
-			col.labels[boolean_P] <- thresP.col
-		}
-		else{
-			boolean_P <- rep(FALSE,dim(data)[1])
-		}
-		if(!is.null(gene.thresN)){
-			boolean_N <- (scores[,factor.plot]<=gene.thresN)
-			order.temp <- c(order.temp,order.genes[boolean_N])
-			col.labels[boolean_N] <- thresN.col
-		}
-		else{
-			boolean_N <- rep(FALSE,dim(data)[1])
-		}
 		
-		order.temp <- c(order.temp,order.genes[!boolean_P & !boolean_N])
-		col.labels <- col.labels[order.temp]
-		
-		plot.in(plot.type,paste0(basefilename,"_PCA_Profiles.pdf"))
-		plot(-1,0,type="n",main="Gene Expression for Compound Profiles",xaxt='n',xlab="Gene Index",ylab="Gene Expression",xlim=c(-(0.1*dim(data)[1]),dim(data)[1]),ylim=c(min(data),max(data)))
-		axis(1,at=c(1:dim(data)[1]),labels=FALSE)
-		mtext(rownames(data)[order.temp],col=col.labels,at=c(1:dim(data)[1]),las=3,side=1)
-		for(i.cmpd in cmpds_interest){
-			lines(c(1:length(data[,i.cmpd])),data[order.temp,i.cmpd],col="grey")
-			text(1,data[order.temp[1],i.cmpd],colnames(data)[i.cmpd],col="grey",pos=2)
-		}
-		lines(c(1:length(data[,ref.index])),data[order.temp,ref.index],col="blue")
-		text(1,data[order.temp[1],ref.index],colnames(data)[ref.index],col="blue",pos=2)
-		plot.out(plot.type)
 	}
 	
 	if(6 %in% which){
@@ -756,7 +820,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 					column.interest=NULL,row.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
 					colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
 					result.available=NULL,plot.type="pdf",
-					CSrank.refplot=FALSE,
+					CSrank.refplot=FALSE,gene.highlight=NULL,profile.type="gene",
 					which=c(1,2,3,4,5,6)){
 	
 			
@@ -818,7 +882,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 		
 		 
 		## Select Biclusters from 'loadings for reference compounds' (redraw if necessary)
-		if((3 %in% which) | (4 %in% which)| (5 %in% which) | (is.null(column.interest)&(6 %in% which)) | ((6 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (7 %in% which) ){
+		if(is.null(BC.plot)|(3 %in% which) | (4 %in% which)| (5 %in% which) | (is.null(column.interest)&(6 %in% which)) | ((6 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (7 %in% which) ){
 			
 			if(is.null(BC.plot)){
 				if(plot.type=="pdf" | !(2 %in% which)){
@@ -881,10 +945,14 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 			plot.out(plot.type)
 		}
 
-		if(4 %in% which){
-			
-			
-			for(i.BC in BC.plot){
+		
+		##
+#		row.interest.list <- list()
+		row.interest.list <- vector("list",max(BC.plot))
+		##
+		
+		for(i.BC in BC.plot){
+			if(4 %in% which){
 				
 				bg.temp <-  col.temp <- rep("grey",length(scores[,i.BC]))
 				if(!is.null(gene.thresP)){
@@ -899,15 +967,15 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 				}
 				
 				# highlighting genes
-				if(!is.null(row.interest)){
-					if(class(row.interest)=="numeric"){
-						col.temp[row.interest] <- "green"
+				if(!is.null(gene.highlight)){
+					if(class(gene.highlight)=="numeric"){
+						col.temp[gene.highlight] <- "green"
 					}
-					if(class(row.interest)=="list"){
-						if(length(row.interest)>5){stop("Too many different row.interest",call.=FALSE)}
+					if(class(gene.highlight)=="list"){
+						if(length(gene.highlight)>5){stop("Too many different gene.highlight",call.=FALSE)}
 						col.pool <- c("green","deeppink","darkorchid4","gold3","tan1")
-						for(i.list in 1:length(row.interest)){
-							col.temp[row.interest[[i.list]]] <- col.pool[i.list]
+						for(i.list in 1:length(gene.highlight)){
+							col.temp[gene.highlight[[i.list]]] <- col.pool[i.list]
 						}
 					}
 				}
@@ -929,13 +997,73 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 				plot.out(plot.type)
 			
 			}
+			
+			# SELECT GENES FOR PROFILES PLOT
+			if(6 %in% which & profile.type=="gene"){
+				if(is.null(row.interest)){
+					if(plot.type=="pdf" | !(4 %in% which)){
+						bg.temp <-  col.temp <- rep("grey",length(scores[,i.BC]))
+						if(!is.null(gene.thresP)){
+							temp.boolean <- (scores[,i.BC]>=gene.thresP)
+							bg.temp[temp.boolean] <- thresP.col
+							col.temp[temp.boolean] <- thresP.col
+						}
+						if(!is.null(gene.thresN)){					
+							temp.boolean <- (scores[,i.BC]<=gene.thresN)
+							bg.temp[temp.boolean] <- thresN.col
+							col.temp[temp.boolean] <- thresN.col
+						}
+						
+						# highlighting genes
+						if(!is.null(gene.highlight)){
+							if(class(gene.highlight)=="numeric"){
+								col.temp[gene.highlight] <- "green"
+							}
+							if(class(gene.highlight)=="list"){
+								if(length(gene.highlight)>5){stop("Too many different gene.highlight",call.=FALSE)}
+								col.pool <- c("green","deeppink","darkorchid4","gold3","tan1")
+								for(i.list in 1:length(gene.highlight)){
+									col.temp[gene.highlight[[i.list]]] <- col.pool[i.list]
+								}
+							}
+						}
+						dev.new()
+						plot(c(1:length(scores[,i.BC])),scores[,i.BC],  type="p",
+								xlab="Gene Index", 
+								ylab="Gene Factor Scores",
+								pch=21,
+								bg=bg.temp,
+								col=col.temp,
+								cex=1,main=paste0("BC ",i.BC," - Gene Factor Scores")
+						)
+						text(c(1:length(scores[,i.BC])),scores[,i.BC], rownames(data),	pos=1,	cex=0.5,	col=col.temp)
+						if(!is.null(gene.thresP)){abline(gene.thresP,0,lty=3)}
+						if(!is.null(gene.thresN)){abline(gene.thresN,0,lty=3)}
+					}
+					cat("Select as many genes as desired with left mouse button. Right-click to end selection procedure.\n\n")
+					id.temp <- identify(c(1:length(scores[,i.BC])),scores[,i.BC],n=999,labels=rownames(data))
+					if(!(length(id.temp)==0)){
+						row.interest.list[[i.BC]] <- id.temp
+					}
+
+				}
+				else{
+					row.interest.list[[i.BC]] <- row.interest
+				}
+			}
+			
 		}
 		
-		##
-		column.interest.list <- list()
-		##
 		
 		
+
+		
+		
+		##
+#		column.interest.list <- list()
+		column.interest.list <- vector("list",max(BC.plot))
+		##
+			
 		for(i.BC in c(1:length(BC.plot))){
 			
 			if(5 %in% which){
@@ -979,12 +1107,10 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 				
 					cat("Select as many compounds as desired with left mouse button. Right-click to end selection procedure.\n\n")
 					id.temp <- identify(c(1:length(loadings[,BC.plot[i.BC]])),loadings[,BC.plot[i.BC]],n=999,labels=colnames(data))
-					if(length(id.temp)==0){
-						column.interest.list[[BC.plot[i.BC]]] <- NULL
-					}
-					else{
+					if(!(length(id.temp)==0)){
 						column.interest.list[[BC.plot[i.BC]]] <- id.temp
 					}
+
 				
 				}
 				else{
@@ -997,72 +1123,35 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 		
 		if( (6 %in% which) & (length(column.interest.list)>0) ){# Excluding the case in which you don't select anything + no pm
 						 
-			## PLOT: Profiles of Compounds of interest + reference compounds on top. (Note: Here multiple ref possible)
-			for(i.profile in c(1:length(column.interest.list))){
-				##
-				if(is.null(column.interest) | !is.null(gene.thresP) | !is.null(gene.thresN)){
-					main.name <- paste0("Gene Expression for Compound Profiles"," - Selection from BC ",i.profile)
-					base.name <- paste0("_FABIA_Profiles_BC",i.profile,".pdf")
+			if(!(profile.type=="gene" & !length(row.interest.list)>0)){ # case of gene profiles but no selection not allowed
 				
-					# Re-order the genes first if thresholds have been set for the gene score.
-					order.genes <- c(1:dim(data)[1])
-					order.temp <- c()
-					col.labels <- rep("black",dim(data)[1])
+				for(i.BC in BC.plot){
+					cmpds_interest <- column.interest.list[[i.BC]]
 					
-					if(!is.null(gene.thresP)){
-						boolean_P <- (scores[,i.profile]>=gene.thresP)
-						order.temp <- c(order.temp,order.genes[boolean_P])
-						col.labels[boolean_P] <- thresP.col
+					if(length(row.interest.list)==0){
+						genes_interest <- vector("list",length(cmpds_interest))
 					}
 					else{
-						boolean_P <- rep(FALSE,dim(data)[1])
-					}
-					if(!is.null(gene.thresN)){
-						boolean_N <- (scores[,i.profile]<=gene.thresN)
-						order.temp <- c(order.temp,order.genes[boolean_N])
-						col.labels[boolean_N] <- thresN.col
-					}
-					else{
-						boolean_N <- rep(FALSE,dim(data)[1])
+						genes_interest <- row.interest.list[[i.BC]]
+						
 					}
 					
-					order.temp <- c(order.temp,order.genes[!boolean_P & !boolean_N])
-					col.labels <- col.labels[order.temp]
-					
-				
-				
-				
-				}
-				else{ # This the case the columns are provided and it is not necessary to order genes based on gene thresholds for each selected bicluster
-					main.name <- paste0("Gene Expression for Compound Profiles")
-					base.name <- paste0("_FABIA_Profiles.pdf")
-				
-					order.temp <- c(1:dim(data)[1])
-					col.labels <- rep("black",dim(data)[1])
-				}
-			
-				cmpds_interest <- column.interest.list[[i.profile]]
-		
-				##
-				
-
-				
-				
-				if(!is.null(cmpds_interest)){
-					plot.in(plot.type,paste0(basefilename,base.name))
-					plot(-1,0,type="n",main=main.name,xaxt='n',xlab="Gene Index",ylab="Gene Expression",xlim=c(-(0.1*dim(data)[1]),dim(data)[1]),ylim=c(min(data),max(data)))
-					axis(1,at=c(1:dim(data)[1]),labels=FALSE)
-					mtext(rownames(data)[order.temp],col=col.labels,at=c(1:dim(data)[1]),las=3,line=1,side=1)
-					for(i.cmpd in cmpds_interest){
-						lines(c(1:length(data[,i.cmpd])),data[order.temp,i.cmpd],col="grey")
-						text(1,data[order.temp[1],i.cmpd],colnames(data)[i.cmpd],col="grey",pos=2)
+					if(!is.null(cmpds_interest)){
+						if(!(profile.type=="gene" & is.null(genes_interest))){
+						
+							
+							base.name <- paste0(basefilename,"_BC",i.BC)
+							main.base <- paste0("Fabia BC",i.BC)
+							
+							CSprofiles(data=data,ref_index=ref.index,gene.select=genes_interest,cmpd.select=cmpds_interest,profile.type=profile.type,cmpd.loadings=loadings,gene.scores=scores,component.plot=i.BC,gene.thresP=gene.thresP,gene.thresN=gene.thresN,basefilename=base.name,plot.type=plot.type,thresP.col=thresP.col,thresN.col=thresN.col,main.base=main.base)
+								
+						}
+						
+						
 					}
-					for(i.ref in ref.index){
-						lines(c(1:length(data[,i.ref])),data[order.temp,i.ref],col="blue")
-						text(1,data[order.temp[1],i.ref],colnames(data)[i.ref],col="blue",pos=2)
-					}
-					plot.out(plot.type)
 				}
+				
+				
 			}
 
 			
@@ -1541,8 +1630,8 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		basefilename="analyseMFA",ref.index=c(1),sparse.dim=2,
 		factor.plot=1,column.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
 		colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
-		CSrank.refplot=FALSE,
-		result.available=NULL,plot.type="pdf",
+		CSrank.refplot=FALSE,gene.highlight=NULL,profile.type="gene",
+		result.available=NULL,plot.type="pdf",row.interest=NULL,
 		which=c(1,2,3,4,5)){
 	
 	## Plot-in and -out functions
@@ -1628,7 +1717,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 	
 	
 	## Selecting the factor.plot
-	if((3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6 %in% which) ){
+	if(is.null(factor.plot)|(3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6 %in% which) ){
 		if(is.null(factor.plot)){
 			if(plot.type=="pdf" | !(2 %in% which)){
 				dev.new()
@@ -1698,6 +1787,19 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 			col.temp[temp.boolean] <- thresN.col
 		}
 		
+		# highlighting genes
+		if(!is.null(gene.highlight)){
+			if(class(gene.highlight)=="numeric"){
+				col.temp[gene.highlight] <- "green"
+			}
+			if(class(gene.highlight)=="list"){
+				if(length(gene.highlight)>5){stop("Too many different gene.highlight",call.=FALSE)}
+				col.pool <- c("green","deeppink","darkorchid4","gold3","tan1")
+				for(i.list in 1:length(gene.highlight)){
+					col.temp[gene.highlight[[i.list]]] <- col.pool[i.list]
+				}
+			}
+		}
 		
 		plot.in(plot.type,paste0(basefilename,"_sMFAFactors.pdf"))
 		plot(c(1:length(scores[,factor.plot])),scores[,factor.plot],  type="p",
@@ -1712,7 +1814,60 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		if(!is.null(gene.thresP)){abline(gene.thresP,0,lty=3)}
 		if(!is.null(gene.thresN)){abline(gene.thresN,0,lty=3)}
 		plot.out(plot.type)
-		
+	}
+	
+	## SELECTING THE GENES OF INTEREST (replot in device if necessary)
+	if(5 %in% which & profile.type=="gene"){
+		if(is.null(row.interest)){
+			if(plot.type=="pdf" | !(4 %in% which)){
+				dev.new()
+				bg.temp <-  col.temp <- rep("grey",length(scores[,factor.plot]))
+				if(!is.null(gene.thresP)){
+					temp.boolean <- (scores[,factor.plot]>=gene.thresP)
+					bg.temp[temp.boolean] <- thresP.col
+					col.temp[temp.boolean] <- thresP.col
+				}
+				if(!is.null(gene.thresN)){
+					temp.boolean <- (scores[,factor.plot]<=gene.thresN)
+					bg.temp[temp.boolean] <- thresN.col
+					col.temp[temp.boolean] <- thresN.col
+				}
+				
+				# highlighting genes
+				if(!is.null(gene.highlight)){
+					if(class(gene.highlight)=="numeric"){
+						col.temp[gene.highlight] <- "green"
+					}
+					if(class(gene.highlight)=="list"){
+						if(length(gene.highlight)>5){stop("Too many different gene.highlight",call.=FALSE)}
+						col.pool <- c("green","deeppink","darkorchid4","gold3","tan1")
+						for(i.list in 1:length(gene.highlight)){
+							col.temp[gene.highlight[[i.list]]] <- col.pool[i.list]
+						}
+					}
+				}
+				plot(c(1:length(scores[,factor.plot])),scores[,factor.plot],  type="p",
+						xlab="Gene Index", 
+						ylab="Gene Factor Scores",
+						pch=21,
+						bg=bg.temp,
+						col=col.temp,
+						cex=1,main=paste0("Factor ",factor.plot," - Gene Factor Scores")
+				)
+				text(c(1:length(scores[,factor.plot])),scores[,factor.plot], rownames(data),	pos=1,	cex=0.5,	col=col.temp)
+				if(!is.null(gene.thresP)){abline(gene.thresP,0,lty=3)}
+				if(!is.null(gene.thresN)){abline(gene.thresN,0,lty=3)}
+			}
+			cat("Select as many genes as desired with left mouse button. Right-click to end selection procedure.\n\n")
+			genes_interest <- identify(c(1:length(scores[,factor.plot])),scores[,factor.plot],n=999,plot=TRUE,labels=rownames(data))
+			
+		}
+		else{
+			genes_interest <- row.interest
+		}
+	}
+	
+	if(4 %in% which){
 		
 		## PLOT: Compound Loadings of 'factor.plot'
 		plot.in(plot.type,paste0(basefilename,"_sMFALoadings.pdf"))
@@ -1761,46 +1916,12 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 	}
 	
 	if( 5 %in% which){
-		## PLOT: Profiles of Compounds of interest + reference compounds on top. (Note: Here multiple ref possible)
-		# Re-order the genes first if thresholds have been set for the gene score.
-		order.genes <- c(1:dim(data)[1])
-		order.temp <- c()
-		col.labels <- rep("black",dim(data)[1])
-		
-		if(!is.null(gene.thresP)){
-			boolean_P <- (scores[,factor.plot]>=gene.thresP)
-			order.temp <- c(order.temp,order.genes[boolean_P])
-			col.labels[boolean_P] <- thresP.col
-		}
-		else{
-			boolean_P <- rep(FALSE,dim(data)[1])
-		}
-		if(!is.null(gene.thresN)){
-			boolean_N <- (scores[,factor.plot]<=gene.thresN)
-			order.temp <- c(order.temp,order.genes[boolean_N])
-			col.labels[boolean_N] <- thresN.col
-		}
-		else{
-			boolean_N <- rep(FALSE,dim(data)[1])
-		}
-		
-		order.temp <- c(order.temp,order.genes[!boolean_P & !boolean_N])
-		col.labels <- col.labels[order.temp]
+		## PLOT: Profiles Plot
+		CSprofiles(data=data,ref_index=ref.index,gene.select=genes_interest,cmpd.select=cmpds_interest,profile.type=profile.type,
+				cmpd.loadings=loadings,gene.scores=scores,component.plot=factor.plot,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
+				basefilename=basefilename,plot.type=plot.type,thresP.col=thresP.col,thresN.col=thresN.col,main.base=paste0("sMFA Factor ",factor.plot))
 		
 		
-		plot.in(plot.type,paste0(basefilename,"_sMFA_Profiles.pdf"))
-		plot(-1,0,type="n",main="Gene Expression for Compound Profiles",xaxt='n',xlab="Gene Index",ylab="Gene Expression",xlim=c(-(0.1*dim(data)[1]),dim(data)[1]),ylim=c(min(data),max(data)))
-		axis(1,at=c(1:dim(data)[1]),labels=FALSE)
-		mtext(rownames(data)[order.temp],col=col.labels,at=c(1:dim(data)[1]),las=3,line=1,side=1)
-		for(i.cmpd in cmpds_interest){
-			lines(c(1:length(data[,i.cmpd])),data[order.temp,i.cmpd],col="grey")
-			text(1,data[order.temp[1],i.cmpd],colnames(data)[i.cmpd],col="grey",pos=2)
-		}
-		for(i.ref in ref.index){
-			lines(c(1:length(data[,i.ref])),data[order.temp,i.ref],col="blue")
-			text(1,data[order.temp[1],i.ref],colnames(data)[i.ref],col="blue",pos=2)
-		}
-		plot.out(plot.type)
 	}
 	
 	if(6 %in% which){
@@ -1819,6 +1940,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 	
 	## Returning the MFA result for further use
 	
+	resMFA$loadings <- loadings
 	resMFA$scores <- scores
 	out <- list(factor.select=factor.plot,result=resMFA,CSRank=out_CS_rank)	
 	return(out)
@@ -1829,6 +1951,12 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 
 
 CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings_names=NULL,component.plot,type.component="Factor",plot=TRUE,plot.type="pdf",basefilename="base"){
+	
+	type <- "loadings"
+#	type <- "loadings_abs"
+#	type <- "max"
+#	type <- "median"
+#	type <- "contributions"
 	
 	## Plot-in and -out functions
 	plot.in <- function(plot.type,name){
@@ -1847,6 +1975,13 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 	
 	avg_query2 <- mean(loadings[-ref.index]^2)
 	
+	
+	
+	if(sum(loadings[ref.index]^2 <= avg_query2)>=1){
+		warning("No CS Rank Scores computed. One ore more of the references is too low as a loading.")
+		return(NULL)
+	}
+	
 	for(i.ref in 1:length(ref.index)){
 		
 		ref.loading <- loadings[ref.index[i.ref]]
@@ -1855,20 +1990,24 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 					sign.temp <- ifelse(sign(ref.loading)==sign(x),1,-1)
 						
 					if(ref.loading^2 >= x^2){
-						return(
-								((x^2 - avg_query2)^2/(ref.loading^2 - avg_query2)^2)*sign.temp)
-#								((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp)
-#								((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp)
+#						return(
+								if(type=="loadings"){return(((x^2 - avg_query2)^2/(ref.loading^2 - avg_query2)^2)*sign.temp)}
+								if(type=="loadings_abs"){return(((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp)}
+#								((x^2 - avg_query2)^2/(ref.loading^2 - avg_query2)^2)*sign.temp
+#								((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp
+#								((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp
 								
-					
+#							)
 					}
 					else{
-						return(
-								((ref.loading^2 - avg_query2)^2/(x^2 - avg_query2)^2)*sign.temp)
-#								((ref.loading^2 - avg_query2^2)^2/(x^2 - avg_query2^2)^2)*sign.temp)
-#								((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp)
+#						return(
+								if(type=="loadings"){return(((ref.loading^2 - avg_query2)^2/(x^2 - avg_query2)^2)*sign.temp)}
+								if(type=="loadings_abs"){return(((ref.loading^2 - avg_query2^2)^2/(x^2 - avg_query2^2)^2)*sign.temp)}
+#								((ref.loading^2 - avg_query2)^2/(x^2 - avg_query2)^2)*sign.temp
+#								((ref.loading^2 - avg_query2^2)^2/(x^2 - avg_query2^2)^2)*sign.temp
+#								((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp
 								
-							
+#							)
 					}
 					
 					

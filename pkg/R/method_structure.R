@@ -127,11 +127,13 @@ setMethod('CSanalysis', c('matrix','matrix','character'),
 #' @param nL \emph{Fabia Parameter:} maximal number of biclusters at which a row element can participate; default = 0 (no limit)
 #' @param lL \emph{Fabia Parameter:} maximal number of row elements per bicluster; default = 0 (no limit)
 #' @param bL \emph{Fabia Parameter:} cycle at which the nL or lL maximum starts; default = 0 (start at the beginning)
-#' @param which Choose one or more plots to draw. 1: Information Content of Biclusters, 2: Loadings for reference compounds, 3: Bicluster \code{BC1.plot} VS Bicluster \code{BC2.plot} : Loadings & Genes, 4: Gene Scores for Bicluster \code{BC.Plot}, 5: Loadings for Factor \code{BC.plot}, 6: Column (compound) profiles, 7: CS Rank Scores for Factor \code{BC.plot}
+#' @param which Choose one or more plots to draw:\cr 1. Information Content of Biclusters \cr 2. Loadings for reference compounds\cr 3. Bicluster \code{BC1.plot} VS Bicluster \code{BC2.plot} : Loadings & Genes\cr 4. Gene Scores for Bicluster \code{BC.Plot}\cr 5. Loadings for Factor \code{BC.plot}\cr 6. Profile plot (see \code{profile.type})\cr 7. CS Rank Scores for Factor \code{BC.plot}
 #' @param BC.plot Which biclusters should be investigated? Can be a vector of multiple (e.g. \code{c(1,3,5)}). If \code{NULL}, you can choose biclusters of interest interactively from reference loadings plot.
-#' @param column.interest Numeric vector of indices of query columns which should be in the compound profiles plot (\code{which=6}). If \code{NULL}, you can interactively select genes on the Gene Scores plot.
+#' @param column.interest Numeric vector of indices of query columns which should be in the profiles plots (\code{which=6}). If \code{NULL}, you can interactively select genes on the Compound Loadings plot (\code{which=5}).
+#' @param row.interest Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=6}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).
+#' @param profile.type Type of \code{which=6} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
-#' @param row.interest Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
+#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
 #' @param gene.thresP Threshold for genes with a high score (\code{which=4}).
 #' @param gene.thresN Threshold for genes with a low score (\code{which=4}).
 #' @param thresP.col Color of genes above \code{gene.thresP}.
@@ -147,8 +149,8 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 		function(refMat,querMat,type="CSfabia",p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negative=0,random=1.0,center=2,norm=1,scale=0.0,lap=1.0,nL=0,lL=0,bL=0
 				,which=c(2,4,5,7)
 				,BC.plot=NULL
-				,column.interest=NULL,color.columns=NULL
-				,row.interest=NULL
+				,column.interest=NULL,row.interest=NULL,profile.type="gene"
+				,color.columns=NULL,gene.highlight=NULL
 				,gene.thresP=1,gene.thresN=-1,thresP.col="blue",thresN.col="red"
 				,legend.names=NULL,legend.cols=NULL
 				,CSrank.refplot=FALSE
@@ -190,7 +192,8 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 					column.interest=column.interest,row.interest=row.interest,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
 					colour.columns=colour.columns,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
 					result.available=result.available2,plot.type=plot.type,CSrank.refplot=CSrank.refplot,
-					which=which)
+					which=which,
+					gene.highlight=gene.highlight,profile.type=profile.type)
 
 			BC.select <- out[[1]]
 			result <- out[[2]]
@@ -256,11 +259,13 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 #' @param ncp \emph{MFA Parameter:} Number of dimensions kept in the results (by default 5).
 #' @param weight.col.mfa \emph{MFA Parameter:} Vector of weights, useful for HMFA method (by default, \code{NULL} and an MFA is performed).
 #' @param row.w \emph{MFA Parameter:} An optional row weights (by default, a vector of 1 for uniform row weights).
-#' @param which Choose one or more plots to draw. 1: Percentage of variance explained by factors, 2: Loadings for reference compounds, 3: Factor 1 VS Factor 2 : Loadings & Genes, 4: Loadings & Genes for Factor \code{factor.plot}, 5: Compound (column) Profiles, 6: CS Rank Scores for Factor \code{factor.plot}
+#' @param which Choose one or more plots to draw:\cr 1. Percentage of variance explained by factors\cr 2. Loadings for reference compounds\cr 3. Factor 1 VS Factor 2 : Loadings & Genes\cr 4. Loadings & Genes for Factor \code{factor.plot}\cr 5. Profile plot (see \code{profile.type})\cr 6. CS Rank Scores for Factor \code{factor.plot}
 #' @param factor.plot Which factor (only one) should be investigated? If \code{NULL}, you can choose a factor of interest interactively from reference loadings plot.
-#' @param column.interest Numeric vector of indices of query columns which should be in the compound profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes on the Gene Scores plot.
+#' @param column.interest Numeric vector of indices of query columns which should be in the profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes in the Compound Loadings plot (\code{which=4}).
+#' @param row.interest Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=5}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).
+#' @param profile.type Type of \code{which=5} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
-#' @param row.interest Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
+#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
 #' @param gene.thresP Threshold for genes with a high score (\code{which=4}).
 #' @param gene.thresN Threshold for genes with a low score (\code{which=4}).
 #' @param thresP.col Color of genes above \code{gene.thresP}.
@@ -277,9 +282,8 @@ setMethod("CSanalysis",c("matrix","matrix","CSmfa"),function(
 #				which=c(1,2,3,4,5,6),
 				which=c(2,4,6),
 				factor.plot=NULL,
-				column.interest=NULL,
-				color.columns=NULL,
-				row.interest=NULL,
+				column.interest=NULL,row.interest=NULL,profile.type="gene",
+				color.columns=NULL,gene.highlight=NULL,				
 				gene.thresP=1,gene.thresN=-1,thresP.col="blue",thresN.col="red",
 				legend.names=NULL,legend.cols=NULL,
 				CSrank.refplot=FALSE,
@@ -323,7 +327,8 @@ setMethod("CSanalysis",c("matrix","matrix","CSmfa"),function(
 					factor.plot=factor.plot,column.interest=column.interest,row.interest=row.interest,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
 					colour.columns=colour.columns,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
 					result.available=result.available2,plot.type=plot.type,CSrank.refplot=CSrank.refplot,
-					which=which)
+					which=which,
+					gene.highlight=gene.highlight,profile.type=profile.type)
 			
 			factor.select <- out[[1]]
 			result <- out[[2]]
@@ -392,11 +397,13 @@ setMethod("CSanalysis",c("matrix","matrix","CSmfa"),function(
 #' @param scale.unit \emph{PCA Parameter:} A boolean, if TRUE (value set by default) then data are scaled to unit variance.
 #' @param row.w \emph{PCA Parameter:} An optional row weights (by default, a vector of 1 for uniform row weights).
 #' @param col.w \emph{PCA Parameter:} An optional column weights (by default, uniform column weights).
-#' @param which Choose one or more plots to draw. 1: Percentage of variance explained by PC's, 2: Loadings for reference compounds, 3: PC 1 VS PC 2 : Loadings & Genes, 4: Loadings & Genes for PC \code{factor.plot}, 5: Compound (column) Profiles, 6: CS Rank Scores for Factor \code{factor.plot}
+#' @param which Choose one or more plots to draw\cr 1. Percentage of variance explained by PC's\cr 2. Loadings for reference compounds\cr 3. PC 1 VS PC 2 : Loadings & Genes\cr 4. Loadings & Genes for PC \code{factor.plot}\cr 5. Profile plot (see \code{profile.type})\cr 6. CS Rank Scores for Factor \code{factor.plot}
 #' @param factor.plot Which PC (only one) should be investigated? If \code{NULL}, you can choose a PC of interest interactively from reference loadings plot.
-#' @param column.interest Numeric vector of indices of query columns which should be in the compound profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes on the Gene Scores plot.
+#' @param column.interest Numeric vector of indices of query columns which should be in the profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes on the Compound Loadings plot (\code{which=4}).
+#' @param row.interest Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=5}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).
+#' @param profile.type Type of \code{which=5} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
-#' @param row.interest Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
+#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
 #' @param gene.thresP Threshold for genes with a high score (\code{which=4}).
 #' @param gene.thresN Threshold for genes with a low score (\code{which=4}).
 #' @param thresP.col Color of genes above \code{gene.thresP}.
@@ -412,9 +419,8 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 				refMat,querMat,type="CSpca",ncp=5,scale.unit=TRUE,row.w=NULL,col.w=NULL,
 				which=c(2,4,6),
 				factor.plot=NULL,
-				column.interest=NULL,
-				color.columns=NULL,
-				row.interest=NULL,
+				column.interest=NULL,row.interest=NULL,profile.type="gene",
+				color.columns=NULL,gene.highlight=NULL,				
 				gene.thresP=1,gene.thresN=-1,thresP.col="blue",thresN.col="red",
 				legend.names=NULL,legend.cols=NULL,
 				CSrank.refplot=FALSE,
@@ -458,7 +464,8 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 					basefilename=basefilename,
 					ref.index=1,factor.plot=factor.plot,column.interest=column.interest,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
 					colour.columns=colour.columns,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
-					result.available=result.available2,plot.type=plot.type,which=which,CSrank.refplot=CSrank.refplot)
+					result.available=result.available2,plot.type=plot.type,which=which,CSrank.refplot=CSrank.refplot,
+					profile.type=profile.type,gene.highlight=gene.highlight)
 			
 			factor.select <- out[[1]]
 			result <- out[[2]]
@@ -526,11 +533,13 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 #' @param sparse \emph{sMFA Parameters (\code{lambda < Inf} only):} If \code{sparse="penalty"}, \code{para} is a vector of 1-norm penalty parameters. If \code{sparse="varnum"}, \code{para} defines the number of sparse loadings to be obtained.
 #' @param max.iter \emph{sMFA Parameters:} Maximum number of iterations.
 #' @param eps.conv \emph{sMFA Parameters:} Convergence criterion.
-#' @param which Choose one or more plots to draw. 1: Percentage of variance explained by PC's, 2: Loadings for reference compounds, 3: Factor 1 VS PC Factor 2 : Loadings & Genes, 4: Loadings & Genes for Factor \code{factor.plot}, 5: Compound (column) Profiles, 6: CS Rank Scores for Factor \code{factor.plot}
+#' @param which Choose one or more plots to draw.\cr 1. Percentage of variance explained by PC's\cr 2. Loadings for reference compounds\cr 3. Factor 1 VS PC Factor 2 : Loadings & Genes\cr 4. Loadings & Genes for Factor \code{factor.plot}\cr 5. Profile plot (see \code{profile.type})\cr 6. CS Rank Scores for Factor \code{factor.plot}
 #' @param factor.plot Which factor (only one) should be investigated? If \code{NULL}, you can choose a factor of interest interactively from reference loadings plot.
-#' @param column.interest Numeric vector of indices of query columns which should be in the compound profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes on the Gene Scores plot.
+#' @param column.interest Numeric vector of indices of query columns which should be in the profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes on the Compound Loadings plot (\code{which=5}).
+#' @param row.interest Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=5}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).
+#' @param profile.type Type of \code{which=5} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
-#' @param row.interest Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
+#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
 #' @param gene.thresP Threshold for genes with a high score (\code{which=4}).
 #' @param gene.thresN Threshold for genes with a low score (\code{which=4}).
 #' @param thresP.col Color of genes above \code{gene.thresP}.
@@ -546,9 +555,8 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 				refMat,querMat,type="Csmfa",K=15,para,lambda=1e-6,sparse.dim=2,sparse="penalty",max.iter=200,eps.conv=1e-3,
 				which=c(2,4,6),
 				factor.plot=NULL,
-				column.interest=NULL,
-				color.columns=NULL,
-				row.interest=NULL,
+				column.interest=NULL,row.interest=NULL,profile.type="gene",
+				color.columns=NULL,gene.highlight=NULL,
 				gene.thresP=1,gene.thresN=-1,thresP.col="blue",thresN.col="red",
 				legend.names=NULL,legend.cols=NULL,
 				CSrank.refplot=FALSE,
@@ -592,7 +600,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 					factor.plot=factor.plot,column.interest=column.interest,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
 					colour.columns=colour.columns,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
 					result.available=result.available2,plot.type=plot.type,CSrank.refplot=CSrank.refplot,
-					which=which)
+					which=which,profile.type=profile.type,gene.highlight=gene.highlight)
 			
 			factor.select <- out[[1]]
 			result <- out[[2]]
