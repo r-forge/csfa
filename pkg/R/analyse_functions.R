@@ -148,7 +148,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	
 	
 	## Selecting the factor.plot
-	if(is.null(factor.plot) | (3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6 %in% which)){
+	if(is.null(factor.plot) | (3 %in% which) | (4 %in% which) | (5 %in% which) | (is.null(column.interest)&(6 %in% which)) | ((6 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (7 %in% which)){
 		if(is.null(factor.plot)){
 			if(plot.type=="pdf" | !(2 %in% which)){
 				dev.new()
@@ -220,7 +220,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 		
 		# highlighting genes
 		if(!is.null(gene.highlight)){
-			if(class(gene.highlight)=="numeric"){
+			if(class(gene.highlight)=="numeric" | class(gene.highlight)=="integer"){
 				col.temp[gene.highlight] <- "green"
 			}
 			if(class(gene.highlight)=="list"){
@@ -250,7 +250,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	## SELECTING THE GENES OF INTEREST (replot in device if necessary)
 	genes_interest <- row.interest #make the object in case of a cmpd profile
 	
-	if(5 %in% which & profile.type=="gene"){
+	if(6 %in% which & profile.type=="gene"){
 		if(is.null(row.interest)){
 			if(plot.type=="pdf" | !(4 %in% which)){
 				bg.temp <-  col.temp <- rep("grey",length(scores[,factor.plot]))
@@ -267,7 +267,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 				
 				# highlighting genes
 				if(!is.null(gene.highlight)){
-					if(class(gene.highlight)=="numeric"){
+					if(class(gene.highlight)=="numeric" | class(gene.highlight)=="integer"){
 						col.temp[gene.highlight] <- "green"
 					}
 					if(class(gene.highlight)=="list"){
@@ -300,7 +300,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 		}
 	}
 	
-	if(4 %in% which){
+	if(5 %in% which){
 		## PLOT: Compound Loadings of 'factor.plot'
 		plot.in(plot.type,paste0(basefilename,"_MFALoadings.pdf"))
 		par(mfrow=c(1,1))
@@ -320,9 +320,9 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	}
 	
 	## SELECTING THE COMPOUNDS OF INTEREST (replot in device if necessary)
-	if(5 %in% which){
+	if(6 %in% which){
 		if(is.null(column.interest)){
-			if(plot.type=="pdf" | !(4 %in% which)){
+			if(plot.type=="pdf" | !(5 %in% which)){
 				## PLOT: Compound Loadings of 'factor.plot'
 				dev.new()
 				par(mfrow=c(1,1))
@@ -347,7 +347,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 		}
 	}
 	
-	if( 5 %in% which){
+	if( 6 %in% which){
 		## PLOT: Profiles Plot
 		CSprofiles(data=data,ref_index=ref.index,gene.select=genes_interest,cmpd.select=cmpds_interest,profile.type=profile.type,
 				cmpd.loadings=loadings,gene.scores=scores,component.plot=factor.plot,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
@@ -357,7 +357,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	}
 	
 	
-	if(6 %in% which){
+	if(7 %in% which){
 		
 		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename))
 				
@@ -441,7 +441,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 	}
 	
 	## Selecting the factor.plot
-	if(is.null(factor.plot)|(3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6%in%which) ){
+	if(is.null(factor.plot)|(3 %in% which) | (4 %in% which) | (5 %in% which) | (is.null(column.interest)&(6 %in% which)) | ((6 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (7%in%which) ){
 		if(is.null(factor.plot)){
 			if(plot.type=="pdf" | !(2 %in% which)){
 				dev.new()
@@ -504,7 +504,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		
 		# highlighting genes
 		if(!is.null(gene.highlight)){
-			if(class(gene.highlight)=="numeric"){
+			if(class(gene.highlight)=="numeric" | class(gene.highlight)=="integer"){
 				col.temp[gene.highlight] <- "green"
 			}
 			if(class(gene.highlight)=="list"){
@@ -532,7 +532,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 	}
 	
 	## SELECTING THE GENES OF INTEREST (replot in device if necessary)
-	if(5 %in% which & profile.type=="gene"){
+	if(6 %in% which & profile.type=="gene"){
 		if(is.null(row.interest)){
 			if(plot.type=="pdf" | !(4 %in% which)){
 				dev.new()
@@ -550,7 +550,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 				
 				# highlighting genes
 				if(!is.null(gene.highlight)){
-					if(class(gene.highlight)=="numeric"){
+					if(class(gene.highlight)=="numeric" | class(gene.highlight)=="integer"){
 						col.temp[gene.highlight] <- "green"
 					}
 					if(class(gene.highlight)=="list"){
@@ -582,7 +582,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		}
 	}
 	
-	if(4 %in% which){
+	if(5 %in% which){
 	
 		## PLOT: Compound Loadings of 'factor.plot'
 		plot.in(plot.type,paste0(basefilename,"_PCALoadings.pdf"))
@@ -603,9 +603,9 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 	}
 	
 	## SELECTING THE COMPOUNDS OF INTEREST (replot in device if necessary)
-	if(5 %in% which){
+	if(6 %in% which){
 		if(is.null(column.interest)){
-			if(plot.type=="pdf" | !(4 %in% which)){
+			if(plot.type=="pdf" | !(5 %in% which)){
 				## PLOT: Compound Loadings of 'factor.plot'
 				dev.new()
 				par(mfrow=c(1,1))
@@ -630,7 +630,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		}
 	}
 	
-	if( 5 %in% which){
+	if( 6 %in% which){
 		## PLOT: Profiles Plot
 		CSprofiles(data=data,ref_index=ref.index,gene.select=genes_interest,cmpd.select=cmpds_interest,profile.type=profile.type,
 				cmpd.loadings=loadings,gene.scores=scores,component.plot=factor.plot,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
@@ -639,7 +639,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		
 	}
 	
-	if(6 %in% which){
+	if(7 %in% which){
 		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="PC",plot=TRUE,plot.type=plot.type,basefilename=basefilename))
 		names(out_CS_rank) <- paste0("Factor",factor.plot)
 		
@@ -968,7 +968,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 				
 				# highlighting genes
 				if(!is.null(gene.highlight)){
-					if(class(gene.highlight)=="numeric"){
+					if(class(gene.highlight)=="numeric" | class(gene.highlight)=="integer"){
 						col.temp[gene.highlight] <- "green"
 					}
 					if(class(gene.highlight)=="list"){
@@ -1016,7 +1016,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 						
 						# highlighting genes
 						if(!is.null(gene.highlight)){
-							if(class(gene.highlight)=="numeric"){
+							if(class(gene.highlight)=="numeric" | class(gene.highlight)=="integer"){
 								col.temp[gene.highlight] <- "green"
 							}
 							if(class(gene.highlight)=="list"){
@@ -1160,7 +1160,8 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 		
 		
 		if(7%in%which){
-			out_CS_rank <- replicate(length(BC.plot),list)
+#			out_CS_rank <- replicate(length(BC.plot),list)
+			out_CS_rank <- vector("list",length(BC.plot))
 			
 			for(i.BC in c(1:length(BC.plot))){
 				out_CS_rank[[i.BC]] <- CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=BC.plot[i.BC],type.component="BC",plot=TRUE,plot.type=plot.type,basefilename=basefilename)
@@ -1717,7 +1718,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 	
 	
 	## Selecting the factor.plot
-	if(is.null(factor.plot)|(3 %in% which) | (4 %in% which) | (is.null(column.interest)&(5 %in% which)) | ((5 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (6 %in% which) ){
+	if(is.null(factor.plot)|(3 %in% which) | (4 %in% which) | (5 %in% which) | (is.null(column.interest)&(6 %in% which)) | ((6 %in% which) & ( (!is.null(gene.thresP))   | (!is.null(gene.thresN)) ) ) | (7 %in% which) ){
 		if(is.null(factor.plot)){
 			if(plot.type=="pdf" | !(2 %in% which)){
 				dev.new()
@@ -1789,7 +1790,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		
 		# highlighting genes
 		if(!is.null(gene.highlight)){
-			if(class(gene.highlight)=="numeric"){
+			if(class(gene.highlight)=="numeric" | class(gene.highlight)=="integer"){
 				col.temp[gene.highlight] <- "green"
 			}
 			if(class(gene.highlight)=="list"){
@@ -1817,7 +1818,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 	}
 	
 	## SELECTING THE GENES OF INTEREST (replot in device if necessary)
-	if(5 %in% which & profile.type=="gene"){
+	if(6 %in% which & profile.type=="gene"){
 		if(is.null(row.interest)){
 			if(plot.type=="pdf" | !(4 %in% which)){
 				dev.new()
@@ -1835,7 +1836,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 				
 				# highlighting genes
 				if(!is.null(gene.highlight)){
-					if(class(gene.highlight)=="numeric"){
+					if(class(gene.highlight)=="numeric" | class(gene.highlight)=="integer"){
 						col.temp[gene.highlight] <- "green"
 					}
 					if(class(gene.highlight)=="list"){
@@ -1867,7 +1868,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		}
 	}
 	
-	if(4 %in% which){
+	if(5 %in% which){
 		
 		## PLOT: Compound Loadings of 'factor.plot'
 		plot.in(plot.type,paste0(basefilename,"_sMFALoadings.pdf"))
@@ -1888,9 +1889,9 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 	}
 	
 	## SELECTING THE COMPOUNDS OF INTEREST (replot in device if necessary)
-	if(5 %in% which){
+	if(6 %in% which){
 		if(is.null(column.interest)){
-			if(plot.type=="pdf" | !(4 %in% which)){
+			if(plot.type=="pdf" | !(5 %in% which)){
 				## PLOT: Compound Loadings of 'factor.plot'
 				dev.new()
 				par(mfrow=c(1,1))
@@ -1915,7 +1916,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		}
 	}
 	
-	if( 5 %in% which){
+	if( 6 %in% which){
 		## PLOT: Profiles Plot
 		CSprofiles(data=data,ref_index=ref.index,gene.select=genes_interest,cmpd.select=cmpds_interest,profile.type=profile.type,
 				cmpd.loadings=loadings,gene.scores=scores,component.plot=factor.plot,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
@@ -1924,7 +1925,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		
 	}
 	
-	if(6 %in% which){
+	if(7 %in% which){
 		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename))
 		names(out_CS_rank) <- paste0("Factor",factor.plot)
 		
@@ -1979,7 +1980,8 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 	
 	if(sum(loadings[ref.index]^2 <= avg_query2)>=1){
 		warning("No CS Rank Scores computed. One ore more of the references is too low as a loading.")
-		return(NULL)
+#		return(NULL)
+		return(NA)
 	}
 	
 	for(i.ref in 1:length(ref.index)){

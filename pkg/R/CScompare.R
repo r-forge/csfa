@@ -81,13 +81,22 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 	}
 	
 	
-	if(1%in%which){cor.CS <- compare.CS.plot(loadings1=loadings1,loadings2=loadings2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,nref=refdim1,color.columns=color.columns,legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=basefilename)}else{cor.CS <- NULL}
+	if(1%in%which){cor.CS <- compare.CS.plot(loadings1=loadings1,loadings2=loadings2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,nref=refdim1,color.columns=color.columns,legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=basefilename)}else{cor.CS <- cor(loadings1,loadings2,use="complete.obs")}
 	
 	if(!(is.null(scores1)|is.null(scores2)|!(2 %in% which))){
 		
 		cor.GS <- compare.GS.plot(scores1=scores1,scores2=scores2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,nref=refdim1,gene.thresP=gene.thresP,gene.thresN=gene.thresN,thresP.col=thresP.col,thresN.col=thresN.col,plot.type=plot.type,basefilename=basefilename)
 	
-	}else{cor.GS <- NULL}
+	}else{
+		if(!(is.null(scores1)|is.null(scores2))){
+			cor.GS <- cor(scores1,scores2,use="complete.obs")
+		}
+		else{
+			cor.GS <- NULL
+		}
+		
+	}
+	
 	
 	if(3%in%which){
 		rankscores1 <- CSGS1$CSRank
@@ -98,7 +107,7 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 		
 	}
 	else{
-		cor.CSRank <- NULL
+		cor.CSRank <- cor(rankscores1,rankscores2,use="complete.obs")
 	}
 		
 	

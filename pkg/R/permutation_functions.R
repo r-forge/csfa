@@ -22,7 +22,7 @@
 #' @param querMat.Perm Possible to provide user-created permuted querMat data. Should be a list object of B times permuted querMat matrices.
 #' @param save.querMat.Perm If \code{TRUE}, the list of permuted querMat matrices will be saved in the permutation.object slot of the CSresult.
 #' @param which Choose which plot to draw. 1: A volcano plot of the -log(p-values) versus the observed connection scores. 2: A histogram of the permuted connection scores under the null hypothesis for a specific compound. A vertical line(s) is added for the observed CS and its p-value. The \code{cmpd.hist} parameter determines which compounds are drawn like this. 3: Analog to \code{which=1}, but for CSRankScores. 4: Analog to \code{which=2}, but for CSRankScores.
-#' @param cmpd.hist Decides which compounds are plotted for the histogram distribution under null hypothesis (\code{which=2}). If \code{NULL}, you can select which compounds you want interactively on the volcano plot.
+#' @param cmpd.hist Decides which query compounds are plotted for the histogram distribution under null hypothesis (\code{which=2}). If \code{NULL}, you can select which compounds you want interactively on the volcano plot.
 #' @param plot.type How should the plots be outputted? \code{"pdf"} to save them in pdf files, \code{device} to draw them in a graphics device (default), \code{sweave} to use them in a sweave or knitr file.
 #' @param color.columns Option to color the compounds on the volcano plot (\code{which=1}). Should be a vector of colors with the length of number of references and queries together.
 #' @param basefilename Basename of the graphs if saved in pdf files
@@ -43,6 +43,7 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 	
 	type <- CSresult@type
 	ref.index <- c(1:dim(refMat)[2])
+	if(!is.null(cmpd.hist)){cmpd.hist <- cmpd.hist + length(ref.index)}
 	
 	if(!(type %in% c("CSmfa","CSzhang"))){stop("Permutation is only available for MFA and Zhang results")}
 	
@@ -295,12 +296,12 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 		
 		if((2 %in% which) & (is.null(cmpd.hist))){
 			# Volcano plot with selecting compounds
-			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe,type=type,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,make.hist=TRUE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot"))
+			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe,type=type,ref.index=ref.index,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,make.hist=TRUE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot"))
 						
 			hist.drawn <- TRUE
 		}else{
 			# Volcano plots without selecting compounds
-			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe,type=type,color.columns=color.columns,list.h0.result=NULL,make.hist=FALSE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot"))
+			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe,type=type,ref.index=ref.index,color.columns=color.columns,list.h0.result=NULL,make.hist=FALSE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot"))
 		
 		}
 
@@ -311,7 +312,7 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 	if((2 %in% which) & !hist.drawn){
 		if(is.null(cmpd.hist)){
 			#volc with plot device
-			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe,type=type,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,make.hist=TRUE,plot.type="device",plot.type.hist=plot.type,basefilename=paste0(basefilename))
+			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe,type=type,ref.index=ref.index,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,make.hist=TRUE,plot.type="device",plot.type.hist=plot.type,basefilename=paste0(basefilename))
 		
 		}else{
 			# just hist
@@ -549,7 +550,7 @@ pvalue_hist <- function(pval.dataframe,list.h0.result,type=c("CSmfa","CSzhang"),
 
 
 # Use compute pvalue plot
-pvalue_volc <- function(pval.dataframe,type=c("CSmfa","CSzhang"),color.columns=NULL,list.h0.result=NULL,make.hist=FALSE,plot.type="device",plot.type.hist="device",basefilename="pvalue_volc"){
+pvalue_volc <- function(pval.dataframe,type=c("CSmfa","CSzhang"),ref.index,color.columns=NULL,list.h0.result=NULL,make.hist=FALSE,plot.type="device",plot.type.hist="device",basefilename="pvalue_volc"){
 	
 	plot.in <- function(plot.type,name){
 		if(plot.type=="pdf"){pdf(paste0(name,".pdf"))}
@@ -558,8 +559,8 @@ pvalue_volc <- function(pval.dataframe,type=c("CSmfa","CSzhang"),color.columns=N
 	}
 	plot.out <- function(plot.type){if(plot.type=="pdf"){dev.off()}}
 	
-	pvalues <- pval.dataframe$pvalues
-	obs.scores <- pval.dataframe$observed
+	pvalues <- pval.dataframe$pvalues[-ref.index]
+	obs.scores <- pval.dataframe$observed[-ref.index]
 	
 	plot.pvalues <- -log(pvalues)
 	inf.index <- which(plot.pvalues == Inf)
@@ -569,11 +570,11 @@ pvalue_volc <- function(pval.dataframe,type=c("CSmfa","CSzhang"),color.columns=N
 	plot.pvalues[inf.index] <- max.real+1
 	
 	
-	if(is.null(color.columns)){color.columns <- "black"}
+	if(is.null(color.columns)){color.columns <- "black"}else{color.columns <- color.columns[-ref.index]}
 	
 	plot.in(plot.type,basefilename)
 	plot(obs.scores,plot.pvalues,col=color.columns,bg="grey",pch=21,xlab="Observed CS for cmpds",ylab="-log(pvalues)",main=paste0("Volcano Plot for ",type," result"))
-	text(obs.scores,plot.pvalues,pval.dataframe$Cmpd,pos=1,col=color.columns)
+	text(obs.scores,plot.pvalues,pval.dataframe$Cmpd[-ref.index],pos=1,col=color.columns)
 	if(inf.present){axis(4,at=max.real+1,"Inf Value",col="red")}
 	plot.out(plot.type)
 	
@@ -584,12 +585,12 @@ pvalue_volc <- function(pval.dataframe,type=c("CSmfa","CSzhang"),color.columns=N
 			if(plot.type!="device"){
 				dev.new()
 				plot(obs.scores,plot.pvalues,col=color.columns,bg="grey",pch=21,xlab="Observed CS for cmpds",ylab="-log(pvalues)",main=paste0("Volcano Plot for ",type," result"))
-				text(obs.scores,plot.pvalues,pval.dataframe$Cmpd,pos=1,col=color.columns)
+				text(obs.scores,plot.pvalues,pval.dataframe$Cmpd[-ref.index],pos=1,col=color.columns)
 				if(inf.present){axis(4,at=max.real+1,"Inf Value",col="red")}
 			}
 						
 			cat("Please choose one or more compounds with left-click.\n To end the selection, press right-click.")
-			choose.cmpd <- identify(obs.scores,plot.pvalues,n=9999,labels=pval.dataframe$Cmpd,col="slateblue3")
+			choose.cmpd <- identify(obs.scores,plot.pvalues,n=9999,labels=pval.dataframe$Cmpd[-ref.index],col="slateblue3") + length(ref.index)
 			
 			pvalue_hist(pval.dataframe[choose.cmpd,],list.h0.result,type,plot.type=plot.type.hist,basefilename=paste(basefilename,"_histogram"))
 			

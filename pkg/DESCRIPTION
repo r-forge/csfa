@@ -1,7 +1,7 @@
 Package: CSFA
 Type: Package
 Title: Connectivity Scores with Factor Analysis
-Version: 0.4
+Version: 0.5
 Date: 2015-10-30
 Author: Ewoud De Troyer
 Maintainer: Ewoud De Troyer <ewoud.detroyer@uhasselt.be>

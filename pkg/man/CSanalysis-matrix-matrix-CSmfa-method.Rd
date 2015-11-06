@@ -6,7 +6,7 @@
 \title{"CSmfa"}
 \usage{
 \S4method{CSanalysis}{matrix,matrix,CSmfa}(refMat, querMat, type = "CSmfa",
-  ncp = 5, weight.col.mfa = NULL, row.w = NULL, which = c(2, 4, 6),
+  ncp = 5, weight.col.mfa = NULL, row.w = NULL, which = c(2, 4, 5, 7),
   factor.plot = NULL, column.interest = NULL, row.interest = NULL,
   profile.type = "gene", color.columns = NULL, gene.highlight = NULL,
   gene.thresP = 1, gene.thresN = -1, thresP.col = "blue",
@@ -27,15 +27,15 @@
 
 \item{row.w}{\emph{MFA Parameter:} An optional row weights (by default, a vector of 1 for uniform row weights).}
 
-\item{which}{Choose one or more plots to draw:\cr 1. Percentage of variance explained by factors\cr 2. Loadings for reference compounds\cr 3. Factor 1 VS Factor 2 : Loadings & Genes\cr 4. Loadings & Genes for Factor \code{factor.plot}\cr 5. Profile plot (see \code{profile.type})\cr 6. CS Rank Scores for Factor \code{factor.plot}}
+\item{which}{Choose one or more plots to draw:\cr 1. Percentage of variance explained by factors\cr 2. Loadings for reference compounds\cr 3. Factor 1 VS Factor 2 : Loadings & Genes\cr 4. Genes Scores for Factor \code{factor.plot}\cr 5. Compound Loadings for Factor \code{factor.plot} \cr 6. Profile plot (see \code{profile.type})\cr 7. CS Rank Scores for Factor \code{factor.plot}}
 
 \item{factor.plot}{Which factor (only one) should be investigated? If \code{NULL}, you can choose a factor of interest interactively from reference loadings plot.}
 
 \item{column.interest}{Numeric vector of indices of query columns which should be in the profiles plot (\code{which=5}). If \code{NULL}, you can interactively select genes in the Compound Loadings plot (\code{which=4}).}
 
-\item{row.interest}{Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=5}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).}
+\item{row.interest}{Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=6}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).}
 
-\item{profile.type}{Type of \code{which=5} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})}
+\item{profile.type}{Type of \code{which=6} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})}
 
 \item{color.columns}{Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.}
 
@@ -49,11 +49,11 @@
 
 \item{thresN.col}{Color of genes below \code{gene.thresN}.}
 
-\item{legend.names}{Option to draw a legend of colored columns in Compound Loadings plot (\code{which=4}). If \code{NULL}, only "References" will be in the legend.}
+\item{legend.names}{Option to draw a legend of colored columns in Compound Loadings plot (\code{which=5}). If \code{NULL}, only "References" will be in the legend.}
 
-\item{legend.cols}{Colors to be used in legend in \code{which=4}. If \code{NULL}, only blue for "References is used".}
+\item{legend.cols}{Colors to be used in legend in \code{which=5}. If \code{NULL}, only blue for "References is used".}
 
-\item{CSrank.refplot}{Logical value deciding if the CS Rank Scores (\code{which=6}) should also be plotted per reference (instead of only the weighted mean).}
+\item{CSrank.refplot}{Logical value deciding if the CS Rank Scores (\code{which=7}) should also be plotted per reference (instead of only the weighted mean).}
 
 \item{result.available}{You can a previously returned object by \code{CSanalysis} in order to only draw graphs, not recompute the scores.}
 

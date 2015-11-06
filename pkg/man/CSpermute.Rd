@@ -30,7 +30,7 @@ CSpermute(refMat, querMat, CSresult, B = 500, mfa.factor = NULL,
 
 \item{which}{Choose which plot to draw. 1: A volcano plot of the -log(p-values) versus the observed connection scores. 2: A histogram of the permuted connection scores under the null hypothesis for a specific compound. A vertical line(s) is added for the observed CS and its p-value. The \code{cmpd.hist} parameter determines which compounds are drawn like this. 3: Analog to \code{which=1}, but for CSRankScores. 4: Analog to \code{which=2}, but for CSRankScores.}
 
-\item{cmpd.hist}{Decides which compounds are plotted for the histogram distribution under null hypothesis (\code{which=2}). If \code{NULL}, you can select which compounds you want interactively on the volcano plot.}
+\item{cmpd.hist}{Decides which query compounds are plotted for the histogram distribution under null hypothesis (\code{which=2}). If \code{NULL}, you can select which compounds you want interactively on the volcano plot.}
 
 \item{color.columns}{Option to color the compounds on the volcano plot (\code{which=1}). Should be a vector of colors with the length of number of references and queries together.}
 

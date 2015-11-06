@@ -29,7 +29,7 @@
 
 \usepackage{subcaption}
 
-\title{CSFA 0.4 - Vignette}
+\title{CSFA 0.5 - Vignette}
 \date{}
 \author{Ewoud De Troyer}
 
@@ -184,7 +184,7 @@ be chosen in the {\it "Compound Loadings"} plot (instead of simply providing it
 to \texttt{CSanalysis} beforehand). You can left-click on multiple compounds you wish to draw in the compound profiles graph (and right-click to stop the selection procedure). 
 
 <<MFA,echo=TRUE,eval=TRUE,cache=TRUE,fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSanalysis Graphs for CSfma">>= 
-out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(2,4,5),
+out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(2,4,5,6),
 		profile.type="cmpd",gene.thresP=2.3,gene.thresN=-2.3,factor.plot=1,
 		column.interest=c(21,22,23))
 @
@@ -204,7 +204,7 @@ additional plots without re-computing the factor analysis. This is done through 
 Connectivity Score Ranks are shown.
 
 <<MFA2,echo=TRUE,eval=TRUE,cache=TRUE,fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSanalysis Graphs for CSfma">>= 
-	out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(6),
+	out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(7),
 			factor.plot=1,column.interest=c(1,2,3),result.available=out_MFA)
 @
 \noindent Another example would be to draw gene profiles. Now alongside the
@@ -214,7 +214,7 @@ this is also done interactively in the gene score plot. In this graph, the
 x-axis contains all compounds, starting with the reference and selected ones.
 The others are the ordered in decreasing CScore.
 <<MFA3,echo=TRUE,eval=TRUE,cache=TRUE,fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSanalysis Graphs for CSfma">>= 
-	out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(5),
+	out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(6),
 			profile.type="gene",factor.plot=1,column.interest=c(1,2,3),
 			row.interest=c(846,871,4,6),result.available=out_MFA)
 @
