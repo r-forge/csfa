@@ -78,7 +78,7 @@
 
 \usepackage{subcaption}
 
-\title{CSFA 0.4 - Vignette}
+\title{CSFA 0.5 - Vignette}
 \date{}
 \author{Ewoud De Troyer}
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -270,7 +270,7 @@ to \texttt{CSanalysis} beforehand). You can left-click on multiple compounds you
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{4}\hlstd{,}\hlnum{5}\hlstd{),}
+\hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{4}\hlstd{,}\hlnum{5}\hlstd{,}\hlnum{6}\hlstd{),}
                 \hlkwc{profile.type}\hlstd{=}\hlstr{"cmpd"}\hlstd{,}\hlkwc{gene.thresP}\hlstd{=}\hlnum{2.3}\hlstd{,}\hlkwc{gene.thresN}\hlstd{=}\hlopt{-}\hlnum{2.3}\hlstd{,}\hlkwc{factor.plot}\hlstd{=}\hlnum{1}\hlstd{,}
                 \hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{21}\hlstd{,}\hlnum{22}\hlstd{,}\hlnum{23}\hlstd{))}
 \end{alltt}
@@ -312,7 +312,7 @@ Connectivity Score Ranks are shown.
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{6}\hlstd{),}
+        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{7}\hlstd{),}
                         \hlkwc{factor.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{),}\hlkwc{result.available}\hlstd{=out_MFA)}
 \end{alltt}
 \begin{verbatim}
@@ -341,7 +341,7 @@ The others are the ordered in decreasing CScore.
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{5}\hlstd{),}
+        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{6}\hlstd{),}
                         \hlkwc{profile.type}\hlstd{=}\hlstr{"gene"}\hlstd{,}\hlkwc{factor.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{),}
                         \hlkwc{row.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{846}\hlstd{,}\hlnum{871}\hlstd{,}\hlnum{4}\hlstd{,}\hlnum{6}\hlstd{),}\hlkwc{result.available}\hlstd{=out_MFA)}
 \end{alltt}
