@@ -25,6 +25,7 @@ analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE
 					result.available=NULL,plot.type="pdf",print.top=TRUE,
 					which=c(1)){
 	
+	
 	## Plot-in and -out functions			
 	plot.in <- function(plot.type,name){
 			if(plot.type=="pdf"){pdf(name)}
@@ -37,9 +38,18 @@ analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE
 	## Doing Zhang Analysis
 	if(is.null(result.available)){
 		zhang_result <- zhangscore(dataref=dataref,dataquery=dataquery,nref=nref,nquery=nquery,ord.query=ord.query,permute=permute,B=B,ntop.pvalues=ntop.pvalues,ntop.scores=ntop.scores,pvalue.method="BH")
+		add.pvalue.color <- FALSE
+		
 	}
 	else{
-		zhang_result <- result.available
+		zhang_result <- result.available@object
+		
+		if(!is.null(result.available@permutation.object)){
+			add.pvalue.color <- TRUE	
+		}else{
+			add.pvalue.color <- FALSE
+		}
+		 
 	}
 	
 	## Printing Top Connections Scores + Pvalues
@@ -48,7 +58,16 @@ analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE
 	
 	##
 	if(!is.null(colour.query)){groupCol <- colour.query} else { groupCol <- "black"}
-	if(permute==TRUE){signCol <- ifelse(zhang_result$All[,3]<=0.05,"purple","grey")} else {signCol <- "grey"}
+	if(add.pvalue.color){
+		pvaltype <- ifelse(result.available@permutation.object$extra.parameters$method.adjust=="none","pvalues","pvalues.adjusted")
+		signCol <- ifelse(result.available@permutation.object$CS.pval.dataframe[,pvaltype]<=0.05,"purple","grey")
+		signCol <- signCol[-c(1:dim(dataref)[2])]
+	}
+	else{
+		signCol <- "grey"
+	}
+	
+	
 	ncol_q <- ncol(dataquery)
 	##
 	
@@ -60,17 +79,17 @@ analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE
 		text(c(1:length(zhang_result$All[,1])),zhang_result$All[,1],rownames(zhang_result$All),	pos=1,	cex=0.5,	col=groupCol)
 		abline(0,0,lty=3)
 		legend.bg <- c()
-		if(permute==TRUE){
-			legend.bg <- c(rep("white",length(legend.names)),"purple")
-			legend.names <- c(legend.names,"BH adj. p-value <= 0.05")
+		if(add.pvalue.color){
+			legend.names <- c(legend.names,paste0(result.available@permutation.object$extra.parameters$method.adjust," adj. p-value <= 0.05"))
+			legend.bg <- c(rep("white",length(legend.names)-1),"purple")
 			legend.cols <- c(legend.cols,"white")
 		}
 		else{
 			legend.bg <- "white"
 		}
-		if(is.null(legend.x)){legend.x <- (ncol_q-0.45*ncol_q)}
-		if(is.null(legend.y)){legend.y <- 1}
-		if(length(legend.names)>0){legend(legend.x,legend.y,legend.names,pch=21,col=legend.cols,pt.bg=legend.bg,bty="n")}
+#		if(is.null(legend.x)){legend.x <- (ncol_q-0.45*ncol_q)}
+#		if(is.null(legend.y)){legend.y <- 1}
+		if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg=legend.bg,bty="n")}
 		plot.out(plot.type)
 	}	
 
@@ -108,9 +127,16 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	## Doing MFA Analysis
 	if(is.null(result.available)){
 		resMFA <- MFA(data,	group=group, type=type, ind.sup=ind.sup,ncp=ncp,name.group=name.group,num.group.sup=num.group.sup,graph=graph,weight.col.mfa=weight.col.mfa,row.w=row.w,axes=axes,tab.comp=tab.comp)
+		add.pvalue.color <- FALSE
+		
 	}
 	else{
-		resMFA <- result.available
+		resMFA <- result.available@object
+		if(!is.null(result.available@permutation.object)){
+			add.pvalue.color <- TRUE
+		}else{
+			add.pvalue.color <- FALSE
+		}
 	}
 	
 	## Printing the Echoufier Rv Correlation
@@ -302,19 +328,43 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	
 	if(5 %in% which){
 		## PLOT: Compound Loadings of 'factor.plot'
+		
+		signCol <- "grey"
+		
+		if(add.pvalue.color){
+			if(result.available@permutation.object$extra.parameters$mfa.factor==factor.plot){
+				pvaltype <- ifelse(result.available@permutation.object$extra.parameters$method.adjust=="none","pvalues","pvalues.adjusted")
+				signCol <- ifelse(result.available@permutation.object$CS.pval.dataframe[,pvaltype]<=0.05,"purple","grey")
+				
+			}
+		}
+		
 		plot.in(plot.type,paste0(basefilename,"_MFALoadings.pdf"))
 		par(mfrow=c(1,1))
 		plot(c(1:length(loadings[,factor.plot])),loadings[,factor.plot],  type="p",
 				xlab="Compound Index", 
 				ylab="Compound Loadings",
 				pch=21,
-				bg="grey",
+				bg=signCol,
 				col=groupCol,
 				cex=1,main=paste0("Factor ",factor.plot," - Compound Loadings")
 		)
 		text(c(1:length(loadings[,factor.plot])),loadings[,factor.plot], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #		if(length(legend.names)>0){legend((length(loadings[,factor.plot])*(1-0.45)),max(loadings),legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-		if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+		
+		legend.names.loadings <- legend.names
+		legend.cols.loadings <- legend.cols
+		
+		legend.bg <- "white"
+		if(add.pvalue.color){
+			if(result.available@permutation.object$extra.parameters$mfa.factor==factor.plot){
+				legend.names.loadings <- c(legend.names.loadings,paste0(result.available@permutation.object$extra.parameters$method.adjust," adj. p-value <= 0.05"))
+				legend.bg <- c(rep("white",length(legend.names.loadings)-1),"purple")
+				legend.cols.loadings <- c(legend.cols.loadings,"white")	
+			}
+		}
+	
+		if(length(legend.names.loadings)>0){legend("topright",legend.names.loadings,pch=21,col=legend.cols.loadings,pt.bg=legend.bg,bty="n")}
 		
 		plot.out(plot.type)
 	}
@@ -359,13 +409,35 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	
 	if(7 %in% which){
 		
-		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename))
+		
+		signCol <- "grey"
+		if(add.pvalue.color){
+			if(result.available@permutation.object$extra.parameters$mfa.factor==factor.plot){
+				pvaltype <- ifelse(result.available@permutation.object$extra.parameters$method.adjust=="none","pvalues","pvalues.adjusted")
+				signCol <- ifelse(result.available@permutation.object$CSRank.pval.dataframe[,pvaltype]<=0.05,"purple","grey")
+			}
+		}
+		
+		legend.bg <- "white"
+		legend.names.csrank <- legend.names
+		legend.cols.csrank <- legend.cols
+	
+		if(add.pvalue.color){
+			if(result.available@permutation.object$extra.parameters$mfa.factor==factor.plot){
+				legend.names.csrank <- c(legend.names.csrank,paste0(result.available@permutation.object$extra.parameters$method.adjust," adj. p-value <= 0.05"))
+				legend.bg <- c(rep("white",length(legend.names.csrank)-1),"purple")
+				legend.cols.csrank <- c(legend.cols.csrank,"white")	
+			}
+		}
+		
+		
+		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename,signCol=signCol,legend.bg=legend.bg,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank))
 				
 		names(out_CS_rank) <- paste0("Factor",factor.plot)
 		
 	}
 	else{
-		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=FALSE))
+		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=FALSE))
 		names(out_CS_rank) <- paste0("Factor",factor.plot)
 		
 	}
@@ -415,7 +487,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		resPCA <- PCA(X=data,scale.unit=scale.unit,ncp=ncp,ind.sup=ind.sup,quanti.sup=quanti.sup,quali.sup=quali.sup,row.w=row.w,col.w=col.w,graph=graph,axes=axes)
 	}
 	else{
-		resPCA <- result.available
+		resPCA <- result.available@object
 	}
 	
 	if(1 %in% which){
@@ -640,13 +712,17 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 	}
 	
 	if(7 %in% which){
-		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="PC",plot=TRUE,plot.type=plot.type,basefilename=basefilename))
+		legend.bg <- "white"
+		legend.names.csrank <- legend.names
+		legend.cols.csrank <- legend.cols
+
+		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="PC",plot=TRUE,plot.type=plot.type,basefilename=basefilename,legend.bg=legend.bg,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank))
 		names(out_CS_rank) <- paste0("Factor",factor.plot)
 		
 		
 	}
 	else{
-		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="PC",plot=FALSE))
+		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="PC",plot=FALSE))
 		names(out_CS_rank) <- paste0("Factor",factor.plot)
 		
 	}
@@ -851,7 +927,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 			resFAB <- fabia(X=t(data),p=p,alpha=alpha,cyc=cyc,spl=spl,spz=spz,non_negative=non_negative,random=random,center=center,norm=norm,scale=scale,lap=lap,nL=nL,lL=lL,bL=bL)
 		}
 		else{
-			resFAB <- result.available
+			resFAB <- result.available@object
 		}
 		
 		if(1 %in% which){
@@ -1163,8 +1239,12 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 #			out_CS_rank <- replicate(length(BC.plot),list)
 			out_CS_rank <- vector("list",length(BC.plot))
 			
+			legend.bg <- "white"
+			legend.names.csrank <- legend.names
+			legend.cols.csrank <- legend.cols
+			
 			for(i.BC in c(1:length(BC.plot))){
-				out_CS_rank[[i.BC]] <- CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=BC.plot[i.BC],type.component="BC",plot=TRUE,plot.type=plot.type,basefilename=basefilename)
+				out_CS_rank[[i.BC]] <- CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=BC.plot[i.BC],type.component="BC",plot=TRUE,plot.type=plot.type,basefilename=basefilename,legend.bg=legend.bg,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank)
 				
 			}
 			names(out_CS_rank) <- paste0("BC",BC.plot)
@@ -1174,7 +1254,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 			out_CS_rank <- replicate(length(BC.plot),list)
 					
 			for(i.BC in c(1:length(BC.plot))){
-				out_CS_rank[[i.BC]] <- CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=BC.plot[i.BC],type.component="BC",plot=FALSE)
+				out_CS_rank[[i.BC]] <- CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=BC.plot[i.BC],type.component="BC",plot=FALSE)
 				
 			}
 			names(out_CS_rank) <- paste0("BC",BC.plot)
@@ -1673,7 +1753,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		
 	}
 	else{
-		resMFA <- result.available
+		resMFA <- result.available@object
 	}
 	
 
@@ -1816,6 +1896,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		if(!is.null(gene.thresN)){abline(gene.thresN,0,lty=3)}
 		plot.out(plot.type)
 	}
+	genes_interest <- row.interest #make the object in case of a cmpd profile
 	
 	## SELECTING THE GENES OF INTEREST (replot in device if necessary)
 	if(6 %in% which & profile.type=="gene"){
@@ -1926,13 +2007,18 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 	}
 	
 	if(7 %in% which){
-		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename))
+		legend.bg <- "white"
+		legend.names.csrank <- legend.names
+		legend.cols.csrank <- legend.cols
+
+		
+		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename,legend.bg=legend.bg,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank))
 		names(out_CS_rank) <- paste0("Factor",factor.plot)
 		
 		
 	}
 	else{
-		out_CS_rank <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=FALSE))
+		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=FALSE))
 		names(out_CS_rank) <- paste0("Factor",factor.plot)
 		
 	}
@@ -1954,10 +2040,15 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings_names=NULL,component.plot,type.component="Factor",plot=TRUE,plot.type="pdf",basefilename="base"){
 	
 	type <- "loadings"
-#	type <- "loadings_abs"
+#	type <- "loadings_abs1"
+#	type <- "loadings_abs2"
+#	type <- "loadings_0abs"
+	
+	
 #	type <- "max"
 #	type <- "median"
 #	type <- "contributions"
+
 	
 	## Plot-in and -out functions
 	plot.in <- function(plot.type,name){
@@ -1974,15 +2065,24 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 	SingleCS.matrix <- matrix(0,nrow=length(loadings[-ref.index]),ncol=length(ref.index))
 	colnames(SingleCS.matrix) <- rep("",length(ref.index))
 	
-	avg_query2 <- mean(loadings[-ref.index]^2)
-	
-	
-	
-	if(sum(loadings[ref.index]^2 <= avg_query2)>=1){
-		warning("No CS Rank Scores computed. One ore more of the references is too low as a loading.")
-#		return(NULL)
-		return(NA)
+	if(type=="loadings"){
+		avg_query2 <- mean(loadings[-ref.index]^2)
+		
 	}
+	if(type=="loadings_abs"){
+		avg_query2 <- mean(abs(loadings[-ref.index]))
+	}
+	
+	if(type != "loadings_0abs"){
+		if(type=="loadings"){refL <- loadings[ref.index]^2}
+		if(type=="loadings_abs"){refL <- abs(loadings[ref.index])}
+		if(sum(refL <= avg_query2)>=1){
+			warning("No CS Rank Scores computed. One or more of the references is too low as a loading.")
+#		return(NULL)
+			return(NA)
+		}
+	}
+
 	
 	for(i.ref in 1:length(ref.index)){
 		
@@ -1990,10 +2090,27 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 		temp <- sapply(loadings[-ref.index],FUN=function(x){
 											
 					sign.temp <- ifelse(sign(ref.loading)==sign(x),1,-1)
+					
+					if(type=="loadings"){
+						reflarger <- (ref.loading^2 >= x^2)
 						
-					if(ref.loading^2 >= x^2){
+					}
+					
+					if(type=="loadings_abs" | type=="loadings_0abs"){
+						reflarger <- (abs(ref.loading) >= abs(x))
+					}
+					
+					if(reflarger){
 #						return(
 								if(type=="loadings"){return(((x^2 - avg_query2)^2/(ref.loading^2 - avg_query2)^2)*sign.temp)}
+								if(type=="loadings_abs"){return(
+											abs(abs(x)-avg_query2)/abs(abs(ref.loading)-avg_query2) * sign.temp
+											)}
+								if(type=="loadings_0abs"){return(
+											abs(x)/abs(ref.loading) * sign.temp
+											
+											)}
+								
 								if(type=="loadings_abs"){return(((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp)}
 #								((x^2 - avg_query2)^2/(ref.loading^2 - avg_query2)^2)*sign.temp
 #								((x^2 - avg_query2^2)^2/(ref.loading^2 - avg_query2^2)^2)*sign.temp
@@ -2004,6 +2121,13 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 					else{
 #						return(
 								if(type=="loadings"){return(((ref.loading^2 - avg_query2)^2/(x^2 - avg_query2)^2)*sign.temp)}
+								if(type=="loadings_abs"){return(
+											abs(abs(ref.loading)-avg_query2)/abs(abs(x)-avg_query2) * sign.temp
+											)}
+								if(type=="loadings_0abs"){return(
+											abs(ref.loading)/abs(x) * sign.temp
+											)}
+								
 								if(type=="loadings_abs"){return(((ref.loading^2 - avg_query2^2)^2/(x^2 - avg_query2^2)^2)*sign.temp)}
 #								((ref.loading^2 - avg_query2)^2/(x^2 - avg_query2)^2)*sign.temp
 #								((ref.loading^2 - avg_query2^2)^2/(x^2 - avg_query2^2)^2)*sign.temp
@@ -2018,7 +2142,10 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 		colnames(SingleCS.matrix)[i.ref] <- paste0(names[ref.index[i.ref]]," (Ref ",i.ref,")")
 	}
 	
-	weights <- loadings[ref.index]^2
+	if(type=="loadings"){weights <- loadings[ref.index]^2}
+	if(type=="loadings_0abs"){weights <- abs(loadings[ref.index])}
+	if(type=="loadings_abs"){weights <- abs(loadings[ref.index])}
+	
 	SingleCS.vector <- apply(SingleCS.matrix,MARGIN=1,FUN=weighted.mean,w=weights)
 	
 	if(plot){
@@ -2055,4 +2182,113 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 	
 	
 	return(out)
+}
+
+
+CSrank2 <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings_names=NULL,component.plot,type.component="Factor",plot=TRUE,plot.type="pdf",basefilename="base",signCol="grey",legend.bg="grey",legend.names="",legend.cols="black"){
+	
+	term1.w <- 0.5
+	term2.w <- 0.5
+	
+	## Plot-in and -out functions
+	plot.in <- function(plot.type,name){
+		if(plot.type=="pdf"){pdf(name)}
+		if(plot.type=="device"){dev.new()}
+		if(plot.type=="sweave"){}
+	}
+	plot.out <- function(plot.type){if(plot.type=="pdf"){dev.off()}}
+	
+	names <- loadings_names
+	loadings <- loadings[,component.plot]
+	
+	RefCS.matrix <- matrix(0,nrow=length(loadings[-ref.index]),ncol=length(ref.index))
+	colnames(RefCS.matrix) <- rep("",length(ref.index))
+	
+	query.loadings <- loadings[-ref.index]
+	
+	
+	# |q|/|R| for each ref  
+	for(i.ref in 1:length(ref.index)){
+		ref.loading <- loadings[ref.index[i.ref]]	
+		
+		
+		temp <- sapply(query.loadings,FUN=function(x){
+					
+					if(abs(ref.loading)>=abs(x)){
+						return(abs(x)/abs(ref.loading))
+					}
+					else{
+						return(abs(ref.loading)/abs(x))
+					}
+				})
+		
+		RefCS.matrix[,i.ref] <- temp
+		colnames(RefCS.matrix)[i.ref] <- paste0(names(loadings)[ref.index[i.ref]]," (Ref ",i.ref,")")
+	}
+	
+	weights <- abs(loadings[ref.index])
+	term1 <- apply(RefCS.matrix,MARGIN=1,FUN=weighted.mean,w=weights)
+	
+	
+	# Extra term for each q
+	query.mean <- mean(abs(query.loadings))
+	term2.temp <- abs(query.loadings)-query.mean
+	
+	term2 <- term2.temp/max(abs(term2.temp))
+	
+	# Combine both terms with (weighted) mean  +  change to 0 if result is negative
+	combinetest1 <- sapply(1:length(term1),FUN=function(x){weighted.mean(c(term1[x],term2[x]),c(term1.w,term2.w))})
+	combinetest2 <- sapply(combinetest1,FUN=function(x){if(x<0){return(0)}else{return(x)}})
+	
+	# Add Sign to final Score
+	sign.temp <- sapply(query.loadings,FUN=function(x){
+				ifelse(sign(mean(loadings[ref.index]))==sign(x),1,-1)
+			})
+	
+	# Final
+	combinetest3 <- combinetest2*sign.temp
+	
+	out <- as.data.frame(cbind(combinetest3,term1,RefCS.matrix,term2,combinetest1,combinetest2))
+	colnames(out) <- c("CSRankScores","Term1.Weighted",paste0("Term1.Ref",c(1:length(ref.index))),"Term2","Combine1.wmean","Combine2.zero")
+	rownames(out) <- names[-ref.index]
+	
+	
+	## PLOTTING
+	
+	if(plot){
+		
+		if(ref.plot){
+			
+			nref <- dim(RefCS.matrix)[2]
+			nplots <- dim(out)[2]-1
+						
+			col.plots <- ifelse(nplots<4,nplots,4)
+			row.plots <- ifelse(nplots%%4==0,nplots%/%4,nplots%/%4 +1)
+			par(mfrow=c(row.plots,col.plots))
+						
+			plot.in(plot.type,paste0(basefilename,"_CSRankExtra.pdf"))
+			for(i.plot in 2:dim(out)[2]){
+				plot(out[,i.plot],xlab="Query Compound Index",ylab="Score",col=color.columns[-ref.index],bg="grey",pch=21,main=paste0(type.component," ",component.plot," - ",colnames(out)[i.plot]))
+				text(out[,i.plot],names[-ref.index],col=color.columns[-ref.index],pos=2)
+			}
+			plot.out(plot.type)
+		
+		}
+		
+		par(mfrow=c(1,1))
+		
+		## Plot Final
+		main.temp <- ifelse(ref.plot,"CS Rank Score (Final)","CS Rank Score")
+		plot.in(plot.type,paste0(basefilename,"_CSRank.pdf"))
+		plot(combinetest3,col=color.columns[-ref.index],xlab="Query Compound Index",ylab="CS Rankscore",bg=signCol,pch=21,main=paste0(type.component," ",component.plot," - ",main.temp))
+		text(combinetest3,labels=names[-ref.index],col=color.columns[-ref.index],pos=2)
+		if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg=legend.bg,bty="n")}
+		
+		plot.out(plot.type)
+	}
+	
+	
+
+	return(out)
+
 }

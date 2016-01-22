@@ -3,9 +3,12 @@
 # Author: lucp8394
 ###############################################################################
 
+# NOTE: TO DO: Check if cor.rank also works when no plots are drawn
+
+
 #' Compare CS Results.
 #' 
-#' After applying different CSanalysis on the same data, you can compare 2 different results of connectivity scores and gene scores
+#' After applying different CSanalysis on the same data, you can compare 2 different results of connectivity scores, rank scores and gene scores
 #' Unless the result came from a Zhang and Gant analysis, you choose from which component (factor, PC, bicluster) the scores should be derived.
 #' 
 #' @export
@@ -13,7 +16,7 @@
 #' @param CSresult2 Second result.
 #' @param component1.plot If you are using a non-Zhang&Gant result, specify the bicluster, factor or principal component which should be used to derive connectivity scores from for the \emph{first} result.
 #' @param component2.plot If you are using a non-Zhang&Gant result, specify the bicluster, factor or principal component which should be used to derive connectivity scores from for the \emph{second} result.
-#' @param which Choose one or both plots which should be created. 1: CS Comparison Plot, 2: GS Comparison Plot, 3: CSRankScores (Normal CS for CSzhang) Comparison Plot
+#' @param which Choose one or both plots which should be created.\cr 1: CS Comparison Plot\cr 2: GS Comparison Plot\cr 3: CSRankScores (Normal CS for CSzhang) Comparison Plot\cr 4: CS p-values comparison plot (normal and ranks).\cr 5: CSRankScores p-values comparison plot (normal and ranks)
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
 #' @param gene.thresP Vector of length 2 containing the positive gene thresholds for \code{CSresult1} and \code{CSresult2}. Genes above the threshold will be colored. (e.g. \code{c(1,2)})
 #' @param gene.thresN Vector of length 2 containing the negative gene thresholds for \code{CSresult1} and \code{CSresult2}. Genes below the threshold will be colored. (e.g. \code{c(-1,-2)})
@@ -25,7 +28,7 @@
 #' @param plot.type How should the plots be outputted? \code{"pdf"} to save them in pdf files, \code{device} to draw them in a graphics device (default), \code{sweave} to use them in a sweave or knitr file.
 #' @param basefilename Basename of the graphs if saved in pdf files
 #' @param threshold.pvalues If both CSresult1 and CSresult contain pvalues (and adjusted pvalues), this threshold will be used to compare the number of overlapping significant results. 
-#' @return A list object with the vector with (rank) correlation between Connectivity Scores (and Gene Scores if available). If both CSresult contain p-values the other list slots are filled with some comparison between the number of significant p-values.
+#' @return A list object with the vector with (pearson + spearman) correlation between Connectivity Scores, Rank Scores (and Gene Scores if available). If both CSresult contain p-values the other list slots are filled with some comparison between the number of significant p-values for CS and CSRank.
 #' @examples
 #' \dontrun{
 #' data("dataSIM",package="CSFA")
@@ -63,6 +66,9 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 	name2 <- CSGS2$name
 	axename1 <- CSGS1$axename
 	axename2 <- CSGS2$axename
+	rankscores1 <- CSGS1$CSRank
+	rankscores2 <- CSGS2$CSRank
+	names(rankscores1) <- names(rankscores2) <- names(loadings1)[-c(1:refdim1)]
 		
 	if(is.null(color.columns)){color.columns <- c(rep("blue",refdim1),rep("black",querdim1))} else {color.columns <- color.columns}
 	if(is.null(legend.names)){
@@ -81,7 +87,12 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 	}
 	
 	
-	if(1%in%which){cor.CS <- compare.CS.plot(loadings1=loadings1,loadings2=loadings2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,nref=refdim1,color.columns=color.columns,legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=basefilename)}else{cor.CS <- cor(loadings1,loadings2,use="complete.obs")}
+	if(1%in%which){
+		cor.CS <- compare.CS.plot(loadings1=loadings1,loadings2=loadings2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,nref=refdim1,color.columns=color.columns,legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=basefilename)
+	}else{
+		cor.CS <- list(cor(loadings1,loadings2,use="complete.obs"),cor(loadings1,loadings2,use="complete.obs",method="spearman"))
+				
+	}
 	
 	if(!(is.null(scores1)|is.null(scores2)|!(2 %in% which))){
 		
@@ -89,7 +100,7 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 	
 	}else{
 		if(!(is.null(scores1)|is.null(scores2))){
-			cor.GS <- cor(scores1,scores2,use="complete.obs")
+			cor.GS <- list(cor(scores1,scores2,use="complete.obs"),cor(scores1,scores2,use="complete.obs",method="spearman"))
 		}
 		else{
 			cor.GS <- NULL
@@ -99,15 +110,13 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 	
 	
 	if(3%in%which){
-		rankscores1 <- CSGS1$CSRank
-		rankscores2 <- CSGS2$CSRank
-		names(rankscores1) <- names(rankscores2) <- names(loadings1)[-c(1:refdim1)]
+
 		
 		cor.CSRank <- compare.CSRank.plot(rankscores1=rankscores1,rankscores2=rankscores2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,color.columns=color.columns[-c(1:refdim1)],legend.names=legend.names.rank,legend.cols=legend.cols.rank,legend.pos=legend.pos,plot.type=plot.type,basefilename=basefilename)
 		
 	}
 	else{
-		cor.CSRank <- cor(rankscores1,rankscores2,use="complete.obs")
+		cor.CSRank <- list(cor(rankscores1,rankscores2,use="complete.obs"),cor(rankscores1,rankscores2,use="complete.obs",method="spearman"))
 	}
 		
 	
@@ -115,14 +124,14 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 		cor.temp <- c(cor.CS[[1]],cor.GS[[1]],cor.CSRank[[1]])
 		names(cor.temp) <- c("CS Correlation","GS Correlation","RankScore Correlation")
 		cor.rank.temp <- c(cor.CS[[2]],cor.GS[[2]],cor.CSRank[[2]])
-		names(cor.rank.temp) <- c("CS Rank Correlation","GS Rank Correlation","RankScore Rank Correlation")
+		names(cor.rank.temp) <- c("CS Spearman Correlation","GS Spearman Correlation","RankScore Spearman Correlation")
 		
 	}
 	else if(!is.null(cor.CS)){
 		cor.temp <- c(cor.CS[[1]],cor.CSRank[[1]])
 		names(cor.temp) <- c("CS Correlation","RankScore Correlation")
 		cor.rank.temp <- c(cor.CS[[2]],cor.CSRank[[2]])
-		names(cor.rank.temp) <- c("CS Rank Correlation","RankScore Rank Correlation")
+		names(cor.rank.temp) <- c("CS Spearman Correlation","RankScore Spearman Correlation")
 	}
 	else{
 		cor.temp <- cor.GS[[1]]
@@ -133,14 +142,99 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 	
 	if(!is.null(CSresult1@permutation.object) & !is.null(CSresult2@permutation.object)){
 		
-		list.pval.dataframe <- list(CSresult1@permutation.object$pval.dataframe,CSresult2@permutation.object$pval.dataframe)
+		# p-values compare table
+		list.pval.dataframe <- list(CSresult1@permutation.object$CS.pval.dataframe,CSresult2@permutation.object$CS.pval.dataframe)
 		out_pval_compare <- pvalue2_compare(list.pval.dataframe,threshold=threshold.pvalues)
+		
+		
+		#p-values compare plot (2 plots)
+		if(4 %in% which){
+			cor.CSpvalues <- compare.pvalues.plot(list.pval.dataframe,nref=refdim1,name1=name1,name2=name2,axename1=axename1,axename2=axename2,color.columns=color.columns[-c(1:refdim1)],legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=paste0(basefilename,"_CS"),plot=TRUE)
+			
+		}
+		else{
+			cor.CSpvalues <- compare.pvalues.plot(list.pval.dataframe,nref=refdim1,name1=name1,name2=name2,axename1=axename1,axename2=axename2,color.columns=color.columns[-c(1:refdim1)],legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=paste0(basefilename,"_CS"),plot=FALSE)
+			
+		}
+			
+		#p-values compare correlation (normal + spearman)
+		CSpvalues.correlation <- cor.CSpvalues[1]
+		CSpvalues.spearcorrelation <- cor.CSpvalues[2]
+		
+		if(!is.null(CSresult1@permutation.object$CSRank.pval.dataframe) & !is.null(CSresult2@permutation.object$CSRank.pval.dataframe)){
+			
+			# p-values compare table
+			
+			list.pval.dataframe.rank <- list(CSresult1@permutation.object$CSRank.pval.dataframe,CSresult2@permutation.object$CSRank.pval.dataframe)
+			out_pval_compare.rank <- pvalue2_compare(list.pval.dataframe.rank,threshold=threshold.pvalues)
+			
+			#p-values compare plot ( 2 plots)
+		
+			if(5 %in% which){
+				cor.CSRankpvalues <- compare.pvalues.plot(list.pval.dataframe.rank,nref=refdim1,name1=name1,name2=name2,axename1=axename1,axename2=axename2,color.columns=color.columns[-c(1:refdim1)],legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=paste0(basefilename,"_CSRank"),plot=TRUE,rank=TRUE)
 				
-		return(list(correlation=cor.temp,rankcorrelation=cor.rank.temp,compare.pvalues=out_pval_compare$compare.pvalues,compare.pvalues.adjusted=out_pval_compare$compare.pvalues.adjusted,pval.data1=out_pval_compare$list.pval.dataframe[[1]],pval.data2=out_pval_compare$list.pval.dataframe[[2]]))
+			}else{
+				cor.CSRankpvalues <- compare.pvalues.plot(list.pval.dataframe.rank,nref=refdim1,name1=name1,name2=name2,axename1=axename1,axename2=axename2,color.columns=color.columns[-c(1:refdim1)],legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=paste0(basefilename,"_CSRank"),plot=FALSE,rank=TRUE)
+				
+				
+			}
+							
+			#p-values compare correlation (normal + spearman)
+			CSRankpvalues.correlation <- cor.CSRankpvalues[1]
+			CSRankpvalues.spearcorrelation <- cor.CSRankpvalues[2]
+			
+		}
+		else{
+			# Add special case if one of them is CSzhang
+			if("CSzhang" %in% c(CSresult1@type,CSresult2@type)){
+				
+				which.zhang <- which(c(CSresult1@type,CSresult2@type)=="CSzhang")
+				if(which.zhang==1){
+					list.pval.dataframe.rank <- list(CSresult1@permutation.object$CS.pval.dataframe[-c(1:refdim1),],CSresult2@permutation.object$CSRank.pval.dataframe)
+				}else{
+					list.pval.dataframe.rank <- list(CSresult1@permutation.object$CSRank.pval.dataframe,CSresult2@permutation.object$CS.pval.dataframe[-c(1:refdim1),])
+				}
+				out_pval_compare.rank <- pvalue2_compare(list.pval.dataframe.rank,threshold=threshold.pvalues)
+								
+				if(5 %in% which){
+					cor.CSRankpvalues <- compare.pvalues.plot(list.pval.dataframe.rank,nref=refdim1,name1=name1,name2=name2,axename1=axename1,axename2=axename2,color.columns=color.columns[-c(1:refdim1)],legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=paste0(basefilename,"_CSRank"),plot=TRUE,rank=TRUE)
+					
+				}else{
+					cor.CSRankpvalues <- compare.pvalues.plot(list.pval.dataframe.rank,nref=refdim1,name1=name1,name2=name2,axename1=axename1,axename2=axename2,color.columns=color.columns[-c(1:refdim1)],legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=paste0(basefilename,"_CSRank"),plot=FALSE,rank=TRUE)
+				}
+				CSRankpvalues.correlation <- cor.CSRankpvalues[1]
+				CSRankpvalues.spearcorrelation <- cor.CSRankpvalues[2]
+				
+				
+				
+			}else{
+				out_pval_compare.rank <- NULL
+				CSRankpvalues.correlation <- NULL
+				CSRankpvalues.spearcorrelation <- NULL
+			}
+			
+
+		}		
+				
+		return(
+				list(correlation=cor.temp,spearcorrelation=cor.rank.temp,
+						compare.CSpvalues=out_pval_compare$compare.pvalues,compare.CSpvalues.adjusted=out_pval_compare$compare.pvalues.adjusted,
+						CSpval.data1=out_pval_compare$list.pval.dataframe[[1]],CSpval.data2=out_pval_compare$list.pval.dataframe[[2]],
+						compare.CSRankpvalues=out_pval_compare.rank$compare.pvalues,compare.CSRankpvalues.adjusted=out_pval_compare.rank$compare.pvalues.adjusted,
+						CSRankpval.data1=out_pval_compare.rank$list.pval.dataframe[[1]],CSRankpval.data2=out_pval_compare.rank$list.pval.dataframe[[2]],
+						CSpvalues.correlation=CSpvalues.correlation,CSpvalues.spearcorrelation=CSpvalues.spearcorrelation,
+						CSRankpvalues.correlation=CSRankpvalues.correlation,CSRankpvalues.spearcorrelation=CSRankpvalues.spearcorrelation
+		
+				)
+		)
 		
 	}
 	else{
-		return(list(correlation=cor.temp,rankcorrelation=cor.rank.temp,compare.pvalues=NULL,compare.pvalues.adjusted=NULL,pval.data1=NULL,pval.data2=NULL))
+		return(list(correlation=cor.temp,spearcorrelation=cor.rank.temp,
+						compare.CSpvalues=NULL,compare.CSpvalues.adjusted=NULL,CSpval.data1=NULL,CSpval.data2=NULL,
+						compare.CSRankpvalues=NULL,compare.CSRankpvalues.adjusted=NULL,CSRankpval.data1=NULL,CSRankpval.data2=NULL,
+						CSpvalues.correlation=NULL,CSpvalues.spearcorrelation=NULL,
+						CSRankpvalues.correlation=NULL,CSRankpvalues.spearcorrelation=NULL))
 	}
 }
 
@@ -152,24 +246,24 @@ get.CS.GS <- function(CSresult,component.plot){
 	if(type=="CSfabia"){
 		loadings <- CSresult@object@L[,component.plot]
 		scores <- t(CSresult@object@Z)[,component.plot]
-		rankscores <- CSrank(CSresult@object@L,1:dim(CSresult@CS$CS.ref)[1],plot=FALSE,component.plot=component.plot)[,1]
+		rankscores <- CSrank2(CSresult@object@L,1:dim(CSresult@CS$CS.ref)[1],plot=FALSE,component.plot=component.plot)[,1]
 		
 		
 		return(list(CS=loadings,GS=scores,name="FABIA",axename=paste0("Fabia BC ",component.plot),CSRank=rankscores))
-		
+			
 	}
 	else if(type=="CSmfa"){
 		loadings <- CSresult@object$quanti.var$coord[,component.plot]		
 		scores <- CSresult@object$ind$coord[,component.plot]	
 		
-		rankscores <- CSrank(CSresult@object$quanti.var$coord,1:dim(CSresult@CS$CS.ref)[1],plot=FALSE,component.plot=component.plot)[,1]
+		rankscores <- CSrank2(CSresult@object$quanti.var$coord,1:dim(CSresult@CS$CS.ref)[1],plot=FALSE,component.plot=component.plot)[,1]
 		
 		return(list(CS=loadings,GS=scores,name="MFA",axename=paste0("MFA Factor ",component.plot),CSRank=rankscores))
 	}
 	else if(type =="CSpca"){
 		loadings <- CSresult@object$var$cor[,component.plot]
 		scores <- CSresult@object$ind$coord[,component.plot]
-		rankscores <- CSrank(CSresult@object$var$coord,1:dim(CSresult@CS$CS.ref)[1],plot=FALSE,component.plot=component.plot)[,1]
+		rankscores <- CSrank2(CSresult@object$var$coord,1:dim(CSresult@CS$CS.ref)[1],plot=FALSE,component.plot=component.plot)[,1]
 		
 		
 		return(list(CS=loadings,GS=scores,name="PCA",axename=paste0("PCA PC ",component.plot),CSRank=rankscores))
@@ -177,7 +271,7 @@ get.CS.GS <- function(CSresult,component.plot){
 	else if(type =="CSsmfa"){
 		loadings <- CSresult@object$loadings[,component.plot]
 		scores <- CSresult@object$scores[,component.plot]
-		rankscores <- CSrank(CSresult@object$loadings,1:dim(CSresult@CS$CS.ref)[1],plot=FALSE,component.plot=component.plot)[,1]
+		rankscores <- CSrank2(CSresult@object$loadings,1:dim(CSresult@CS$CS.ref)[1],plot=FALSE,component.plot=component.plot)[,1]
 		
 		
 		return(list(CS=loadings,GS=scores,name="sMFA",axename=paste0("sMFA Factor ",component.plot),CSRank=rankscores))
@@ -223,7 +317,8 @@ compare.CS.plot <- function(loadings1,loadings2,name1,name2,axename1,axename2,nr
 	if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,bty="n")}
 	plot.out(plot.type)
 	cor.CS <- cor(loadings1,loadings2,use="complete.obs")
-	cor.CS.rank <- cor(rank(loadings1,na.last="keep"),rank(loadings2,na.last="keep"),use="complete.obs")
+#	cor.CS.rank <- cor(rank(loadings1,na.last="keep"),rank(loadings2,na.last="keep"),use="complete.obs")
+	cor.CS.rank <- cor(loadings1,loadings2,use="complete.obs",method="spearman")
 	
 	return(list(cor.CS,cor.CS.rank))
 }
@@ -296,7 +391,9 @@ compare.GS.plot <- function(scores1,scores2,name1,name2,axename1,axename2,nref,g
 	}
 	plot.out(plot.type)
 	cor.GS <- cor(scores1,scores2,use="complete.obs")
-	cor.GS.rank <- cor(rank(scores1,na.last="keep"),rank(scores2,na.last="keep"),use="complete.obs")
+#	cor.GS.rank <- cor(rank(scores1,na.last="keep"),rank(scores2,na.last="keep"),use="complete.obs")
+	cor.GS.rank <- cor(scores1,scores2,use="complete.obs",method="spearman")
+	
 	return(list(cor.GS,cor.GS.rank))
 
 }
@@ -333,8 +430,115 @@ compare.CSRank.plot <- function(rankscores1,rankscores2,name1,name2,axename1,axe
 	if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,bty="n")}
 	plot.out(plot.type)
 	cor.CSRank <- cor(rankscores1,rankscores2,use="complete.obs")
-	cor.CSRank.rank <- cor(rank(rankscores1,na.last="keep"),rank(rankscores2,na.last="keep"),use="complete.obs")
+	
+#	cor.CSRank.rank <- cor(rank(rankscores1,na.last="keep"),rank(rankscores2,na.last="keep"),use="complete.obs")
+	cor.CSRank.rank <- cor(rankscores1,rankscores2,use="complete.obs",method="spearman")
+	
 	return(list(cor.CSRank,cor.CSRank.rank))
 	
 	
+}
+
+
+compare.pvalues.plot <- function(list.pval.dataframe,nref,name1,name2,axename1,axename2,color.columns,legend.names,legend.cols,legend.pos,plot.type="device",basefilename="",plot=TRUE,rank=FALSE){
+	## Plot-in and -out functions
+	plot.in <- function(plot.type,name){
+		if(plot.type=="pdf"){pdf(name)}
+		if(plot.type=="device"){dev.new()}
+		if(plot.type=="sweave"){}
+	}
+	plot.out <- function(plot.type){if(plot.type=="pdf"){dev.off()}}	
+	
+	if(!rank){
+		list.pval.dataframe[[1]] <- list.pval.dataframe[[1]][-c(1:nref),]
+		list.pval.dataframe[[2]] <- list.pval.dataframe[[2]][-c(1:nref),]
+	}
+	
+	
+	adjusted.available <- unlist(lapply(list.pval.dataframe,FUN=function(x){"pvalues.adjusted"%in%colnames(x)}))
+	
+	if(sum(adjusted.available)==2){
+		use.adjust <- TRUE
+	}else{
+		use.adjust <- FALSE
+	}
+	
+	if(use.adjust){
+		pvalues1 <- -log(list.pval.dataframe[[1]]$pvalues.adjusted)
+		pvalues2 <- -log(list.pval.dataframe[[2]]$pvalues.adjusted)
+		
+		pvalues.name <- "adjusted p-values"
+		
+	}
+	else{
+		pvalues1 <- -log(list.pval.dataframe[[1]]$pvalues)
+		pvalues2 <- -log(list.pval.dataframe[[2]]$pvalues)
+		
+		pvalues.name <- "p-values"
+		
+	}
+	
+
+	
+	which.inf1 <- which(pvalues1==Inf)
+	which.inf2 <- which(pvalues2==Inf)
+	
+	if(length(which.inf1)>0){
+		inf1.present <- TRUE
+		max.real1 <- max(pvalues1[-which.inf1])
+		pvalues1[which.inf1] <- max.real1+1
+		
+	}else{
+		inf1.present <- FALSE
+	}
+	
+	if(length(which.inf2)>0){
+		inf2.present <- TRUE
+		max.real2 <- max(pvalues2[-which.inf2])
+		pvalues2[which.inf2] <- max.real2+1
+		
+	}else{
+		inf2.present <- FALSE
+	}
+	
+	if(plot){
+		
+		rank.name <- ifelse(rank,"Rank","")
+		
+		axename1.temp <- ifelse(axename1=="Zhang CS","Zhang & Gant Score",paste(axename1," Connectivity ",rank.name," Score"))
+		axename2.temp <- ifelse(axename2=="Zhang CS","Zhang & Gant Score",paste(axename2," Connectivity ",rank.name," Score"))
+		
+		plot.in(plot.type,paste0(basefilename,"_",paste0(name1,"VS",name2,"_pvalues.pdf")))
+		plot(pvalues1,pvalues2,col=color.columns,bg="grey",main=paste0(name1," VS ",name2," -log(",pvalues.name,") of CS",rank.name),xlab=axename1.temp,ylab=axename2.temp,pch=21)
+		text(pvalues1,pvalues2,as.character(list.pval.dataframe[[1]][,1]),col=color.columns,pos=1,cex=0.5)
+		if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,bty="n")}
+		
+		if(inf1.present){axis(3,at=max.real1+1,"Inf Value",col="red")}
+		if(inf2.present){axis(4,at=max.real2+1,"Inf Value",col="red")}
+		plot.out(plot.type)
+		
+		plot.in(plot.type,paste0(basefilename,"_",paste0(name1,"VS",name2,"_rankpvalues.pdf")))
+				plot(rank(pvalues1),rank(pvalues2),col=color.columns,bg="grey",main=paste0(name1," VS ",name2," rank -log(",pvalues.name,") of CS",rank.name),xlab=axename1.temp,ylab=axename2.temp,pch=21)
+		text(rank(pvalues1),rank(pvalues2),as.character(list.pval.dataframe[[1]][,1]),col=color.columns,pos=1,cex=0.5)
+		if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,bty="n")}
+		
+		if(inf1.present){axis(3,at=max(rank(pvalues1)),"Inf Value",col="red")}
+		if(inf2.present){axis(4,at=max(rank(pvalues2)),"Inf Value",col="red")}
+				
+		plot.out(plot.type)
+		
+	}
+	
+	pvalues1.temp <- pvalues1
+	pvalues1.temp[which.inf1] <- NA
+	pvalues2.temp <- pvalues2
+	pvalues2.temp[which.inf2] <- NA
+	
+	cor <- cor(pvalues1.temp,pvalues2.temp,use="complete.obs")
+	cor.spearman <- cor(pvalues1.temp,pvalues2.temp,use="complete.obs",method="spearman")
+	
+	out <- c(cor,cor.spearman)
+	names(out) <- c("Correlation","Spearman Correlation")
+	
+	return(out)
 }

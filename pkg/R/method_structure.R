@@ -165,7 +165,7 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 			if(is.null(legend.names)){legend.names <- c("References")}
 			if(is.null(legend.cols)){legend.cols <- c("blue")}
 
-			analysis.pm.temp <- list(p=p,alpha=alpha,cyc=cyc,spl=spl,spz=spz,non_negative=non_negative,random=random,center=center,norm=norm,scale=scale,la=lap,nL=nL,lL=lL,bL=bL)
+			analysis.pm.temp <- list(p=p,alpha=alpha,cyc=cyc,spl=spl,spz=spz,non_negative=non_negative,random=random,center=center,norm=norm,scale=scale,lap=lap,nL=nL,lL=lL,bL=bL)
 			
 			if(!is.null(result.available)){
 				if(class(result.available) != "CSresult"){
@@ -177,7 +177,7 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 				else if(!identical(result.available@call$analysis.pm,analysis.pm.temp)){
 					stop("result.available used other analysis parameters")
 				}
-				else{result.available2 <- result.available@object}
+				else{result.available2 <- result.available}
 			}
 			else{
 				result.available2 <- NULL
@@ -217,7 +217,7 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 			rownames(GS) <- rownames(scores)
 			colnames(GS) <- sapply(BC.select,FUN=function(x){paste0("BC",x)})
 			
-			call.object <- list(match.call=type@call,analysis.pm=list(p=p,alpha=alpha,cyc=cyc,spl=spl,spz=spz,non_negative=non_negative,random=random,center=center,norm=norm,scale=scale,la=lap,nL=nL,lL=lL,bL=bL),BC.select=BC.select)
+			call.object <- list(match.call=type@call,analysis.pm=list(p=p,alpha=alpha,cyc=cyc,spl=spl,spz=spz,non_negative=non_negative,random=random,center=center,norm=norm,scale=scale,lap=lap,nL=nL,lL=lL,bL=bL),BC.select=BC.select)
 
 			if(!is.null(result.available)){
 				if(BC.select != result.available@call$BC.select){
@@ -272,7 +272,7 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 #' @param thresN.col Color of genes below \code{gene.thresN}.
 #' @param legend.names Option to draw a legend of colored columns in Compound Loadings plot (\code{which=5}). If \code{NULL}, only "References" will be in the legend.
 #' @param legend.cols Colors to be used in legend in \code{which=5}. If \code{NULL}, only blue for "References is used".
-#' @param result.available You can a previously returned object by \code{CSanalysis} in order to only draw graphs, not recompute the scores.
+#' @param result.available You can a previously returned object by \code{CSanalysis} in order to only draw graphs, not recompute the scores. If this object also contains the permutation object, in the loadings and CSRank plot (\code{which=c(5,7)}) the values with a (adjusted) pvalue smaller than 0.05 will be colored purple.
 #' @param plot.type How should the plots be outputted? \code{"pdf"} to save them in pdf files, \code{device} to draw them in a graphics device (default), \code{sweave} to use them in a sweave or knitr file.
 #' @param basefilename Basename of the graphs if saved in pdf files
 #' @param CSrank.refplot Logical value deciding if the CS Rank Scores (\code{which=7}) should also be plotted per reference (instead of only the weighted mean).
@@ -314,7 +314,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSmfa"),function(
 				else if(!identical(result.available@call$analysis.pm,analysis.pm.temp)){
 					stop("result.available used other analysis parameters")
 				}
-				else{result.available2 <- result.available@object}
+				else{result.available2 <- result.available}
 			}
 			else{
 				result.available2 <- NULL
@@ -450,7 +450,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 				else if(!identical(result.available@call$analysis.pm,analysis.pm.temp)){
 					stop("result.available used other analysis parameters")
 				}
-				else{result.available2 <- result.available@object}
+				else{result.available2 <- result.available}
 			}
 			else{
 				result.available2 <- NULL
@@ -575,7 +575,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 			if(is.null(legend.names)){legend.names <- c("References")}
 			if(is.null(legend.cols)){legend.cols <- c("blue")}
 					
-			analysis.pm.temp <- list(K=K,lambda=lambda,sparse=sparse,max.iter=max.iter,eps.conv=eps.conv)
+			analysis.pm.temp <- list(K=K,lambda=lambda,sparse=sparse,max.iter=max.iter,eps.conv=eps.conv,para=para,sparse.dim=sparse.dim)
 			
 			if(!is.null(result.available)){
 				if(class(result.available) != "CSresult"){
@@ -587,7 +587,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 				else if(!identical(result.available@call$analysis.pm,analysis.pm.temp)){
 					stop("result.available used other analysis parameters")
 				}
-				else{result.available2 <- result.available@object}
+				else{result.available2 <- result.available}
 			}
 			else{
 				result.available2 <- NULL
@@ -600,7 +600,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 					factor.plot=factor.plot,column.interest=column.interest,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
 					colour.columns=colour.columns,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
 					result.available=result.available2,plot.type=plot.type,CSrank.refplot=CSrank.refplot,
-					which=which,profile.type=profile.type,gene.highlight=gene.highlight)
+					which=which,profile.type=profile.type,gene.highlight=gene.highlight,row.interest=row.interest)
 			
 			factor.select <- out[[1]]
 			result <- out[[2]]
@@ -622,7 +622,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 			rownames(GS) <- rownames(scores)
 			colnames(GS) <- sapply(factor.select,FUN=function(x){paste0("Factor",x)})
 			
-			call.object <- list(match.call=type@call,analysis.pm=list(K=K,lambda=lambda,sparse=sparse,max.iter=max.iter,eps.conv=eps.conv),factor.select=factor.select)
+			call.object <- list(match.call=type@call,analysis.pm=list(K=K,lambda=lambda,sparse=sparse,max.iter=max.iter,eps.conv=eps.conv,para=para,sparse.dim=sparse.dim),factor.select=factor.select)
 			
 			if(!is.null(result.available)){
 				if(factor.select != result.available@call$factor.select){
@@ -672,7 +672,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 #' @param color.query Vector of colors for the query columns. You can use this option to highlight columns(compounds) of interest in the CS plot. (This does not include the reference columns since they are not included in the CS plot.)
 #' @param legend.names Option to draw a legend (about the highlights in \code{color.query}) in the CS plot. If \code{NULL}, no legend will be drawn.
 #' @param legend.cols Colors to be used for the \code{legend.names}.
-#' @param result.available You can a previously returned object by \code{CSanalysis} in order to only draw graphs, not recompute the scores.
+#' @param result.available You can a previously returned object by \code{CSanalysis} in order to only draw graphs, not recompute the scores. If this object also contains the permutation object, in the score plot the values with a (adjusted) pvalue smaller than 0.05 will be colored purple.
 #' @param plot.type How should the plots be outputted? \code{"pdf"} to save them in pdf files, \code{device} to draw them in a graphics device (default), \code{sweave} to use them in a sweave or knitr file.
 #' @param basefilename Basename of the graphs if saved in pdf files
 #' @return An object of the S4 Class \code{CSresult}. The CS slot will also contain the top positive and negative scores as well as the top p-values. The GS slot will be empty for Zhang and Gant.
@@ -695,13 +695,13 @@ setMethod("CSanalysis",c("matrix","matrix","CSzhang"),function(refMat,querMat,ty
 				else if(result.available@type != class(type)){
 					stop("result.available is from a different analysis")
 				}
-				else{result.available2 <- result.available@object}
+				else{result.available2 <- result.available}
 			}
 			else{
 				result.available2 <- NULL
 			}
 			
-			out <- analyse_zhang(dataref=refMat,dataquery=querMat,nref=nref,nquery=nquery,ord.query=ord.query,ntop.pvalues=ntop.values,ntop.scores=ntop.scores,
+			out <- analyse_zhang(dataref=refMat,dataquery=querMat,nref=nref,nquery=nquery,ord.query=ord.query,ntop.pvalues=20,ntop.scores=ntop.scores,
 #					permute=permute,B=B,ntop.pvalues=ntop.values,
 					basefilename=basefilename,
 					colour.query=colour.query,legend.names=legend.names,legend.cols=legend.cols,legend.x=NULL,legend.y=NULL,
@@ -720,16 +720,16 @@ setMethod("CSanalysis",c("matrix","matrix","CSzhang"),function(refMat,querMat,ty
 			if(!is.null(result.available)){
 				if(!is.null(result.available@permutation.object)){
 					
-					if(identical(result.available@permutation.object$analysis.perm.pm , call.object$analysis.pm   )){
-						warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object slot is unchanged.")
+#					if(identical(result.available@permutation.object$analysis.perm.pm , call.object$analysis.pm   )){
+						warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!")
 						return(new("CSresult",type="CSzhang",CS=CS,GS=data.frame(),object=out,permutation.object=result.available@permutation.object,call=call.object))
 						
-					}
-					else{
-						warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object was also deleted due to a different choice of method parameters.")
-						return(new("CSresult",type="CSzhang",CS=CS,GS=data.frame(),object=out,permutation.object=NULL,call=call.object))
+#					}
+#					else{
+#						warning("CS Slot in CSresult will be overwritten. To add p-values again, run CSpermute again on this object!\nThe permutation.object was also deleted due to a different choice of method parameters.")
+#						return(new("CSresult",type="CSzhang",CS=CS,GS=data.frame(),object=out,permutation.object=NULL,call=call.object))
 						
-					}
+#					}
 					
 				}
 				
