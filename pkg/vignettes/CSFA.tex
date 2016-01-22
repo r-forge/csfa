@@ -78,7 +78,7 @@
 
 \usepackage{subcaption}
 
-\title{CSFA 0.5 - Vignette}
+\title{CSFA 0.6 - Vignette}
 \date{}
 \author{Ewoud De Troyer}
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -494,6 +494,24 @@ In the code below, we plot both type of graphs for the MFA result with a pre-det
 
 
 \end{knitrout}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,out_MFA,}\hlkwc{B}\hlstd{=}\hlnum{100}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
+                \hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{3}\hlstd{,}\hlnum{4}\hlstd{),}\hlkwc{cmpd.hist}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{29}\hlstd{,}\hlnum{105}\hlstd{),}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{)}
+\end{alltt}
+\end{kframe}\begin{figure}[H]
+
+
+\includegraphics[width=9cm,height=10cm]{figure/CSpermuteplots2-1} 
+\includegraphics[width=9cm,height=10cm]{figure/CSpermuteplots2-2} 
+\includegraphics[width=9cm,height=10cm]{figure/CSpermuteplots2-3} \hfill{}
+
+\caption[CSpermute graphs for MFA result]{CSpermute graphs for MFA result\label{fig:CSpermuteplots2}}
+\end{figure}
+
+
+\end{knitrout}
 
 \section{Example Compare CS Results}
 Finally, CSFA also provides a way to quickly compare the 2 results on the same
@@ -524,30 +542,30 @@ comparison plot will be coloring according to these thresholds.
 \end{alltt}
 \begin{verbatim}
 ##        CS Correlation RankScore Correlation 
-##             0.9931169             0.9116397
+##             0.9931169             0.9982107
 \end{verbatim}
 \begin{alltt}
         \hlstd{corr_MFA_FABIA}\hlopt{$}\hlstd{correlation}
 \end{alltt}
 \begin{verbatim}
 ##        CS Correlation        GS Correlation RankScore Correlation 
-##            -0.9573119            -0.7752930             0.8634966
+##            -0.9573119            -0.7752930             0.9801271
 \end{verbatim}
 \begin{alltt}
-        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{rankcorrelation}
+        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{spearcorrelation}
 \end{alltt}
 \begin{verbatim}
-##        CS Rank Correlation RankScore Rank Correlation 
-##                  0.9646826                  0.6048734
+##        CS Spearman Correlation RankScore Spearman Correlation 
+##                      0.9646826                      0.7273489
 \end{verbatim}
 \begin{alltt}
-        \hlstd{corr_MFA_FABIA}\hlopt{$}\hlstd{rankcorrelation}
+        \hlstd{corr_MFA_FABIA}\hlopt{$}\hlstd{spearcorrelation}
 \end{alltt}
 \begin{verbatim}
-##        CS Rank Correlation        GS Rank Correlation 
-##                 -0.5693159                 -0.7996527 
-## RankScore Rank Correlation 
-##                  0.3512829
+##        CS Spearman Correlation        GS Spearman Correlation 
+##                     -0.5693159                     -0.7996527 
+## RankScore Spearman Correlation 
+##                      0.5550448
 \end{verbatim}
 \end{kframe}\begin{figure}[H]
 
@@ -574,20 +592,20 @@ significant p-values. The significancy threshold can be changed with the
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{compare.pvalues}
+        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{compare.CSpvalues}
 \end{alltt}
 \begin{verbatim}
 ##                 Result1.Sign Result1.NotSign
-## Result2.Sign              37               0
-## Result2.NotSign           47             257
+## Result2.Sign              40               0
+## Result2.NotSign           47             254
 \end{verbatim}
 \begin{alltt}
-        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{compare.pvalues.adjusted}
+        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{compare.CSpvalues.adjusted}
 \end{alltt}
 \begin{verbatim}
 ##                 Result1.Sign Result1.NotSign
-## Result2.Sign              37               0
-## Result2.NotSign           11             293
+## Result2.Sign              36               0
+## Result2.NotSign           12             293
 \end{verbatim}
 \end{kframe}
 \end{knitrout}

@@ -21,8 +21,8 @@
 #' @param verbose If \code{TRUE}, progression dots of the permutation analysis will be printed.
 #' @param querMat.Perm Possible to provide user-created permuted querMat data. Should be a list object of B times permuted querMat matrices.
 #' @param save.querMat.Perm If \code{TRUE}, the list of permuted querMat matrices will be saved in the permutation.object slot of the CSresult.
-#' @param which Choose which plot to draw. 1: A volcano plot of the -log(p-values) versus the observed connection scores. 2: A histogram of the permuted connection scores under the null hypothesis for a specific compound. A vertical line(s) is added for the observed CS and its p-value. The \code{cmpd.hist} parameter determines which compounds are drawn like this. 3: Analog to \code{which=1}, but for CSRankScores. 4: Analog to \code{which=2}, but for CSRankScores.
-#' @param cmpd.hist Decides which query compounds are plotted for the histogram distribution under null hypothesis (\code{which=2}). If \code{NULL}, you can select which compounds you want interactively on the volcano plot.
+#' @param which Choose which plot to draw.\cr 1. A volcano plot of the -log(p-values) versus the observed connection scores.\cr 2. A histogram of the permuted connection scores under the null hypothesis for a specific compound. A vertical line(s) is added for the observed CS and its p-value. The \code{cmpd.hist} parameter determines which compounds are drawn like this.\cr 3. Analog to \code{which=1}, but for CSRankScores.\cr 4. Analog to \code{which=2}, but for CSRankScores.
+#' @param cmpd.hist Query index vector which decides which query compounds are plotted for the histogram distribution under null hypothesis (\code{which=2}). If \code{NULL}, you can select which compounds you want interactively on the volcano plot.
 #' @param plot.type How should the plots be outputted? \code{"pdf"} to save them in pdf files, \code{device} to draw them in a graphics device (default), \code{sweave} to use them in a sweave or knitr file.
 #' @param color.columns Option to color the compounds on the volcano plot (\code{which=1}). Should be a vector of colors with the length of number of references and queries together.
 #' @param basefilename Basename of the graphs if saved in pdf files
@@ -37,7 +37,7 @@
 #' MFA_analysis <- CSpermute(Mat1,Mat2,MFA_analysis,B=200)
 #' }
 CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjust="none",verbose=TRUE,querMat.Perm=NULL,save.querMat.Perm=FALSE,
-		which=c(1,2),cmpd.hist=NULL,color.columns=NULL,plot.type="device",basefilename="CSpermute"){
+		which=c(1,3),cmpd.hist=NULL,color.columns=NULL,plot.type="device",basefilename="CSpermute"){
 	
 	if(class(CSresult)!="CSresult"){stop("CSresult is not a class object of CSresult")}
 	
@@ -76,30 +76,30 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 		}
 		
 		if(save.querMat.Perm){permutation.object$querMat.Perm <- querMat.Perm}
-	
-	
+		
+		
 		###### APPLYING ANALYSIS TO DATA ########
 		
 		
 		## MFA Analysis ##
 		if(type=="CSmfa"){
-		
+			
 			if(verbose){cat("Analysing Permuted Data with MFA\n(Factor is chosen based on highest average reference loadings):\n")}
-		
+			
 			MFA.Perm <- list()
 #			MFA.bc.Perm <- c(1:B)
-		
+			
 			for(i in 1:B){
 				data_comb <- cbind(refMat,querMat.Perm[[i]])
 				rownames(data_comb) <- rownames(refMat)
 				colnames(data_comb) <- c(colnames(refMat),colnames(querMat))
-			
+				
 				out_MFA <- MFA(base=data_comb,group=c(ncol(refMat),ncol(querMat)),type=c("s","s"),ind.sup=NULL,row.w=CSresult@call$analysis.pm$row.w,weight.col.mfa=CSresult@call$analysis.pm$weight.col.mfa,ncp=CSresult@call$analysis.pm$ncp,name.group=c("Reference","Query"),graph=FALSE)
 				ref.loadings <- apply(out_MFA$quanti.var$coord,MARGIN=2,FUN=function(x){mean(x[ref.index])})
 				factor.choose <- which(abs(ref.loadings)==max(abs(ref.loadings)))
 #				MFA.bc.Perm[i] <- factor.choose
 				MFA.Perm[[i]] <- out_MFA$quanti.var$coord[,factor.choose]
-		
+				
 				if(verbose){
 					cat(".")
 					if(i%%100==0){cat(" ",i,"\n")}
@@ -109,18 +109,22 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 			
 			permutation.object$CS.Perm <- MFA.Perm
 			
+			MFA.Perm.rank <- lapply(MFA.Perm,FUN=function(x){
+						return(CSrank2(as.data.frame(x),ref.index=ref.index,plot=FALSE,component.plot=1)$CSRankScores)
+					})
+			permutation.object$CSRank.Perm <- MFA.Perm.rank
 		}
-	
+		
 		## Zhang Analysis ##
 		if(type=="CSzhang"){
 			if(verbose){cat("Analysing Permuted Data with Zhang and Gant:\n")}
 			
 			Zhang.Perm <- list()
-		
+			
 			for(i in 1:B){
 				rownames(querMat.Perm[[i]]) <- rownames(refMat)
 				colnames(querMat.Perm[[i]]) <- colnames(querMat)
-			
+				
 				out_zhang <- analyse_zhang(refMat,querMat.Perm[[i]],
 						nref=CSresult@call$analysis.pm$nref,nquery=CSresult@call$analysis.pm$nquery,ord.query=CSresult@call$analysis.pm$ord.query,ntop.scores=CSresult@call$analysis.pm$ntop.scores,
 						basefilename="analyseZhang",which=c(),plot.type="device",print.top=FALSE)
@@ -138,7 +142,7 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 					}
 				}
 				Zhang.Perm[[i]] <- zhang.temp
-
+				
 				if(verbose){
 					cat(".")
 					if(i%%100==0){cat(" ",i,"\n")}
@@ -148,6 +152,7 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 			if(verbose){cat("\nDONE\n")}
 			
 			permutation.object$CS.Perm <- Zhang.Perm
+			permutation.object$CSRank.Perm <- NULL
 			
 			mfa.factor <- NULL
 		}
@@ -174,22 +179,22 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 			CS.warning <- FALSE
 		}
 	}
-			
+	
 	# Note: pvalues will always be re-computed to allow for different mfa.factor
-	pval.dataframe <- pvalue_compute(obs.result=CSresult,list.h0.result=permutation.object$CS.Perm,mfa.factor=mfa.factor,method.adjust=method.adjust)
+#	pval.dataframe <- pvalue_compute(obs.result=CSresult,list.h0.result=permutation.object$CS.Perm,mfa.factor=mfa.factor,method.adjust=method.adjust)
 	
 #	# Getting Pvalues from CS and CSrank
-#	pval.dataframe.temp <- pvalue_compute(obs.result=CSresult,list.h0.result=permutation.object$CS.Perm,mfa.factor=mfa.factor,method.adjust=method.adjust)
-#	pval.dataframe <- pval.dataframe.temp[[1]]
-#	pval.dataframe.rank <- pval.dataframe.temp[[2]]
+	pval.dataframe.temp <- pvalue_compute(obs.result=CSresult,ref.index=ref.index,list.h0.result=permutation.object$CS.Perm,list.h0.result.rank=permutation.object$CSRank.Perm,mfa.factor=mfa.factor,method.adjust=method.adjust)
+	pval.dataframe <- pval.dataframe.temp[[1]]
+	pval.dataframe.rank <- pval.dataframe.temp[[2]]
 	
-	permutation.object$pval.dataframe <- pval.dataframe
-#	permutation.object$CS.pval.dataframe <- pval.dataframe
-#	permutation.object$CSRank.pval.dataframe <- pval.dataframe.rank
+#	permutation.object$pval.dataframe <- pval.dataframe
+	permutation.object$CS.pval.dataframe <- pval.dataframe
+	permutation.object$CSRank.pval.dataframe <- pval.dataframe.rank
 	
 	
 	CSresult@permutation.object <- permutation.object # Saving the updated permutation.object in CSresult
-		
+	
 	
 	#### UPDATE THE CSresult object which will be returned in the end
 	if(type=="CSzhang"){
@@ -234,12 +239,12 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 		
 		
 		CS <- CSresult@CS
-#		CSRankScores <- CSresult@CSRankScores
+		CSRankScores <- CSresult@CSRankScores
 		
 		if(CS.warning){
 			# If warning, re-extract CS and GS 
 			warning("Due to choice of mfa.factor, the CS, CSRankScores and GS slot in CSresult will be overwritten with another factor. ")
-						
+			
 			loadings <- CSresult@object$quanti.var$coord	
 			scores <- CSresult@object$ind$coord			
 			
@@ -256,11 +261,11 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 			GS <- data.frame(scores[,mfa.factor])
 			rownames(GS) <- rownames(scores)
 			colnames(GS) <- sapply(mfa.factor,FUN=function(x){paste0("Factor",x)})
-					
+			
 			CSresult@GS <- GS
 			
-#			CSRankScores <- list(CSrank(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(cbind(refMat,querMat)),component.plot=mfa.factor,type.component="Factor",plot=FALSE))
-#			names(CSRankScores) <- paste0("Factor",mfa.factor)
+			CSRankScores <- list(CSrank2(loadings,ref.index,color.columns=c(),ref.plot=FALSE,loadings_names=colnames(cbind(refMat,querMat)),component.plot=mfa.factor,type.component="Factor",plot=FALSE))
+			names(CSRankScores) <- paste0("Factor",mfa.factor)
 			
 			
 		}
@@ -269,21 +274,20 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 		CS$CS.query$pvalues <- pval.dataframe$pvalues[-ref.index]
 		
 #		# CHANGE LATER IF MULTIPLE CSRANKSCORES!! (Like fabia with multiple BC's)
-#		CSRankScores[1]$CSRankScores$pvalues <- pval.dataframe.rank$pvalues.rank
+		CSRankScores[[1]]$pvalues <- pval.dataframe.rank$pvalues
 		
-			
 		if(method.adjust!="none"){
 			CS$CS.ref$pvalues.adjusted <- pval.dataframe$pvalues.adjusted[ref.index]
 			CS$CS.query$pvalues.adjusted <- pval.dataframe$pvalues.adjusted[-ref.index]
 			
-#			CSRankScores[1]$CSRankScores$pvalues.adjusted <- pval.dataframe.rank$pvalues.adjusted.rank
+			CSRankScores[[1]]$pvalues.adjusted <- pval.dataframe.rank$pvalues.adjusted
 		}
 		
 		CSresult@CS <- CS
-#		CSresult@CSRankScores <- CSRankScores
+		CSresult@CSRankScores <- CSRankScores
 	}
-			
-		
+	
+	
 	
 	##### POSSIBLE PLOTS #####
 	
@@ -296,15 +300,14 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 		
 		if((2 %in% which) & (is.null(cmpd.hist))){
 			# Volcano plot with selecting compounds
-			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe,type=type,ref.index=ref.index,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,make.hist=TRUE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot"))
-						
+			pvalue_volc(pval.dataframe=permutation.object$CS.pval.dataframe,type=type,ref.index=ref.index,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,list.h0.result.rank=permutation.object$CSRank.Perm,make.hist=TRUE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot"))
+			
 			hist.drawn <- TRUE
 		}else{
 			# Volcano plots without selecting compounds
-			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe,type=type,ref.index=ref.index,color.columns=color.columns,list.h0.result=NULL,make.hist=FALSE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot"))
-		
+			pvalue_volc(pval.dataframe=permutation.object$CS.pval.dataframe,type=type,ref.index=ref.index,color.columns=color.columns,list.h0.result=NULL,list.h0.result.rank=NULL,make.hist=FALSE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot"))
 		}
-
+		
 	}
 	
 	
@@ -312,59 +315,64 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 	if((2 %in% which) & !hist.drawn){
 		if(is.null(cmpd.hist)){
 			#volc with plot device
-			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe,type=type,ref.index=ref.index,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,make.hist=TRUE,plot.type="device",plot.type.hist=plot.type,basefilename=paste0(basefilename))
-		
+			pvalue_volc(pval.dataframe=permutation.object$CS.pval.dataframe,type=type,ref.index=ref.index,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,list.h0.result.rank=permutation.object$CSRank.Perm,make.hist=TRUE,plot.type="device",plot.type.hist=plot.type,basefilename=paste0(basefilename))
+			
 		}else{
 			# just hist
-			pvalue_hist(pval.dataframe=permutation.object$pval.dataframe[cmpd.hist,],list.h0.result=permutation.object$CS.Perm,type=type,plot.type=plot.type,basefilename=paste0(basefilename,"_histogram"))
+			pvalue_hist(pval.dataframe=permutation.object$CS.pval.dataframe[cmpd.hist,],list.h0.result=permutation.object$CS.Perm,list.h0.result.rank=permutation.object$CSRank.Perm,type=type,plot.type=plot.type,basefilename=paste0(basefilename,"_histogram"))
 			
 		}
-
+		
 		hist.drawn <- TRUE
 	}
 	
-#	## SAME PLOTS FOR CSRANKSCORES
-#	
-#	hist.drawn.rank <- FALSE
-#	
-#	# Volcano plot
-#	if(3 %in% which){
-#		
-#		if((4 %in% which) & (is.null(cmpd.hist))){
-#			# Volcano plot with selecting compounds
-#			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe.rank,type=type,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,make.hist=TRUE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot_CSRankScores"))
-#			
-#			hist.drawn.rank <- TRUE
-#		}else{
-#			# Volcano plots without selecting compounds
-#			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe.rank,type=type,color.columns=color.columns,list.h0.result=NULL,make.hist=FALSE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot_CSRankScores"))
-#			
-#		}
-#		
-#	}
-#	
-#	
-#	# Histogram plot
-#	if((4 %in% which) & !hist.drawn.rank){
-#		if(is.null(cmpd.hist)){
-#			#volc with plot device
-#			pvalue_volc(pval.dataframe=permutation.object$pval.dataframe.rank,type=type,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,make.hist=TRUE,plot.type="device",plot.type.hist=plot.type,basefilename=paste0(basefilename,"_CSRankScores"))
-#			
-#		}else{
-#			# just hist
-#			pvalue_hist(pval.dataframe=permutation.object$pval.dataframe.rank[cmpd.hist,],list.h0.result=permutation.object$CS.Perm,type=type,plot.type=plot.type,basefilename=paste0(basefilename,"_histogram_CSRankScores"))
-#			
-#		}
-#		
-#		hist.drawn.rank <- TRUE
-#	}
-#	
+	## SAME PLOTS FOR CSRANKSCORES
 	
+	hist.drawn.rank <- FALSE
+	
+	if(!is.null(permutation.object$CSRank.pval.dataframe)){ #zhang does not have this
+		
+		# Volcano plot
+		if(3 %in% which){
+		
+			if((4 %in% which) & (is.null(cmpd.hist))){
+				# Volcano plot with selecting compounds
+				pvalue_volc(pval.dataframe=permutation.object$CSRank.pval.dataframe,ref.index=ref.index,CSRank=TRUE,type=type,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,list.h0.result.rank=permutation.object$CSRank.Perm,make.hist=TRUE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot_CSRankScores"))
+			
+				hist.drawn.rank <- TRUE
+			}else{
+				# Volcano plots without selecting compounds
+				pvalue_volc(pval.dataframe=permutation.object$CSRank.pval.dataframe,ref.index=ref.index,CSRank=TRUE,type=type,color.columns=color.columns,list.h0.result=NULL,list.h0.result.rank=NULL,make.hist=FALSE,plot.type=plot.type,plot.type.hist=plot.type,basefilename=paste0(basefilename,"_volcanoplot_CSRankScores"))
+			
+			}
+		
+		}
+	
+	
+		# Histogram plot
+		if((4 %in% which) & !hist.drawn.rank){
+			if(is.null(cmpd.hist)){
+				#volc with plot device
+				pvalue_volc(pval.dataframe=permutation.object$CSRank.pval.dataframe,ref.index=ref.index,CSRank=TRUE,type=type,color.columns=color.columns,list.h0.result=permutation.object$CS.Perm,list.h0.result.rank=permutation.object$CSRank.Perm,make.hist=TRUE,plot.type="device",plot.type.hist=plot.type,basefilename=paste0(basefilename,"_CSRankScores"))
+			
+			}else{
+				# just hist
+				pvalue_hist(pval.dataframe=permutation.object$CSRank.pval.dataframe[cmpd.hist-length(ref.index),],ref.index=ref.index,CSRank=TRUE,list.h0.result=permutation.object$CS.Perm,list.h0.result.rank=permutation.object$CSRank.Perm,type=type,plot.type=plot.type,basefilename=paste0(basefilename,"_histogram_CSRankScores"))
+			
+			}
+		
+			hist.drawn.rank <- TRUE
+		}
+	
+	}
 	
 	##### RETURN OBJECT ######
 	
 #	# Also add the method parameters used for this permutation...
 #	CSresult@permutation.object$analysis.perm.pm <- CSresult@call$analysis.pm
+	
+	# add p-value information + for which factor it was done
+	CSresult@permutation.object$extra.parameters <- list(mfa.factor=mfa.factor,method.adjust=method.adjust)
 	
 	return(CSresult)
 	# Contains:
@@ -377,7 +385,7 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 
 
 # add adjusted pvalues
-pvalue_compute <- function(obs.result,list.h0.result,ref.index=1,cmpd.index=NULL,mfa.factor=1,method.adjust=c("none","holm","hochberg","hommel","bonferroni","BH","BY","fdr")){
+pvalue_compute <- function(obs.result,list.h0.result,list.h0.result.rank,ref.index=1,cmpd.index=NULL,mfa.factor=1,method.adjust=c("none","holm","hochberg","hommel","bonferroni","BH","BY","fdr")){
 	if(class(obs.result)!="CSresult"){stop("obs.result is not a \"CSresult\" class object")}
 	
 	type <- obs.result@type
@@ -397,7 +405,7 @@ pvalue_compute <- function(obs.result,list.h0.result,ref.index=1,cmpd.index=NULL
 		for(i.cmpd in cmpd.index){
 			h0.data <- unlist(lapply(list.h0.result,FUN=function(x){return(x[i.cmpd])}))
 			obs <- obs.scores[i.cmpd,1]
-			pvalue <- ifelse(obs>=0 ,sum(h0.data>obs)/(length(h0.data)+1), sum(h0.data<obs)/(length(h0.data)+1))
+			pvalue <- ifelse(obs>=0 ,sum(h0.data>obs)/(length(h0.data)+1), sum(h0.data<=obs)/(length(h0.data)+1))
 			temp.pval <- c(temp.pval,pvalue)
 			temp.obs <- c(temp.obs,obs)
 		}
@@ -407,7 +415,7 @@ pvalue_compute <- function(obs.result,list.h0.result,ref.index=1,cmpd.index=NULL
 		pval.dataframe$observed <- temp.obs
 		
 		
-		return(pval.dataframe)
+		return(list(pval.dataframe,NULL))
 	}
 	
 	if(type=="CSmfa"){
@@ -424,17 +432,17 @@ pvalue_compute <- function(obs.result,list.h0.result,ref.index=1,cmpd.index=NULL
 		temp.pval2 <- c()
 		temp.obs <- c()
 		
-#		# Prep for CSrank pvalues
-#		obs.scores.rank <- CSrank(obs.result@object$quanti.var$coord,ref.index=ref.index,plot=FALSE,component.plot=mfa.factor)$CSRankScores
+		# Prep for CSrank pvalues
+		obs.scores.rank <- CSrank2(obs.result@object$quanti.var$coord,ref.index=ref.index,plot=FALSE,component.plot=mfa.factor)$CSRankScores
 #		list.h0.result.rank <- lapply(list.h0.result,FUN=function(x){
-#					return(CSrank(as.data.frame(x),ref.index=ref.index,plot=FALSE,component.plot=1)$CSRankScores)
+#					return(CSrank2(as.data.frame(x),ref.index=ref.index,plot=FALSE,component.plot=1)$CSRankScores)
 #				})
-#		
-#		pval.dataframe.rank<- data.frame(Cmpd=names(obs.scores)[cmpd.index],cmpd.index=cmpd.index)
-#		temp.pval.rank <- c()
-#		temp.pval1.rank <- c()
-#		temp.pval2.rank <- c()
-#		temp.obs.rank <- c()
+		
+		pval.dataframe.rank<- data.frame(Cmpd=names(obs.scores)[cmpd.index[-ref.index]],cmpd.index=cmpd.index[-ref.index])
+		temp.pval.rank <- c()
+		temp.pval1.rank <- c()
+		temp.pval2.rank <- c()
+		temp.obs.rank <- c()
 		
 		
 		for(i.cmpd in cmpd.index){
@@ -443,52 +451,57 @@ pvalue_compute <- function(obs.result,list.h0.result,ref.index=1,cmpd.index=NULL
 			
 			h0.data <- unlist(lapply(list.h0.result,FUN=function(x){return(x[i.cmpd])}))
 			obs <- obs.scores[i.cmpd]
-						
+			
 			# PROBLEM WITH MFA: Solution 2-sided p-value? (FOR MFA SIGN ALSO NOT ALWAYS POS OR NEG CONN, DEPENDS ON DATA!!!!!)
-			pvalue1 <- ifelse(obs>=0 ,sum(h0.data>obs)/(length(h0.data)+1), sum(h0.data<obs)/(length(h0.data)+1))
-			pvalue2 <- ifelse(obs>=0 ,sum(h0.data<(-obs))/(length(h0.data)+1), sum(h0.data>(-obs))/(length(h0.data)+1))
+			pvalue1 <- ifelse(obs>=0 ,sum(h0.data>=obs)/(length(h0.data)+1), sum(h0.data<=obs)/(length(h0.data)+1))
+			pvalue2 <- ifelse(obs>=0 ,sum(h0.data<=(-obs))/(length(h0.data)+1), sum(h0.data>=(-obs))/(length(h0.data)+1))
 			
 			temp.pval1 <- c(temp.pval1,pvalue1)
 			temp.pval2 <- c(temp.pval2,pvalue2)
 			temp.pval <- c(temp.pval,pvalue1+pvalue2)
 			temp.obs <- c(temp.obs,obs)
 			
-#			# P-values of CSRank
-#	
-#			# ONLY 1-SIDED p_VALUE OKAY?
-#			h0.data.rank <- unlist(lapply(list.h0.result.rank,FUN=function(x){return(x[i.cmpd])}))
-#			obs.rank <- obs.scores.rank[i.cmpd]
-#			
-#			pvalue1.rank <- ifelse(obs.rank>=0,sum(h0.data.rank>obs.rank)/(length(h0.data.rank)+1), sum(h0.data.rank<obs.rank)/(length(h0.data.rank)+1))
-##			pvalue2.rank <- ifelse()
-#			
-#			temp.pval1.rank <- c(temp.pval1.rank,pvalue1.rank)
-##			temp.pval2.rank <- c(temp.pval2.rank,pvalue2.rank)
-##			temp.pval.rank <- c(temp.pval.rank,pvalue1.rank+pvalue2.rank)
-#			temp.obs.rank <- c(temp.obs.rank,obs.rank)
+			# P-values of CSRank
+			
+			if(!(i.cmpd %in% ref.index)){ # no p-values for the references
+				# ONLY 1-SIDED p_VALUE OKAY?
+				i.cmpd.temp <- i.cmpd-length(ref.index)
+				h0.data.rank <- unlist(lapply(list.h0.result.rank,FUN=function(x){return(x[i.cmpd.temp])}))
+				obs.rank <- obs.scores.rank[i.cmpd.temp]
+				
+				pvalue1.rank <- ifelse(obs.rank>=0,sum(h0.data.rank>=obs.rank)/(length(h0.data.rank)+1), sum(h0.data.rank<=obs.rank)/(length(h0.data.rank)+1))
+#			pvalue2.rank <- ifelse()
+				
+				temp.pval1.rank <- c(temp.pval1.rank,pvalue1.rank)
+#			temp.pval2.rank <- c(temp.pval2.rank,pvalue2.rank)
+#			temp.pval.rank <- c(temp.pval.rank,pvalue1.rank+pvalue2.rank)
+				temp.obs.rank <- c(temp.obs.rank,obs.rank)
+			}
+			
 			
 		}
 		pval.dataframe$pvalues <- temp.pval
 		pval.dataframe$pvalue1 <- temp.pval1
 		pval.dataframe$pvalue2 <- temp.pval2
 		if(method.adjust!="none"){pval.dataframe$pvalues.adjusted <- p.adjust(temp.pval,method=method.adjust)}
+		
 		pval.dataframe$observed <- temp.obs
 		
-#		pval.dataframe.rank$pvalues.rank <- temp.pval1.rank
-##		pval.dataframe.rank$pvalue1.rank <- temp.pval1.rank
-##		pval.dataframe.rank$pvalue2.rank <- temp.pval2.rank
-#		if(method.adjust!="none"){pval.dataframe.rank$pvalues.adjusted.rank <- p.adjust(temp.pval.rank,method=method.adjust)}
-#		pval.dataframe.rank$observed.rank <- temp.obs.rank
+		pval.dataframe.rank$pvalues <- temp.pval1.rank
+#		pval.dataframe.rank$pvalue1.rank <- temp.pval1.rank
+#		pval.dataframe.rank$pvalue2.rank <- temp.pval2.rank
+		if(method.adjust!="none"){pval.dataframe.rank$pvalues.adjusted <- p.adjust(temp.pval1.rank,method=method.adjust)}
+		pval.dataframe.rank$observed <- temp.obs.rank
 		
 		
-		return(pval.dataframe)
-#		return(list(pval.dataframe,pval.dataframe.rank))
+#		return(pval.dataframe)
+		return(list(pval.dataframe,pval.dataframe.rank))
 		
 	}
 }
 
 # function for all pvalues and h0 given
-pvalue_hist <- function(pval.dataframe,list.h0.result,type=c("CSmfa","CSzhang"),plot.type="device",basefilename="pvalue_hist"){
+pvalue_hist <- function(pval.dataframe,list.h0.result,list.h0.result.rank,type=c("CSmfa","CSzhang"),plot.type="device",ref.index,basefilename="pvalue_hist",CSRank=FALSE){
 	
 	plot.in <- function(plot.type,name){
 		if(plot.type=="pdf"){pdf(paste0(name,".pdf"))}
@@ -510,13 +523,21 @@ pvalue_hist <- function(pval.dataframe,list.h0.result,type=c("CSmfa","CSzhang"),
 			
 			h0.data <- unlist(lapply(list.h0.result,FUN=function(x){return(x[cmpd.index[i]])}))
 			
+			
 			obs <- obs.scores[i]
 			pvalue <- pval.dataframe$pvalues[i]
+			max.y <- max(hist(h0.data,nclass=15,plot=FALSE)$counts)
 			
 			plot.in(plot.type,paste0(basefilename,"_cmpd",cmpd.index[i]))
 			hist(h0.data,xlim=c(min(c(h0.data,obs)),max(c(h0.data,obs))),nclass=15,col='lightblue',main=paste0('Distribution of Cmpd ',cmpd.index[i]," (",cmpd.names[i],") under H0"),xlab="Zhang Score")
 			abline(v=obs,lw=2,col="red")
-			if(obs>=0){text(obs,50, paste0("Observed Value (p-value=",pvalue,")"),pos=2,col="red",offset=1)} else{text(obs,50, paste0("Observed Value (p-value=",pvalue,")"),pos=4,col="red",offset=1)}
+			if(obs>=0){text(obs,0.9*max.y, paste0("Observed Value (p-value=",pvalue,")"),pos=2,col="red",offset=1)} else{text(obs,0.9*max.y, paste0("Observed Value (p-value=",pvalue,")"),pos=4,col="red",offset=1)}
+			
+			if("pvalues.adjusted"%in%names(pval.dataframe)){
+				if(obs>=0){text(obs,0.75*max.y, paste0("(adjusted p-value=",pval.dataframe$pvalues.adjusted[i],")"),pos=2,col="red",offset=1)} else{text(obs,0.75*max.y, paste0("(adjusted p-value=",pval.dataframe$pvalues.adjusted[i],")"),pos=4,col="red",offset=1)}
+				
+			}
+			
 			plot.out(plot.type)
 		}
 		
@@ -528,19 +549,51 @@ pvalue_hist <- function(pval.dataframe,list.h0.result,type=c("CSmfa","CSzhang"),
 		for(i in 1:dim(pval.dataframe)[1]){
 			h0.data <- unlist(lapply(list.h0.result,FUN=function(x){return(x[cmpd.index[i]])}))
 			obs <- obs.scores[i]
-			pvalue1 <- pval.dataframe$pvalue1[i]
-			pvalue2 <- pval.dataframe$pvalue2[i]
 			
+			if(CSRank){
+				
+#				list.h0.result.rank <- lapply(list.h0.result,FUN=function(x){
+#							return(CSrank2(as.data.frame(x),ref.index=ref.index,plot=FALSE,component.plot=1)$CSRankScores)
+#						})
+				i.temp <- cmpd.index[i]-length(ref.index)
+				h0.data.rank <- unlist(lapply(list.h0.result.rank,FUN=function(x){return(x[i.temp])}))
+				
+				
+				pvalue <- pval.dataframe$pvalues[i]
+				max.y <- max(hist(h0.data.rank,nclass=15,plot=FALSE)$counts)
+				
+				
+				plot.in(plot.type,paste0(basefilename,"_cmpd",cmpd.index[i]))
+				hist(h0.data.rank,xlim=c(min(c(h0.data.rank,obs)),max(c(h0.data.rank,obs))),nclass=15,col='lightblue',main=paste0('Distribution of Cmpd ',cmpd.index[i]," (",cmpd.names[i],") under H0"),xlab="MFA CSRankscore")
+				abline(v=obs,lw=2,col="red")
+				if(obs>=0){text(obs,0.9*max.y, paste0("Observed Value"),pos=2,col="red",offset=1)} else{text(obs,0.9*max.y, paste0("Observed Value"),pos=4,col="red",offset=1)}
+				text(obs,0.75*max.y,paste0("P-Value = ",pvalue),col="red",pos=ifelse(obs>=0,2,4))
+				if("pvalues.adjusted"%in%names(pval.dataframe)){
+					if(obs>=0){text(obs,0.6*max.y, paste0("Adjusted P-value = ",pval.dataframe$pvalues.adjusted[i]),pos=2,col="red",offset=1)} else{text(obs,0.6*max.y, paste0("Adjusted P-value = ",pval.dataframe$pvalues.adjusted[i]),pos=4,col="red",offset=1)}
+					
+				}
+				plot.out(plot.type)
+			}
+			else{
+				pvalue1 <- pval.dataframe$pvalue1[i]
+				pvalue2 <- pval.dataframe$pvalue2[i]
+				max.y <- max(hist(h0.data,nclass=15,plot=FALSE)$counts)
+				
+				
+				plot.in(plot.type,paste0(basefilename,"_cmpd",cmpd.index[i]))
+				hist(h0.data,xlim=c(min(c(h0.data,obs,-obs)),max(c(h0.data,obs,-obs))),nclass=15,col='lightblue',main=paste0('Distribution of Cmpd ',cmpd.index[i]," (",cmpd.names[i],") under H0"),xlab="MFA CScore")
+				abline(v=obs,lw=2,col="red")
+				if(obs>=0){text(obs,0.9*max.y, paste0("Observed Value (p-value=",pvalue1,")"),pos=2,col="red",offset=1)} else{text(obs,0.9*max.y, paste0("Observed Value (p-value=",pvalue1,")"),pos=4,col="red",offset=1)}
+				abline(v=-obs,lw=2,col="red",lty=2)
+				if(obs>=0){text(-obs,0.75*max.y, paste0("- Observed Value (p-value=",pvalue2,")"),pos=4,col="red",offset=1)} else{text(-obs,0.75*max.y, paste0("- Observed Value (p-value=",pvalue2,")"),pos=2,col="red",offset=1)}
+				text(obs,0.6*max.y,paste0("P-Value = ",pvalue1+pvalue2),col="red",pos=ifelse(obs>=0,2,4))
+				if("pvalues.adjusted"%in%names(pval.dataframe)){
+					if(obs>=0){text(obs,0.45*max.y, paste0("Adjusted P-value = ",pval.dataframe$pvalues.adjusted[i]),pos=2,col="red",offset=1)} else{text(obs,0.45*max.y, paste0("Adjusted P-value = ",pval.dataframe$pvalues.adjusted[i]),pos=4,col="red",offset=1)}
+					
+				}
+				plot.out(plot.type)
+			}
 			
-			# HERE
-			plot.in(plot.type,paste0(basefilename,"_cmpd",cmpd.index[i]))
-			hist(h0.data,xlim=c(min(c(h0.data,obs,-obs)),max(c(h0.data,obs,-obs))),nclass=15,col='lightblue',main=paste0('Distribution of Cmpd ',cmpd.index[i]," (",cmpd.names[i],") under H0"),xlab="MFA CScore")
-			abline(v=obs,lw=2,col="red")
-			if(obs>=0){text(obs,50, paste0("Observed Value (",pvalue1,")"),pos=2,col="red",offset=1)} else{text(obs,50, paste0("Observed Value (p-value=",pvalue1,")"),pos=4,col="red",offset=1)}
-			abline(v=-obs,lw=2,col="red",lty=2)
-			if(obs>=0){text(-obs,30, paste0("- Observed Value (",pvalue2,")"),pos=4,col="red",offset=1)} else{text(-obs,50, paste0("- Observed Value (",pvalue2,")"),pos=2,col="red",offset=1)}
-			text(obs,60,paste0("P-Value = ",pvalue1+pvalue2),col="red",pos=ifelse(obs>=0,2,4))
-			plot.out(plot.type)
 		}
 		
 	}
@@ -550,7 +603,7 @@ pvalue_hist <- function(pval.dataframe,list.h0.result,type=c("CSmfa","CSzhang"),
 
 
 # Use compute pvalue plot
-pvalue_volc <- function(pval.dataframe,type=c("CSmfa","CSzhang"),ref.index,color.columns=NULL,list.h0.result=NULL,make.hist=FALSE,plot.type="device",plot.type.hist="device",basefilename="pvalue_volc"){
+pvalue_volc <- function(pval.dataframe,type=c("CSmfa","CSzhang"),ref.index,CSRank=FALSE,color.columns=NULL,list.h0.result=NULL,list.h0.result.rank=NULL,make.hist=FALSE,plot.type="device",plot.type.hist="device",basefilename="pvalue_volc"){
 	
 	plot.in <- function(plot.type,name){
 		if(plot.type=="pdf"){pdf(paste0(name,".pdf"))}
@@ -559,24 +612,47 @@ pvalue_volc <- function(pval.dataframe,type=c("CSmfa","CSzhang"),ref.index,color
 	}
 	plot.out <- function(plot.type){if(plot.type=="pdf"){dev.off()}}
 	
-	pvalues <- pval.dataframe$pvalues[-ref.index]
-	obs.scores <- pval.dataframe$observed[-ref.index]
+	if("pvalues.adjusted" %in% names(pval.dataframe)){use.adjusted <- TRUE}else{use.adjusted <- FALSE}
+	
+	if(use.adjusted){
+		if(!CSRank){pvalues <- pval.dataframe$pvalues.adjusted[-ref.index]}else{pvalues <- pval.dataframe$pvalues.adjusted}
+		
+	}else{
+		if(!CSRank){pvalues <- pval.dataframe$pvalues[-ref.index]}else{pvalues <- pval.dataframe$pvalues}
+	}
+	
+	
+	if(!CSRank){obs.scores <- pval.dataframe$observed[-ref.index]}else{obs.scores <- pval.dataframe$observed}
+	if(!CSRank){temp.names <- pval.dataframe$Cmpd[-ref.index]}else{temp.names <- pval.dataframe$Cmpd}
+	
 	
 	plot.pvalues <- -log(pvalues)
 	inf.index <- which(plot.pvalues == Inf)
-	if(length(inf.index)>0){inf.present <- TRUE}else{inf.present <- FALSE}
+	if(length(inf.index)>0){
+		inf.present <- TRUE
+		max.real <- max(plot.pvalues[-inf.index])
+		plot.pvalues[inf.index] <- max.real+1
 	
-	max.real <- max(plot.pvalues[-inf.index])
-	plot.pvalues[inf.index] <- max.real+1
+	}else{
+		inf.present <- FALSE
+	}
+	
+
 	
 	
 	if(is.null(color.columns)){color.columns <- "black"}else{color.columns <- color.columns[-ref.index]}
+	ylab.temp <- ifelse(use.adjusted,"-log(adjusted pvalues)","-log(pvalues)")
+	main.temp <- ifelse(CSRank,"CSRankScores","CScores")
+	xlab.temp <- ifelse(CSRank,"Observed CSRank for Cmpds","Observed CS for Cmpds")
 	
 	plot.in(plot.type,basefilename)
-	plot(obs.scores,plot.pvalues,col=color.columns,bg="grey",pch=21,xlab="Observed CS for cmpds",ylab="-log(pvalues)",main=paste0("Volcano Plot for ",type," result"))
-	text(obs.scores,plot.pvalues,pval.dataframe$Cmpd[-ref.index],pos=1,col=color.columns)
+	plot(obs.scores,plot.pvalues,col=color.columns,bg="grey",pch=21,xlab=xlab.temp,ylab=ylab.temp,main=paste0("Volcano Plot for ",type," result - ",main.temp))
+	text(obs.scores,plot.pvalues,temp.names,pos=1,col=color.columns)
 	if(inf.present){axis(4,at=max.real+1,"Inf Value",col="red")}
+	abline(h=-log(0.05),col="red",lty=3)
+	text(min(obs.scores),-log(0.05)+0.1,paste0(ifelse(use.adjusted,"adjusted p-value","p-value")," = 0.05"),pos=4,col="red")
 	plot.out(plot.type)
+	
 	
 	if(make.hist){
 		if(!is.null(list.h0.result)){
@@ -585,14 +661,15 @@ pvalue_volc <- function(pval.dataframe,type=c("CSmfa","CSzhang"),ref.index,color
 			if(plot.type!="device"){
 				dev.new()
 				plot(obs.scores,plot.pvalues,col=color.columns,bg="grey",pch=21,xlab="Observed CS for cmpds",ylab="-log(pvalues)",main=paste0("Volcano Plot for ",type," result"))
-				text(obs.scores,plot.pvalues,pval.dataframe$Cmpd[-ref.index],pos=1,col=color.columns)
+				text(obs.scores,plot.pvalues,temp.names,pos=1,col=color.columns)
 				if(inf.present){axis(4,at=max.real+1,"Inf Value",col="red")}
 			}
-						
-			cat("Please choose one or more compounds with left-click.\n To end the selection, press right-click.")
-			choose.cmpd <- identify(obs.scores,plot.pvalues,n=9999,labels=pval.dataframe$Cmpd[-ref.index],col="slateblue3") + length(ref.index)
 			
-			pvalue_hist(pval.dataframe[choose.cmpd,],list.h0.result,type,plot.type=plot.type.hist,basefilename=paste(basefilename,"_histogram"))
+			cat("Please choose one or more compounds with left-click.\n To end the selection, press right-click.")
+			choose.cmpd <- identify(obs.scores,plot.pvalues,n=9999,labels=temp.names,col="slateblue3") 
+			if(!CSRank){choose.cmpd <- choose.cmpd + length(ref.index)}
+			
+			pvalue_hist(pval.dataframe[choose.cmpd,],list.h0.result,list.h0.result.rank,type,plot.type=plot.type.hist,basefilename=paste(basefilename,"_histogram"),CSRank=CSRank,ref.index=ref.index)
 			
 		}
 	}

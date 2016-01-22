@@ -29,7 +29,7 @@
 
 \usepackage{subcaption}
 
-\title{CSFA 0.5 - Vignette}
+\title{CSFA 0.6 - Vignette}
 \date{}
 \author{Ewoud De Troyer}
 
@@ -305,6 +305,10 @@ In the code below, we plot both type of graphs for the MFA result with a pre-det
 out_MFA <- CSpermute(refMat,querMat,out_MFA,B=100,method.adjust="BH",
 		which=c(1,2),cmpd.hist=c(29,105),plot.type="sweave")
 @
+<<CSpermuteplots2,echo=TRUE,eval=TRUE,cache=TRUE,message=FALSE,results='hide',fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSpermute graphs for MFA result">>=
+out_MFA <- CSpermute(refMat,querMat,out_MFA,B=100,method.adjust="BH",
+		which=c(3,4),cmpd.hist=c(29,105),plot.type="sweave")
+@
 
 \section{Example Compare CS Results}
 Finally, CSFA also provides a way to quickly compare the 2 results on the same
@@ -332,8 +336,8 @@ comparison plot will be coloring according to these thresholds.
 	corr_ZG_MFA$correlation
 	corr_MFA_FABIA$correlation
 	
-	corr_ZG_MFA$rankcorrelation
-	corr_MFA_FABIA$rankcorrelation
+	corr_ZG_MFA$spearcorrelation
+	corr_MFA_FABIA$spearcorrelation
 	
 @
 \noindent Note that apart from the scatter plots in Figure \ref{fig:CScompare},
@@ -345,8 +349,8 @@ returned object also contains a small comparison between the number of
 significant p-values. The significancy threshold can be changed with the
 \texttt{threshold.pvalues} parameter and is defaulted to 0.05.
 <<CScompare2,echo=TRUE>>=
-	corr_ZG_MFA$compare.pvalues
-	corr_ZG_MFA$compare.pvalues.adjusted
+	corr_ZG_MFA$compare.CSpvalues
+	corr_ZG_MFA$compare.CSpvalues.adjusted
 @
 
 \newpage

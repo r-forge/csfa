@@ -224,3 +224,46 @@ plot_contributions <- function(CSresult,factor.plot,color.columns,legend.names=N
 ## [1] 0.01857909
 #
 
+compare_CS_CSRankScores <- function(CSresult,color.columns=NULL,plot.type="device",basefilename=""){
+	
+	
+	## Plot-in and -out functions
+	plot.in <- function(plot.type,name){
+		if(plot.type=="pdf"){pdf(name)}
+		if(plot.type=="device"){dev.new()}
+		if(plot.type=="sweave"){}
+	}
+	plot.out <- function(plot.type){if(plot.type=="pdf"){dev.off()}}	
+	
+	if(is.null(color.columns)){
+		color.columns <- rep("black",dim(CSresult@CS$CS.query)[1])
+	}
+	else{
+		color.columns <- color.columns[-c(1:dim(CSresult@CS$CS.ref)[1])]
+		if(length(color.columns)!=dim(CSresult@CS$CS.query)[1]){stop("color.columns wrong lengths")}
+	}
+	
+	if(CSresult@type=="CSfabia"){
+		
+		for(i.plot in 1:length(CSresult@CSRankScores)){
+			loadings <- CSresult@CS$CS.query[,i.plot]
+			scores <- CSresult@CSRankScores[[i.plot]]$CSRankScores
+			
+			plot.in(plot.type,basefilename)
+			plot(loadings,scores,col=color.columns,bg="grey",pch=21,xlab="Loadings",ylab="CSRankScores",main=paste0(names(CSresult@CSRankScores)[i.plot],": Loadings VS CSRankScores"))
+#			text(loadings,scores, rownames(CSresult@CS$CS.query),pos=1,cex=0.5,col=color.columns)
+			plot.out(plot.type)
+		}
+		
+	}else{
+		loadings <- CSresult@CS$CS.query[,1]
+		scores <- CSresult@CSRankScores[[1]]$CSRankScores
+		
+		plot.in(plot.type,basefilename)
+		plot(loadings,scores,col=color.columns,bg="grey",pch=21,xlab="Loadings",ylab="CSRankScores",main=paste0(names(CSresult@CSRankScores)[1],": Loadings VS CSRankScores"))
+#		text(loadings,scores, rownames(CSresult@CS$CS.query),pos=1,cex=0.5,col=color.columns)
+		plot.out(plot.type)
+		
+	}
+	
+}
