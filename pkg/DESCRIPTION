@@ -2,7 +2,7 @@ Package: CSFA
 Type: Package
 Title: Connectivity Scores with Factor Analysis
 Version: 0.6
-Date: 2015-12-02
+Date: 2016-02-03
 Author: Ewoud De Troyer
 Maintainer: Ewoud De Troyer <ewoud.detroyer@uhasselt.be>
 Description: Applies Factor Analysis methodology to microarray data in order
