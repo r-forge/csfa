@@ -237,22 +237,3 @@ zhangscore <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE,pe
 	}
 }
 
-
-## Some Testing
-#test <- zhangscore(dataref=data1ref_ref,dataquery=data1ref_query,permute=TRUE,B=1000,ntop.pvalues=20,ntop.scores=15)
-#test$Top
-#
-#test$All[order(test$All[,2])[1:50],]
-#
-#
-#
-#test <- zhangscore(dataref=data6ref_ref,dataquery=data6ref_query,permute=TRUE,B=1000)
-#test$Toppvalues
-#test$Top
-#
-#test$All[order(test$All[,2])[1:50],]
-#
-#
-#
-#test <- zhangscore(dataref=data1ref_ref,dataquery=data1ref_query,permute=TRUE,B=1000,ntop.pvalues=20,ntop.scores=15,nref=200,nquery=100)
-#test$Top

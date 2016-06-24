@@ -21,7 +21,7 @@ CSprofiles <- function(data,ref_index,gene.select,cmpd.select,profile.type=c("ge
 	if(profile.type=="gene"){
 		# Gene Profiles
 		
-		new.order <- order(abs(cmpd.loadings[,component.plot]),decreasing=TRUE) # Other compounds are ordered by their loadings
+		new.order <- order(abs(cmpd.loadings[,component.plot]),decreasing=TRUE) # Other compounds are ordered by their absolute loadings
 		order.others <- setdiff(new.order,c(ref_index,cmpd.index)) 
 		
 		data.new <- data[gene.index,c(ref_index,cmpd.index,order.others),drop=FALSE]

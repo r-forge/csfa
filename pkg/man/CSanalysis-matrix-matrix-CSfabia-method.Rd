@@ -8,13 +8,14 @@
 \S4method{CSanalysis}{matrix,matrix,CSfabia}(refMat, querMat,
   type = "CSfabia", p = 13, alpha = 0.01, cyc = 500, spl = 0,
   spz = 0.5, non_negative = 0, random = 1, center = 2, norm = 1,
-  scale = 0, lap = 1, nL = 0, lL = 0, bL = 0, which = c(2, 4, 5, 7),
-  BC.plot = NULL, column.interest = NULL, row.interest = NULL,
-  profile.type = "gene", color.columns = NULL, gene.highlight = NULL,
-  gene.thresP = 1, gene.thresN = -1, thresP.col = "blue",
-  thresN.col = "red", legend.names = NULL, legend.cols = NULL,
-  CSrank.refplot = FALSE, result.available = NULL,
-  basefilename = "analyseFABIA", plot.type = "device")
+  scale = 0, lap = 1, nL = 0, lL = 0, bL = 0, which = c(2, 3, 4, 5),
+  component.plot = NULL, CSrank.refplot = FALSE, column.interest = NULL,
+  row.interest = NULL, profile.type = "gene", color.columns = NULL,
+  gene.highlight = NULL, gene.thresP = 1, gene.thresN = -1,
+  thresP.col = "blue", thresN.col = "red", legend.names = NULL,
+  legend.cols = NULL, legend.pos = "topright", result.available = NULL,
+  result.available.update = FALSE, plot.type = "device",
+  basefilename = "analyseFABIA")
 }
 \arguments{
 \item{refMat}{Reference matrix (Rows = genes and columns = compounds)}
@@ -51,15 +52,17 @@
 
 \item{bL}{\emph{Fabia Parameter:} cycle at which the nL or lL maximum starts; default = 0 (start at the beginning)}
 
-\item{which}{Choose one or more plots to draw:\cr 1. Information Content of Biclusters \cr 2. Loadings for reference compounds\cr 3. Bicluster \code{BC1.plot} VS Bicluster \code{BC2.plot} : Loadings & Genes\cr 4. Gene Scores for Bicluster \code{BC.Plot}\cr 5. Loadings for Factor \code{BC.plot}\cr 6. Profile plot (see \code{profile.type})\cr 7. CS Rank Scores for Factor \code{BC.plot}}
+\item{which}{Choose one or more plots to draw: \cr 1. Percentage Variance Explained / Information Content for Component (Factor/Bicluster) \cr 2. Loadings for reference compounds \cr 3  Loadings for Component (Factor/Bicluster) ( \code{component.plot} \cr 4  Gene Scores for Component (Factor/Bicluster) \code{component.Plot} \cr 5. Connectivity Ranking Scores for Component \code{component.plot} \cr 6. Component \code{component.plot} VS Other Component : Loadings & Genes \cr 7. Profile plot (see \code{profile.type})}
 
-\item{BC.plot}{Which biclusters should be investigated? Can be a vector of multiple (e.g. \code{c(1,3,5)}). If \code{NULL}, you can choose biclusters of interest interactively from reference loadings plot.}
+\item{component.plot}{Which components (Factor/Bicluster) should be investigated? Can be a vector of multiple (e.g. \code{c(1,3,5)}). If \code{NULL}, you can choose components of interest interactively from reference loadings plot.}
 
-\item{column.interest}{Numeric vector of indices of query columns which should be in the profiles plots (\code{which=6}). If \code{NULL}, you can interactively select genes on the Compound Loadings plot (\code{which=5}).}
+\item{CSrank.refplot}{Logical value deciding if the CS Rank Scores (\code{which=5}) should also be plotted per reference (instead of only the weighted mean).}
 
-\item{row.interest}{Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=6}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).}
+\item{column.interest}{Numeric vector of indices of query columns which should be in the profiles plots (\code{which=7}). If \code{NULL}, you can interactively select genes on the Compound Loadings plot (\code{which=3}).}
 
-\item{profile.type}{Type of \code{which=6} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})}
+\item{row.interest}{Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=7}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).}
+
+\item{profile.type}{Type of \code{which=7} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})}
 
 \item{color.columns}{Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.}
 
@@ -73,17 +76,19 @@
 
 \item{thresN.col}{Color of genes below \code{gene.thresN}.}
 
-\item{legend.names}{Option to draw a legend of colored columns in Compound Loadings plot (\code{which=5}). If \code{NULL}, only "References" will be in the legend.}
+\item{legend.names}{Option to draw a legend of for example colored columns in Compound Loadings plot (\code{which=3}). If \code{NULL}, only "References" will be in the legend.}
 
-\item{legend.cols}{Colors to be used in legend in \code{which=5}. If \code{NULL}, only blue for "References is used".}
+\item{legend.cols}{Colors to be used in legends. If \code{NULL}, only blue for "References is used".}
 
-\item{CSrank.refplot}{Logical value deciding if the CS Rank Scores (\code{which=6}) should also be plotted per reference (instead of only the weighted mean).}
+\item{legend.pos}{Position of the legend in all requested plots, can be \code{"topright"}, \code{"topleft"}, \code{"bottomleft"}, \code{"bottomright"}, \code{"bottom"}, \code{"top"}, \code{"left"}, \code{"right"}, \code{"center"}.}
 
 \item{result.available}{You can a previously returned object by \code{CSanalysis} in order to only draw graphs, not recompute the scores.}
 
-\item{basefilename}{Basename of the graphs if saved in pdf files}
+\item{result.available.update}{Logical value. If \code{TRUE}, the CS and GS will be overwritten depending on the new \code{component.plot} choice. This would also delete the p-values if \code{permutation.object} was available.}
 
 \item{plot.type}{How should the plots be outputted? \code{"pdf"} to save them in pdf files, \code{device} to draw them in a graphics device (default), \code{sweave} to use them in a sweave or knitr file.}
+
+\item{basefilename}{Basename of the graphs if saved in pdf files}
 }
 \value{
 An object of the S4 Class \code{CSresult}.
