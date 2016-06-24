@@ -21,7 +21,7 @@
 analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE,permute=FALSE,B=100000,ntop.pvalues=20,ntop.scores=20,
 					basefilename="analyseZhang",
 					#column.interest=NULL,
-					colour.query=NULL,legend.names=NULL,legend.cols=unique(colour.query),legend.x=NULL,legend.y=NULL,
+					colour.query=NULL,legend.names=NULL,legend.cols=unique(colour.query),legend.pos="topright",
 					result.available=NULL,plot.type="pdf",print.top=TRUE,
 					which=c(1)){
 	
@@ -53,8 +53,8 @@ analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE
 	}
 	
 	## Printing Top Connections Scores + Pvalues
-	if(print.top){print(zhang_result$Top)}
-	if(permute==TRUE){print(zhang_result$Toppvalues)}
+#	if(print.top){print(zhang_result$Top)}
+#	if(permute==TRUE){print(zhang_result$Toppvalues)}
 	
 	##
 	if(!is.null(colour.query)){groupCol <- colour.query} else { groupCol <- "black"}
@@ -89,7 +89,7 @@ analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE
 		}
 #		if(is.null(legend.x)){legend.x <- (ncol_q-0.45*ncol_q)}
 #		if(is.null(legend.y)){legend.y <- 1}
-		if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg=legend.bg,bty="n")}
+		if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg=legend.bg,bty="n")}
 		plot.out(plot.type)
 	}	
 
@@ -109,7 +109,7 @@ analyse_zhang <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE
 analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=5,name.group=NULL,num.group.sup=NULL,graph=FALSE,weight.col.mfa=NULL,row.w=NULL,axes=c(1,2),tab.comp=NULL,
 				basefilename="analyseMFA",
 				factor.plot=1,column.interest=NULL,row.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
-				colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
+				colour.columns=NULL,legend.pos="topright",legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
 				result.available=NULL,plot.type="pdf",
 				CSrank.refplot=FALSE,gene.highlight=NULL,profile.type="gene",
 				which=c(1,2,3,4,5)){
@@ -140,8 +140,8 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	}
 	
 	## Printing the Echoufier Rv Correlation
-	cat("Echoufier Rv Correlation:\n")
-	print(resMFA$group$RV)
+#	cat("Echoufier Rv Correlation:\n")
+#	print(resMFA$group$RV)
 	
 	if(1 %in% which){
 		## PLOT: Amount of variance explained by PC's
@@ -153,7 +153,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	}
 	
 	##
-	loadings <- resMFA$quanti.var$coord	# For compounds	
+	loadings <- resMFA$quanti.var$cor	# For compounds	
 	scores <- resMFA$ind$coord			# For genes
 	if(!is.null(colour.columns)){groupCol <- colour.columns} else { groupCol <- "black"}
 	ref.index <- c(1:group[1])
@@ -168,7 +168,8 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 			points(c(1:dim(loadings)[2]),loadings[i.ref,],col=i.ref)
 		}
 		abline(0,0,lty=3)
-		legend(dim(loadings)[2]*(1-0.4),max(loadings[ref.index,]),colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
+#		legend(dim(loadings)[2]*(1-0.4),max(loadings[ref.index,]),colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
+		legend(legend.pos,colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
 		plot.out(plot.type)
 	}
 	
@@ -183,7 +184,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 					points(c(1:dim(loadings)[2]),loadings[i.ref,],col=i.ref)
 				}
 				abline(0,0,lty=3)
-				legend(dim(loadings)[2]*(1-0.4),max(loadings[ref.index,]),colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
+				legend(legend.pos,colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
 			}
 			cat("Please select with left mousebutton which Factor should be investigated. (The Factor with highest loading for reference)\nIf multiple reference were used, click in the middle of the group of points.\n")
 			y.mean <- apply(loadings[ref.index,,drop=FALSE],MARGIN=2,FUN=mean)
@@ -210,7 +211,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 		)
 		text(loadings[,factor.plot],loadings[,factor2.plot], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #		if(length(legend.names)>0){legend(0.8,0.8,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-		if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+		if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
 		
 		plot.out(plot.type)
 	
@@ -329,13 +330,11 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 	if(5 %in% which){
 		## PLOT: Compound Loadings of 'factor.plot'
 		
-		signCol <- "grey"
-		
+		signCol <- "grey"		
 		if(add.pvalue.color){
 			if(result.available@permutation.object$extra.parameters$mfa.factor==factor.plot){
 				pvaltype <- ifelse(result.available@permutation.object$extra.parameters$method.adjust=="none","pvalues","pvalues.adjusted")
 				signCol <- ifelse(result.available@permutation.object$CS.pval.dataframe[,pvaltype]<=0.05,"purple","grey")
-				
 			}
 		}
 		
@@ -364,7 +363,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 			}
 		}
 	
-		if(length(legend.names.loadings)>0){legend("topright",legend.names.loadings,pch=21,col=legend.cols.loadings,pt.bg=legend.bg,bty="n")}
+		if(length(legend.names.loadings)>0){legend(legend.pos,legend.names.loadings,pch=21,col=legend.cols.loadings,pt.bg=legend.bg,bty="n")}
 		
 		plot.out(plot.type)
 	}
@@ -386,7 +385,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 				)
 				text(c(1:length(loadings[,factor.plot])),loadings[,factor.plot], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #				if(length(legend.names)>0){legend((length(loadings[,factor.plot])*(1-0.45)),max(loadings),legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-				if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+				if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
 				
 			}
 			cat("Select as many compounds as desired with left mouse button. Right-click to end selection procedure.\n\n")
@@ -431,7 +430,7 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 		}
 		
 		
-		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename,signCol=signCol,legend.bg=legend.bg,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank))
+		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename,signCol=signCol,legend.bg=legend.bg,legend.pos=legend.pos,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank))
 				
 		names(out_CS_rank) <- paste0("Factor",factor.plot)
 		
@@ -461,12 +460,14 @@ analyse_MFA <- function(data,group,type=rep("s",length(group)),ind.sup=NULL,ncp=
 
 
 
-analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
+analyse_PCA <- function(data, 
+		
+		scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		quanti.sup = NULL, quali.sup = NULL, row.w = NULL,
 		col.w = NULL, graph = FALSE, axes = c(1,2),
 		basefilename="analysePCA",
 		ref.index=1,factor.plot=NULL,column.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
-		colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
+		colour.columns=NULL,legend.pos="topright",legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
 		CSrank.refplot=FALSE,gene.highlight=NULL,profile.type="gene",row.interest=NULL,
 		result.available=NULL,plot.type="pdf",which=c(1,2,3,4,5,6)){
 	
@@ -542,7 +543,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		)
 		text(loadings[,factor.plot],loadings[,factor2.plot], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #		if(length(legend.names)>0){legend(0.8,0.8,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-		if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+		if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
 		
 		plot.out(plot.type)
 	
@@ -669,7 +670,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		)
 		text(c(1:length(loadings[,factor.plot])),loadings[,factor.plot], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #		if(length(legend.names)>0){legend((length(loadings[,factor.plot])*(1-0.45)),max(loadings),legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-		if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+		if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
 		
 		plot.out(plot.type)
 	}
@@ -691,7 +692,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 				)
 				text(c(1:length(loadings[,factor.plot])),loadings[,factor.plot], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #				if(length(legend.names)>0){legend((length(loadings[,factor.plot])*(1-0.45)),1,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-				if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+				if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
 				
 			}
 			cat("Select as many compounds as desired with left mouse button. Right-click to end selection procedure.\n\n")
@@ -716,7 +717,7 @@ analyse_PCA <- function(data, scale.unit = TRUE, ncp = 5, ind.sup = NULL,
 		legend.names.csrank <- legend.names
 		legend.cols.csrank <- legend.cols
 
-		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="PC",plot=TRUE,plot.type=plot.type,basefilename=basefilename,legend.bg=legend.bg,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank))
+		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,legend.pos=legend.pos,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="PC",plot=TRUE,plot.type=plot.type,basefilename=basefilename,legend.bg=legend.bg,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank))
 		names(out_CS_rank) <- paste0("Factor",factor.plot)
 		
 		
@@ -889,12 +890,13 @@ analyse_Zhang_MFAPCA <- function(data,resZhang,resPCA=NULL,resMFA=NULL,ressparse
 
 
 
-analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negative=0,random=1.0,center=2,norm=1,scale=0.0,lap=1.0,nL=0,lL=0,bL=0,
+analyse_fabia <- function(data,
+					p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negative=0,random=1.0,center=2,norm=1,scale=0.0,lap=1.0,nL=0,lL=0,bL=0,
 					basefilename="analyseFABIA",weighted.data=FALSE,
 					ref.index=c(1),
 					BC.plot=NULL,
 					column.interest=NULL,row.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
-					colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
+					colour.columns=NULL,legend.pos="topright",legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
 					result.available=NULL,plot.type="pdf",
 					CSrank.refplot=FALSE,gene.highlight=NULL,profile.type="gene",
 					which=c(1,2,3,4,5,6)){
@@ -952,7 +954,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 				points(c(1:dim(loadings)[2]),loadings[i.ref,],col=i.ref)
 			}
 			abline(0,0,lty=3)
-			legend(dim(loadings)[2]*(1-0.2),max(loadings[ref.index,]),colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
+			legend(legend.pos,colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
 			plot.out(plot.type)
 		}
 		
@@ -968,7 +970,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 						points(c(1:dim(loadings)[2]),loadings[i.ref,],col=i.ref)
 					}
 					abline(0,0,lty=3)
-					legend(dim(loadings)[2]*(1-0.2),max(loadings[ref.index,]),colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
+					legend(legend.pos,colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
 				}
 				out.overlap <- fabia.overlap(resFAB,ref.index)
 				cat("Bicluster Suggestions (BC's which overlap with Ref & Query with default thresholds):\n")
@@ -1003,7 +1005,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 			)
 			text(loadings[,BC1.plot],loadings[,BC2.plot], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #			if(length(legend.names)>0){legend(0.8,0.8,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-			if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+			if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
 			plot.out(plot.type)
 		
 
@@ -1156,7 +1158,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 				)
 				text(c(1:length(loadings[,BC.plot[i.BC]])),loadings[,BC.plot[i.BC]], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #				if(length(legend.names)>0){legend((length(loadings[,BC.plot[i.BC]])*(1-0.45)),max(loadings),legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-				if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+				if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
 				
 				plot.out(plot.type)
 			}
@@ -1177,7 +1179,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 						)
 						text(c(1:length(loadings[,BC.plot[i.BC]])),loadings[,BC.plot[i.BC]], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #						if(length(legend.names)>0){legend((length(loadings[,BC.plot[i.BC]])*(1-0.45)),max(loadings),legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-						if(length(legend.names)>0){legend("topright",max(loadings),legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+						if(length(legend.names)>0){legend(legend.pos,max(loadings),legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
 						
 					}
 				
@@ -1244,7 +1246,7 @@ analyse_fabia <- function(data,p=13,alpha=0.01,cyc=500,spl=0,spz=0.5,non_negativ
 			legend.cols.csrank <- legend.cols
 			
 			for(i.BC in c(1:length(BC.plot))){
-				out_CS_rank[[i.BC]] <- CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=BC.plot[i.BC],type.component="BC",plot=TRUE,plot.type=plot.type,basefilename=basefilename,legend.bg=legend.bg,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank)
+				out_CS_rank[[i.BC]] <- CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,legend.pos=legend.pos,loadings_names=colnames(data),component.plot=BC.plot[i.BC],type.component="BC",plot=TRUE,plot.type=plot.type,basefilename=basefilename,legend.bg=legend.bg,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank)
 				
 			}
 			names(out_CS_rank) <- paste0("BC",BC.plot)
@@ -1710,7 +1712,7 @@ analyse_Zhang_fabia <- function(data,resZhang,resFAB=NULL,
 analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("penalty","varnum"),use.corr=FALSE,lambda=1e-6,max.iter=200,trace=FALSE,eps.conv=1e-3,
 		basefilename="analyseMFA",ref.index=c(1),sparse.dim=2,
 		factor.plot=1,column.interest=NULL,gene.thresP=NULL,gene.thresN=NULL,
-		colour.columns=NULL,legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
+		colour.columns=NULL,legend.pos="topright",legend.names=NULL,legend.cols=unique(colour.columns),thresP.col="blue",thresN.col="red",
 		CSrank.refplot=FALSE,gene.highlight=NULL,profile.type="gene",
 		result.available=NULL,plot.type="pdf",row.interest=NULL,
 		which=c(1,2,3,4,5)){
@@ -1792,7 +1794,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 			points(c(1:dim(loadings)[2]),loadings[i.ref,],col=i.ref)
 		}
 		abline(0,0,lty=3)
-		legend(dim(loadings)[2]*(1-0.4),max(loadings[ref.index,]),colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
+		legend(legend.pos,colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
 		plot.out(plot.type)
 	}
 	
@@ -1807,7 +1809,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 					points(c(1:dim(loadings)[2]),loadings[i.ref,],col=i.ref)
 				}
 				abline(0,0,lty=3)
-				legend(dim(loadings)[2]*(1-0.4),max(loadings[ref.index,]),colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
+				legend(legend.pos,colnames(data)[ref.index],col=ref.index,bty="n",pch=21)
 			}
 			cat("Please select with left mousebutton which Factor should be investigated. (The Factor with highest loading for reference)\nIf multiple reference were used, click in the middle of the group of points.\n")
 			y.mean <- apply(loadings[ref.index,,drop=FALSE],MARGIN=2,FUN=mean)
@@ -1834,7 +1836,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		)
 		text(loadings[,factor.plot],loadings[,factor2.plot], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #		if(length(legend.names)>0){legend(0.8,0.8,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-		if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+		if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
 		
 		plot.out(plot.type)
 		
@@ -1964,7 +1966,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		)
 		text(c(1:length(loadings[,factor.plot])),loadings[,factor.plot], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #		if(length(legend.names)>0){legend((length(loadings[,factor.plot])*(1-0.45)),max(loadings),legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-		if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+		if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
 		
 		plot.out(plot.type)
 	}
@@ -1986,7 +1988,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 				)
 				text(c(1:length(loadings[,factor.plot])),loadings[,factor.plot], colnames(data),	pos=1,	cex=0.5,	col=groupCol)
 #				if(length(legend.names)>0){legend((length(loadings[,factor.plot])*(1-0.45)),max(loadings),legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
-				if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
+				if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg="white",bty="n")}
 				
 			}
 			cat("Select as many compounds as desired with left mouse button. Right-click to end selection procedure.\n\n")
@@ -2012,7 +2014,7 @@ analyse_sMFA <- function(data,K=15,para,type=c("predictor","Gram"),sparse=c("pen
 		legend.cols.csrank <- legend.cols
 
 		
-		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename,legend.bg=legend.bg,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank))
+		out_CS_rank <- list(CSrank2(loadings,ref.index,color.columns=groupCol,ref.plot=CSrank.refplot,legend.pos=legend.pos,loadings_names=colnames(data),component.plot=factor.plot,type.component="Factor",plot=TRUE,plot.type=plot.type,basefilename=basefilename,legend.bg=legend.bg,legend.names=legend.names.csrank,legend.cols=legend.cols.csrank))
 		names(out_CS_rank) <- paste0("Factor",factor.plot)
 		
 		
@@ -2185,7 +2187,7 @@ CSrank <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings
 }
 
 
-CSrank2 <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings_names=NULL,component.plot,type.component="Factor",plot=TRUE,plot.type="pdf",basefilename="base",signCol="grey",legend.bg="grey",legend.names="",legend.cols="black"){
+CSrank2 <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loadings_names=NULL,component.plot,type.component="Factor",plot=TRUE,plot.type="pdf",basefilename="base",signCol="grey",legend.pos="topright",legend.bg="grey",legend.names="",legend.cols="black"){
 	
 	term1.w <- 0.5
 	term2.w <- 0.5
@@ -2282,7 +2284,7 @@ CSrank2 <- function(loadings,ref.index,color.columns=NULL,ref.plot=FALSE,loading
 		plot.in(plot.type,paste0(basefilename,"_CSRank.pdf"))
 		plot(combinetest3,col=color.columns[-ref.index],xlab="Query Compound Index",ylab="CS Rankscore",bg=signCol,pch=21,main=paste0(type.component," ",component.plot," - ",main.temp))
 		text(combinetest3,labels=names[-ref.index],col=color.columns[-ref.index],pos=2)
-		if(length(legend.names)>0){legend("topright",legend.names,pch=21,col=legend.cols,pt.bg=legend.bg,bty="n")}
+		if(length(legend.names)>0){legend(legend.pos,legend.names,pch=21,col=legend.cols,pt.bg=legend.bg,bty="n")}
 		
 		plot.out(plot.type)
 	}

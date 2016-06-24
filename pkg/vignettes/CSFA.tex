@@ -78,12 +78,14 @@
 
 \usepackage{subcaption}
 
-\title{CSFA 0.6 - Vignette}
+\title{CSFA 0.9 - Vignette}
 \date{}
 \author{Ewoud De Troyer}
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
 \maketitle
+%Coming Soon... when it's done. \\
+%But still probably faster than the next Song of Ice and Fire book.
 \section{Introduction}
 
 One of the many challenges in today's omics data is the goal of connecting those
@@ -185,8 +187,8 @@ matrix.
 be computed with the package. The last two methods will also provide scores for the
 genes involved in the structure.\\
 More details about the connectivity and gene scores as well as the decision
-making of which component to look at can be be found in Shkedy, Z. and De
-Troyer, E. (ADD REF).
+making of which component to look at can be be found in an upcoming paper.
+%Shkedy, Z. and De Troyer, E. (ADD REF).
 
 \subsection{Zhang and Gant}
 The Zhang and Gant scores are computed with the default parameters. This means
@@ -202,29 +204,6 @@ using either "device" or "pdf".
 \begin{alltt}
         \hlstd{out_ZG} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSzhang"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{)}
 \end{alltt}
-\begin{verbatim}
-##    posname  posscore negname    negscore
-## 1    cSP-7 0.8159043   cSN-6 -0.74898237
-## 2   cSP-10 0.8137249   cSN-8 -0.74288930
-## 3    cSP-9 0.8093167   cSN-3 -0.73490411
-## 4    cSP-8 0.8081590   cSN-2 -0.73414170
-## 5    cSP-6 0.8081177  cSN-10 -0.73401815
-## 6   cWP-17 0.5702188   cSN-7 -0.72983443
-## 7   cWP-19 0.5694001   cSN-1 -0.72942985
-## 8   cWP-12 0.5672755   cSN-9 -0.72934793
-## 9   cWP-11 0.5659705   cSN-4 -0.72832312
-## 10   cWP-7 0.5658364   cSN-5 -0.72709705
-## 11   cWP-4 0.5649765    c-25 -0.03391145
-## 12   cWP-9 0.5648644   c-264 -0.03185064
-## 13   cWP-3 0.5621351    c-28 -0.03167404
-## 14   cWP-1 0.5590061    c-16 -0.03005021
-## 15   cWP-8 0.5581202   c-220 -0.02962786
-## 16   cWP-5 0.5578107    c-32 -0.02801159
-## 17  cWP-18 0.5485421    c-94 -0.02700210
-## 18  cWP-15 0.5481818    c-27 -0.02650816
-## 19  cWP-16 0.5473567   c-228 -0.02583543
-## 20   cWP-2 0.5473340   c-169 -0.02576697
-\end{verbatim}
 \end{kframe}\begin{figure}[H]
 
 
@@ -246,19 +225,19 @@ strong) and negative connected compounds.
 \subsection{MFA}
 The next CS analysis which is applied is the one using Multiple Factor Analysis
 (MFA) by setting the \texttt{type} to \texttt{"CSmfa"}. Three of the
-available plots were chosen, namely the Reference Loadings, Gene Scores,
-Compound Loadings (Connectivity Scores) and Compound Profiles
-(\texttt{which=c(2,4,5)}).\\
+available plots were chosen, namely the Reference Loadings,
+Compound Loadings (Connectivity Scores), Gene Scores and Compound Profiles
+(\texttt{which=c(2,3,4,7)}).\\
 Note that in the R-code we already preselected which component to investigate
-with \texttt{factor.plot}.
+with \texttt{component.plot}.
 Further we also already decided which columns of the query matrix we would like
 to draw in the compound profiles graph with \texttt{column.interest}. Indices 1, 2 and 3 coincide
 with 3 weakly positive connected compounds.\\ \\
 However, if you are not sure beforehand what you want to investigate, you can
 also decide upon these parameters on the fly interactively. To do this simply
 set these parameters to \texttt{NULL} or leave them out.\\
-To determine \texttt{factor.plot}, you will be able to to click on the factor
-you want to observe in the {\it "Loadings for Ref..."} plot. After all, this graph will be
+To determine \texttt{component.plot}, you will be able to to click on the
+factors you want to observe in the {\it "Loadings for Ref..."} plot. This graph will be
 your main guideline on which factor is capturing the structure of your reference
 set of signatures. As shown in Figure \ref{fig:MFA} below, this is clearly the
 first factor. \\
@@ -270,17 +249,10 @@ to \texttt{CSanalysis} beforehand). You can left-click on multiple compounds you
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{4}\hlstd{,}\hlnum{5}\hlstd{,}\hlnum{6}\hlstd{),}
-                \hlkwc{profile.type}\hlstd{=}\hlstr{"cmpd"}\hlstd{,}\hlkwc{gene.thresP}\hlstd{=}\hlnum{2.3}\hlstd{,}\hlkwc{gene.thresN}\hlstd{=}\hlopt{-}\hlnum{2.3}\hlstd{,}\hlkwc{factor.plot}\hlstd{=}\hlnum{1}\hlstd{,}
+\hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{,}\hlnum{4}\hlstd{,}\hlnum{7}\hlstd{),}
+                \hlkwc{profile.type}\hlstd{=}\hlstr{"cmpd"}\hlstd{,}\hlkwc{gene.thresP}\hlstd{=}\hlnum{2.3}\hlstd{,}\hlkwc{gene.thresN}\hlstd{=}\hlopt{-}\hlnum{2.3}\hlstd{,}\hlkwc{component.plot}\hlstd{=}\hlnum{1}\hlstd{,}
                 \hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{21}\hlstd{,}\hlnum{22}\hlstd{,}\hlnum{23}\hlstd{))}
 \end{alltt}
-\begin{verbatim}
-## Echoufier Rv Correlation:
-##           Reference     Query       MFA
-## Reference 1.0000000 0.4947578 0.8001384
-## Query     0.4947578 1.0000000 0.9171329
-## MFA       0.8001384 0.9171329 1.0000000
-\end{verbatim}
 \end{kframe}\begin{figure}[H]
 
 
@@ -299,10 +271,6 @@ to \texttt{CSanalysis} beforehand). You can left-click on multiple compounds you
 positive and negative connected compounds are appearing in the Compound Loadings
 plot. However now we also get a plot showing the scores of the genes involved in
 the structure of the first factor in the MFA analysis.\\
-Also note that the \texttt{CSanalysis} function automatically prints the
-Echoufier Rv Correlation matrix between the Reference, Query and MFA matrix.
-%fig.keep="high",fig.pos='H',fig.show='hold',out.width='9cm',out.height='10cm',fig.align='left'
-%show plots, but also explain how interactivity works
 \\ \\
 We can also reuse the \texttt{CSanalysis} function to draw the same or
 additional plots without re-computing the factor analysis. This is done through the
@@ -312,16 +280,9 @@ Connectivity Score Ranks are shown.
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{7}\hlstd{),}
-                        \hlkwc{factor.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{),}\hlkwc{result.available}\hlstd{=out_MFA)}
+        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{5}\hlstd{),}
+                        \hlkwc{component.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{),}\hlkwc{result.available}\hlstd{=out_MFA)}
 \end{alltt}
-\begin{verbatim}
-## Echoufier Rv Correlation:
-##           Reference     Query       MFA
-## Reference 1.0000000 0.4947578 0.8001384
-## Query     0.4947578 1.0000000 0.9171329
-## MFA       0.8001384 0.9171329 1.0000000
-\end{verbatim}
 \end{kframe}\begin{figure}[H]
 
 
@@ -341,17 +302,10 @@ The others are the ordered in decreasing CScore.
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{6}\hlstd{),}
-                        \hlkwc{profile.type}\hlstd{=}\hlstr{"gene"}\hlstd{,}\hlkwc{factor.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{),}
+        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSmfa"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{7}\hlstd{),}
+                        \hlkwc{profile.type}\hlstd{=}\hlstr{"gene"}\hlstd{,}\hlkwc{component.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{column.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{),}
                         \hlkwc{row.interest}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{846}\hlstd{,}\hlnum{871}\hlstd{,}\hlnum{4}\hlstd{,}\hlnum{6}\hlstd{),}\hlkwc{result.available}\hlstd{=out_MFA)}
 \end{alltt}
-\begin{verbatim}
-## Echoufier Rv Correlation:
-##           Reference     Query       MFA
-## Reference 1.0000000 0.4947578 0.8001384
-## Query     0.4947578 1.0000000 0.9171329
-## MFA       0.8001384 0.9171329 1.0000000
-\end{verbatim}
 \end{kframe}\begin{figure}[H]
 
 
@@ -369,9 +323,9 @@ The others are the ordered in decreasing CScore.
 The last analysis is done with FABIA, Factor Analysis for Bicluster Acquisition
 (\texttt{type="CSfabia"}). We will only select 2 plots this time, namely the
 reference loadings and compound loadings (\texttt{which=c(2,5)}). However in
-contrary with the MFA anaylsis, we can select 2 components for this analysis.
+contrary with the MFA anaylsis, we select 2 components for this analysis.
 Based on the reference loadings we decide to select bicluster 1 and 2
-(\texttt{BC.plot=c(1,2)}). \\
+(\texttt{component.plot=c(1,2)}). \\
 This time we also do some manual coloring of the columns to highlight some
 strongly connected compounds with \texttt{color.columns}. We start by making a vector of length
 341 (column dimension of example data) and fill it with the color black. Next we fill in the
@@ -392,7 +346,7 @@ have a reproducible result.
         \hlstd{out_FABIA} \hlkwb{<-} \hlkwd{CSanalysis}\hlstd{(refMat,querMat,}\hlstr{"CSfabia"}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{,}\hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{5}\hlstd{),}
                         \hlkwc{color.columns}\hlstd{=color.columns,}
                         \hlkwc{legend.names}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"References"}\hlstd{,}\hlstr{"SP Connected"}\hlstd{),}
-                        \hlkwc{legend.cols}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"blue"}\hlstd{,}\hlstr{"red"}\hlstd{),} \hlkwc{BC.plot}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),}
+                        \hlkwc{legend.cols}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"blue"}\hlstd{,}\hlstr{"red"}\hlstd{),} \hlkwc{component.plot}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),}
                         \hlkwc{gene.thresP}\hlstd{=}\hlnum{2}\hlstd{,}\hlkwc{gene.thresN}\hlstd{=}\hlopt{-}\hlnum{2}\hlstd{)}
 \end{alltt}
 \end{kframe}\begin{figure}[H]
@@ -424,15 +378,19 @@ any plots just yet by putting \texttt{which} to \texttt{c()}. The number of
 permutation was chosen to only be 100 in this case. Further, the p-values are
 also adjusted for multiplicity by setting a value for \texttt{method.adjust}
 different than \texttt{"none"}.\\
-(Note: it is possible for MFA results to compute the p-values in a different factor than the one chosen in the CS analysis. This is accomplished through the \texttt{mfa.factor} parameter.)
+(Note: or MFA, \texttt{CSpermute} should {\it only} be used to compute the
+p-values of the Component in which the structure (loadings) of the references is the strongest.
+This because in each permutation the factor with the highest average reference loadings will be chosen. 
+The ability to compute p-values of other factors (in which the reference set also increased loadings) will be added in a later release. 
+)
 
 
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,}\hlkwc{CSresult}\hlstd{=out_MFA,}\hlkwc{B}\hlstd{=}\hlnum{100}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
+        \hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,}\hlkwc{CSresult}\hlstd{=out_MFA,}\hlkwc{B}\hlstd{=}\hlnum{250}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
                         \hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(),}\hlkwc{verbose}\hlstd{=}\hlnum{FALSE}\hlstd{)}
-        \hlstd{out_ZG} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,}\hlkwc{CSresult}\hlstd{=out_ZG,}\hlkwc{B}\hlstd{=}\hlnum{100}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
+        \hlstd{out_ZG} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,}\hlkwc{CSresult}\hlstd{=out_ZG,}\hlkwc{B}\hlstd{=}\hlnum{250}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
                         \hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(),}\hlkwc{verbose}\hlstd{=}\hlnum{FALSE}\hlstd{)}
 \end{alltt}
 \end{kframe}
@@ -442,28 +400,35 @@ different than \texttt{"none"}.\\
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlkwd{head}\hlstd{(out_MFA}\hlopt{@}\hlkwc{CS}\hlopt{$}\hlstd{CS.query)}
+\hlkwd{head}\hlstd{(out_MFA}\hlopt{@}\hlkwc{CS}\hlstd{[[}\hlnum{1}\hlstd{]]}\hlopt{$}\hlstd{CS.query)}
 \end{alltt}
 \begin{verbatim}
-##         Factor1 pvalues pvalues.adjusted
-## cWP-1 0.5858096       0                0
-## cWP-2 0.5771857       0                0
-## cWP-3 0.5739775       0                0
-## cWP-4 0.5867910       0                0
-## cWP-5 0.5770335       0                0
-## cWP-6 0.5852554       0                0
+##       CLoadings   CLpvalues CLpvalues.adjusted CRankScores   CRpvalues
+## cWP-1 0.5858096 0.003984064         0.03813318   0.6800244 0.003984064
+## cWP-2 0.5771857 0.003984064         0.03813318   0.6690638 0.003984064
+## cWP-3 0.5739775 0.003984064         0.03813318   0.6649862 0.003984064
+## cWP-4 0.5867910 0.003984064         0.03813318   0.6812717 0.003984064
+## cWP-5 0.5770335 0.003984064         0.03813318   0.6688703 0.003984064
+## cWP-6 0.5852554 0.003984064         0.03813318   0.6793200 0.003984064
+##       CRpvalues.adjusted CLrank CLabsrank CRrank CRabsrank
+## cWP-1         0.03813318     14        24     14        24
+## cWP-2         0.03813318     17        27     17        27
+## cWP-3         0.03813318     19        29     19        29
+## cWP-4         0.03813318     13        23     13        23
+## cWP-5         0.03813318     18        28     18        28
+## cWP-6         0.03813318     15        25     15        25
 \end{verbatim}
 \begin{alltt}
 \hlkwd{head}\hlstd{(out_ZG}\hlopt{@}\hlkwc{CS}\hlopt{$}\hlstd{CS.query)}
 \end{alltt}
 \begin{verbatim}
-##       ZhangScore pvalues pvalues.adjusted
-## cWP-1  0.5590061       0                0
-## cWP-2  0.5473340       0                0
-## cWP-3  0.5621351       0                0
-## cWP-4  0.5649765       0                0
-## cWP-5  0.5578107       0                0
-## cWP-6  0.5468158       0                0
+##         ZGscore     pvalues pvalues.adjusted ZGrank ZGabsrank
+## cWP-1 0.5590061 0.003984064       0.03707393     14        24
+## cWP-2 0.5473340 0.003984064       0.03707393     20        30
+## cWP-3 0.5621351 0.003984064       0.03707393     13        23
+## cWP-4 0.5649765 0.003984064       0.03707393     11        21
+## cWP-5 0.5578107 0.003984064       0.03707393     16        26
+## cWP-6 0.5468158 0.003984064       0.03707393     21        31
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -471,7 +436,9 @@ different than \texttt{"none"}.\\
 \noindent Next, we can actually re-use the updated \texttt{out\_MFA} and
 \texttt{out\_ZG} in \texttt{CSpermute}.
 As long as the number of permutations (\texttt{B}) is not changed, the permutation will not need to computed all over again. 
-This means you can plot the available graphs (\text{which}: 1, volcano plot ; 2, connectivity score compound distribution histogram under null hypothesis with p-value) as many times as needed.
+This means you can plot the available graphs (\text{which}: 1, volcano plot for
+CLoadings ; 2, CLoadings compound distribution histogram under null
+hypothesis with p-value), as many times as needed (plot 3 and 4 are the same as 1 and 2, but for CRankingScores).
 The parameter \texttt{cmpd.hist} decides which compounds should be used for the second type of plot. 
 If this parameter is not given (\texttt{NULL}), you can interactively choose them on the volcano plot by left-clicking on them (and right-click to stop).
 In the code below, we plot both type of graphs for the MFA result with a pre-determined \texttt{cmpd.hist}.
@@ -479,8 +446,8 @@ In the code below, we plot both type of graphs for the MFA result with a pre-det
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,out_MFA,}\hlkwc{B}\hlstd{=}\hlnum{100}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
-                \hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),}\hlkwc{cmpd.hist}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{29}\hlstd{,}\hlnum{105}\hlstd{),}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{)}
+\hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,out_MFA,}\hlkwc{B}\hlstd{=}\hlnum{250}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
+                \hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),}\hlkwc{cmpd.hist}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{23}\hlstd{,}\hlnum{99}\hlstd{),}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{)}
 \end{alltt}
 \end{kframe}\begin{figure}[H]
 
@@ -497,8 +464,8 @@ In the code below, we plot both type of graphs for the MFA result with a pre-det
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-\hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,out_MFA,}\hlkwc{B}\hlstd{=}\hlnum{100}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
-                \hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{3}\hlstd{,}\hlnum{4}\hlstd{),}\hlkwc{cmpd.hist}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{29}\hlstd{,}\hlnum{105}\hlstd{),}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{)}
+\hlstd{out_MFA} \hlkwb{<-} \hlkwd{CSpermute}\hlstd{(refMat,querMat,out_MFA,}\hlkwc{B}\hlstd{=}\hlnum{250}\hlstd{,}\hlkwc{method.adjust}\hlstd{=}\hlstr{"BH"}\hlstd{,}
+                \hlkwc{which}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{3}\hlstd{,}\hlnum{4}\hlstd{),}\hlkwc{cmpd.hist}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{23}\hlstd{,}\hlnum{99}\hlstd{),}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{)}
 \end{alltt}
 \end{kframe}\begin{figure}[H]
 
@@ -533,39 +500,43 @@ comparison plot will be coloring according to these thresholds.
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-        \hlstd{corr_ZG_MFA} \hlkwb{<-} \hlkwd{CScompare}\hlstd{(out_ZG,out_MFA,}\hlkwc{component2.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{)}
+        \hlstd{comp_ZG_MFA} \hlkwb{<-} \hlkwd{CScompare}\hlstd{(out_ZG,out_MFA,}\hlkwc{component2.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{)}
 
-        \hlstd{corr_MFA_FABIA} \hlkwb{<-} \hlkwd{CScompare}\hlstd{(out_MFA,out_FABIA,}\hlkwc{component1.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{component2.plot}\hlstd{=}\hlnum{1}\hlstd{,}
+        \hlstd{comp_MFA_FABIA} \hlkwb{<-} \hlkwd{CScompare}\hlstd{(out_MFA,out_FABIA,}\hlkwc{component1.plot}\hlstd{=}\hlnum{1}\hlstd{,}\hlkwc{component2.plot}\hlstd{=}\hlnum{1}\hlstd{,}
                         \hlkwc{gene.thresP}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{2}\hlstd{),}\hlkwc{gene.thresN}\hlstd{=}\hlkwd{c}\hlstd{(}\hlopt{-}\hlnum{2}\hlstd{,}\hlopt{-}\hlnum{2}\hlstd{),}\hlkwc{plot.type}\hlstd{=}\hlstr{"sweave"}\hlstd{)}
 
-        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{correlation}
+        \hlstd{comp_ZG_MFA[[}\hlnum{1}\hlstd{]]}
 \end{alltt}
 \begin{verbatim}
-##        CS Correlation RankScore Correlation 
-##             0.9931169             0.9982107
+## $scores
+##                      CLoadings CRankScores GeneScores
+## Correlation_Pearson  0.9965602   0.9982107         NA
+## Correlation_Spearman 0.9627536   0.7273489         NA
+## 
+## $pvalues
+##                      CLoadings CRankScores
+## Correlation_Pearson  0.9535213   0.9089663
+## Correlation_Spearman 0.8779146   0.7118921
+## 
+## $adj.pvalues
+##                      CLoadings CRankScores
+## Correlation_Pearson  0.9482794   0.9394654
+## Correlation_Spearman 0.5749857   0.5329719
 \end{verbatim}
 \begin{alltt}
-        \hlstd{corr_MFA_FABIA}\hlopt{$}\hlstd{correlation}
+        \hlstd{comp_MFA_FABIA[[}\hlnum{1}\hlstd{]]}
 \end{alltt}
 \begin{verbatim}
-##        CS Correlation        GS Correlation RankScore Correlation 
-##            -0.9573119            -0.7752930             0.9801271
-\end{verbatim}
-\begin{alltt}
-        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{spearcorrelation}
-\end{alltt}
-\begin{verbatim}
-##        CS Spearman Correlation RankScore Spearman Correlation 
-##                      0.9646826                      0.7273489
-\end{verbatim}
-\begin{alltt}
-        \hlstd{corr_MFA_FABIA}\hlopt{$}\hlstd{spearcorrelation}
-\end{alltt}
-\begin{verbatim}
-##        CS Spearman Correlation        GS Spearman Correlation 
-##                     -0.5693159                     -0.7996527 
-## RankScore Spearman Correlation 
-##                      0.5550448
+## $scores
+##                       CLoadings CRankScores GeneScores
+## Correlation_Pearson  -0.9573119   0.9801271 -0.7752930
+## Correlation_Spearman -0.5693159   0.5550448 -0.7996527
+## 
+## $pvalues
+## NULL
+## 
+## $adj.pvalues
+## NULL
 \end{verbatim}
 \end{kframe}\begin{figure}[H]
 
@@ -592,20 +563,24 @@ significant p-values. The significancy threshold can be changed with the
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
-        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{compare.CSpvalues}
+\hlstd{comp_ZG_MFA[[}\hlnum{2}\hlstd{]]}
 \end{alltt}
 \begin{verbatim}
-##                 Result1.Sign Result1.NotSign
-## Result2.Sign              40               0
-## Result2.NotSign           47             254
-\end{verbatim}
-\begin{alltt}
-        \hlstd{corr_ZG_MFA}\hlopt{$}\hlstd{compare.CSpvalues.adjusted}
-\end{alltt}
-\begin{verbatim}
+## $pvalues
 ##                 Result1.Sign Result1.NotSign
 ## Result2.Sign              36               0
-## Result2.NotSign           12             293
+## Result2.NotSign            7             292
+## 
+## $adj.pvalues
+##                 Result1.Sign Result1.NotSign
+## Result2.Sign              35               0
+## Result2.NotSign            1             299
+\end{verbatim}
+\begin{alltt}
+\hlstd{comp_MFA_FABIA[[}\hlnum{2}\hlstd{]]}
+\end{alltt}
+\begin{verbatim}
+## NULL
 \end{verbatim}
 \end{kframe}
 \end{knitrout}

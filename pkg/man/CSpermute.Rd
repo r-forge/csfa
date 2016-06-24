@@ -5,9 +5,9 @@
 \title{Permute CS results}
 \usage{
 CSpermute(refMat, querMat, CSresult, B = 500, mfa.factor = NULL,
-  method.adjust = "none", verbose = TRUE, querMat.Perm = NULL,
-  save.querMat.Perm = FALSE, which = c(1, 3), cmpd.hist = NULL,
-  color.columns = NULL, plot.type = "device", basefilename = "CSpermute")
+  method.adjust = "none", verbose = TRUE, which = c(1, 3),
+  cmpd.hist = NULL, color.columns = NULL, plot.type = "device",
+  basefilename = "CSpermute")
 }
 \arguments{
 \item{refMat}{Reference matrix (Rows = genes and columns = compounds).}
@@ -22,17 +22,13 @@ CSpermute(refMat, querMat, CSresult, B = 500, mfa.factor = NULL,
 
 \item{method.adjust}{Correction method of multiplicity adjusted p-values: "none", "holm", "hochberg", "hommel", "bonferroni", "BH", "BY" or "fdr". (Raw p-values are also always provided)}
 
-\item{verbose}{If \code{TRUE}, progression dots of the permutation analysis will be printed.}
-
-\item{querMat.Perm}{Possible to provide user-created permuted querMat data. Should be a list object of B times permuted querMat matrices.}
-
-\item{save.querMat.Perm}{If \code{TRUE}, the list of permuted querMat matrices will be saved in the permutation.object slot of the CSresult.}
+\item{verbose}{If \code{TRUE}, progression dots     of the permutation analysis will be printed.}
 
 \item{which}{Choose which plot to draw.\cr 1. A volcano plot of the -log(p-values) versus the observed connection scores.\cr 2. A histogram of the permuted connection scores under the null hypothesis for a specific compound. A vertical line(s) is added for the observed CS and its p-value. The \code{cmpd.hist} parameter determines which compounds are drawn like this.\cr 3. Analog to \code{which=1}, but for CSRankScores.\cr 4. Analog to \code{which=2}, but for CSRankScores.}
 
 \item{cmpd.hist}{Query index vector which decides which query compounds are plotted for the histogram distribution under null hypothesis (\code{which=2}). If \code{NULL}, you can select which compounds you want interactively on the volcano plot.}
 
-\item{color.columns}{Option to color the compounds on the volcano plot (\code{which=1}). Should be a vector of colors with the length of number of references and queries together.}
+\item{color.columns}{Option to color the compounds on the volcano plot (\code{which=1}). Should be a vector of colors with the length of number of queries.}
 
 \item{plot.type}{How should the plots be outputted? \code{"pdf"} to save them in pdf files, \code{device} to draw them in a graphics device (default), \code{sweave} to use them in a sweave or knitr file.}
 
@@ -42,10 +38,15 @@ CSpermute(refMat, querMat, CSresult, B = 500, mfa.factor = NULL,
 Returns the same CSresult object with added p-values to the CS slot and added information to the permutation.object slot. This CSresult can be reused in CSpermute to redraw the plots without calculation.
 }
 \description{
-Apply permutation on MFA or Zhang results to obtain p-values. 
+Apply permutation on MFA or Zhang results to obtain p-values of 1 of the components. 
 The function asks for a CSresult object which is returned by CSanalysis. The CSpermute function will return the same CSresult object with added information such as p-values.
 If asked, the CSpermute function will also draw a volcanoplot and/or histograms of the p-values. If you simply want to redraw these plots, simply use the returned CSresult object by CSpermute again in the CSpermute function.
 If the number of permutations was not changed, this will prevent the entire permutation analysis from being redone.
+}
+\details{
+\bold{IMPORTANT!} For MFA, \code{CSpermute} should \emph{only} be used to compute the p-values of the Component in which the structure (loadings) of the references is the strongest.
+This because in each permutation the factor with the highest average reference loadings will be chosen. 
+The ability to compute p-values of other factors (in which the reference set also increased loadings) will be added in a later release.
 }
 \examples{
 \dontrun{

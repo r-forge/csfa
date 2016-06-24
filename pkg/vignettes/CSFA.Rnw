@@ -29,12 +29,14 @@
 
 \usepackage{subcaption}
 
-\title{CSFA 0.6 - Vignette}
+\title{CSFA 0.9 - Vignette}
 \date{}
 \author{Ewoud De Troyer}
 
 \begin{document}
 \maketitle
+%Coming Soon... when it's done. \\
+%But still probably faster than the next Song of Ice and Fire book.
 \section{Introduction}
 
 One of the many challenges in today's omics data is the goal of connecting those
@@ -138,8 +140,8 @@ matrix.
 be computed with the package. The last two methods will also provide scores for the
 genes involved in the structure.\\
 More details about the connectivity and gene scores as well as the decision
-making of which component to look at can be be found in Shkedy, Z. and De
-Troyer, E. (ADD REF).
+making of which component to look at can be be found in an upcoming paper.
+%Shkedy, Z. and De Troyer, E. (ADD REF).
 
 \subsection{Zhang and Gant}
 The Zhang and Gant scores are computed with the default parameters. This means
@@ -162,19 +164,19 @@ strong) and negative connected compounds.
 \subsection{MFA}
 The next CS analysis which is applied is the one using Multiple Factor Analysis
 (MFA) by setting the \texttt{type} to \texttt{"CSmfa"}. Three of the
-available plots were chosen, namely the Reference Loadings, Gene Scores,
-Compound Loadings (Connectivity Scores) and Compound Profiles
-(\texttt{which=c(2,4,5)}).\\
+available plots were chosen, namely the Reference Loadings,
+Compound Loadings (Connectivity Scores), Gene Scores and Compound Profiles
+(\texttt{which=c(2,3,4,7)}).\\
 Note that in the R-code we already preselected which component to investigate
-with \texttt{factor.plot}.
+with \texttt{component.plot}.
 Further we also already decided which columns of the query matrix we would like
 to draw in the compound profiles graph with \texttt{column.interest}. Indices 1, 2 and 3 coincide
 with 3 weakly positive connected compounds.\\ \\
 However, if you are not sure beforehand what you want to investigate, you can
 also decide upon these parameters on the fly interactively. To do this simply
 set these parameters to \texttt{NULL} or leave them out.\\
-To determine \texttt{factor.plot}, you will be able to to click on the factor
-you want to observe in the {\it "Loadings for Ref..."} plot. After all, this graph will be
+To determine \texttt{component.plot}, you will be able to to click on the
+factors you want to observe in the {\it "Loadings for Ref..."} plot. This graph will be
 your main guideline on which factor is capturing the structure of your reference
 set of signatures. As shown in Figure \ref{fig:MFA} below, this is clearly the
 first factor. \\
@@ -184,8 +186,8 @@ be chosen in the {\it "Compound Loadings"} plot (instead of simply providing it
 to \texttt{CSanalysis} beforehand). You can left-click on multiple compounds you wish to draw in the compound profiles graph (and right-click to stop the selection procedure). 
 
 <<MFA,echo=TRUE,eval=TRUE,cache=TRUE,fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSanalysis Graphs for CSfma">>= 
-out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(2,4,5,6),
-		profile.type="cmpd",gene.thresP=2.3,gene.thresN=-2.3,factor.plot=1,
+out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(2,3,4,7),
+		profile.type="cmpd",gene.thresP=2.3,gene.thresN=-2.3,component.plot=1,
 		column.interest=c(21,22,23))
 @
 
@@ -193,10 +195,6 @@ out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(2,4,5,6)
 positive and negative connected compounds are appearing in the Compound Loadings
 plot. However now we also get a plot showing the scores of the genes involved in
 the structure of the first factor in the MFA analysis.\\
-Also note that the \texttt{CSanalysis} function automatically prints the
-Echoufier Rv Correlation matrix between the Reference, Query and MFA matrix.
-%fig.keep="high",fig.pos='H',fig.show='hold',out.width='9cm',out.height='10cm',fig.align='left'
-%show plots, but also explain how interactivity works
 \\ \\
 We can also reuse the \texttt{CSanalysis} function to draw the same or
 additional plots without re-computing the factor analysis. This is done through the
@@ -204,8 +202,8 @@ additional plots without re-computing the factor analysis. This is done through 
 Connectivity Score Ranks are shown.
 
 <<MFA2,echo=TRUE,eval=TRUE,cache=TRUE,fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSanalysis Graphs for CSfma">>= 
-	out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(7),
-			factor.plot=1,column.interest=c(1,2,3),result.available=out_MFA)
+	out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(5),
+			component.plot=1,column.interest=c(1,2,3),result.available=out_MFA)
 @
 \noindent Another example would be to draw gene profiles. Now alongside the
 manual or interactive selected \texttt{column.interest}, you can also manual
@@ -214,8 +212,8 @@ this is also done interactively in the gene score plot. In this graph, the
 x-axis contains all compounds, starting with the reference and selected ones.
 The others are the ordered in decreasing CScore.
 <<MFA3,echo=TRUE,eval=TRUE,cache=TRUE,fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSanalysis Graphs for CSfma">>= 
-	out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(6),
-			profile.type="gene",factor.plot=1,column.interest=c(1,2,3),
+	out_MFA <- CSanalysis(refMat,querMat,"CSmfa",plot.type="sweave",which=c(7),
+			profile.type="gene",component.plot=1,column.interest=c(1,2,3),
 			row.interest=c(846,871,4,6),result.available=out_MFA)
 @
 
@@ -225,9 +223,9 @@ The others are the ordered in decreasing CScore.
 The last analysis is done with FABIA, Factor Analysis for Bicluster Acquisition
 (\texttt{type="CSfabia"}). We will only select 2 plots this time, namely the
 reference loadings and compound loadings (\texttt{which=c(2,5)}). However in
-contrary with the MFA anaylsis, we can select 2 components for this analysis.
+contrary with the MFA anaylsis, we select 2 components for this analysis.
 Based on the reference loadings we decide to select bicluster 1 and 2
-(\texttt{BC.plot=c(1,2)}). \\
+(\texttt{component.plot=c(1,2)}). \\
 This time we also do some manual coloring of the columns to highlight some
 strongly connected compounds with \texttt{color.columns}. We start by making a vector of length
 341 (column dimension of example data) and fill it with the color black. Next we fill in the
@@ -246,7 +244,7 @@ have a reproducible result.
 	out_FABIA <- CSanalysis(refMat,querMat,"CSfabia",plot.type="sweave",which=c(2,5),
 			color.columns=color.columns,
 			legend.names=c("References","SP Connected"),
-			legend.cols=c("blue","red"), BC.plot=c(1,2),
+			legend.cols=c("blue","red"), component.plot=c(1,2),
 			gene.thresP=2,gene.thresN=-2)
 @
 \noindent The results in Figure \ref{fig:FABIA} are very comparable with the
@@ -266,13 +264,17 @@ any plots just yet by putting \texttt{which} to \texttt{c()}. The number of
 permutation was chosen to only be 100 in this case. Further, the p-values are
 also adjusted for multiplicity by setting a value for \texttt{method.adjust}
 different than \texttt{"none"}.\\
-(Note: it is possible for MFA results to compute the p-values in a different factor than the one chosen in the CS analysis. This is accomplished through the \texttt{mfa.factor} parameter.)
+(Note: or MFA, \texttt{CSpermute} should {\it only} be used to compute the
+p-values of the Component in which the structure (loadings) of the references is the strongest.
+This because in each permutation the factor with the highest average reference loadings will be chosen. 
+The ability to compute p-values of other factors (in which the reference set also increased loadings) will be added in a later release. 
+)
 
 
 <<CSpermute_compute,eval=FALSE,echo=TRUE,cache=TRUE>>=
-	out_MFA <- CSpermute(refMat,querMat,CSresult=out_MFA,B=100,method.adjust="BH",
+	out_MFA <- CSpermute(refMat,querMat,CSresult=out_MFA,B=250,method.adjust="BH",
 			which=c(),verbose=FALSE)
-	out_ZG <- CSpermute(refMat,querMat,CSresult=out_ZG,B=100,method.adjust="BH",
+	out_ZG <- CSpermute(refMat,querMat,CSresult=out_ZG,B=250,method.adjust="BH",
 			which=c(),verbose=FALSE)
 
 @
@@ -289,25 +291,27 @@ load("perm_data/out_ZG.RData")
 @
 
 <<CSpermute_compute2,echo=TRUE,cache=TRUE>>=
-head(out_MFA@CS$CS.query)
+head(out_MFA@CS[[1]]$CS.query)
 head(out_ZG@CS$CS.query)
 @
 
 \noindent Next, we can actually re-use the updated \texttt{out\_MFA} and
 \texttt{out\_ZG} in \texttt{CSpermute}.
 As long as the number of permutations (\texttt{B}) is not changed, the permutation will not need to computed all over again. 
-This means you can plot the available graphs (\text{which}: 1, volcano plot ; 2, connectivity score compound distribution histogram under null hypothesis with p-value) as many times as needed.
+This means you can plot the available graphs (\text{which}: 1, volcano plot for
+CLoadings ; 2, CLoadings compound distribution histogram under null
+hypothesis with p-value), as many times as needed (plot 3 and 4 are the same as 1 and 2, but for CRankingScores).
 The parameter \texttt{cmpd.hist} decides which compounds should be used for the second type of plot. 
 If this parameter is not given (\texttt{NULL}), you can interactively choose them on the volcano plot by left-clicking on them (and right-click to stop).
 In the code below, we plot both type of graphs for the MFA result with a pre-determined \texttt{cmpd.hist}.
 
 <<CSpermuteplots,echo=TRUE,eval=TRUE,cache=TRUE,message=FALSE,results='hide',fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSpermute graphs for MFA result">>=
-out_MFA <- CSpermute(refMat,querMat,out_MFA,B=100,method.adjust="BH",
-		which=c(1,2),cmpd.hist=c(29,105),plot.type="sweave")
+out_MFA <- CSpermute(refMat,querMat,out_MFA,B=250,method.adjust="BH",
+		which=c(1,2),cmpd.hist=c(23,99),plot.type="sweave")
 @
 <<CSpermuteplots2,echo=TRUE,eval=TRUE,cache=TRUE,message=FALSE,results='hide',fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="CSpermute graphs for MFA result">>=
-out_MFA <- CSpermute(refMat,querMat,out_MFA,B=100,method.adjust="BH",
-		which=c(3,4),cmpd.hist=c(29,105),plot.type="sweave")
+out_MFA <- CSpermute(refMat,querMat,out_MFA,B=250,method.adjust="BH",
+		which=c(3,4),cmpd.hist=c(23,99),plot.type="sweave")
 @
 
 \section{Example Compare CS Results}
@@ -328,16 +332,13 @@ be created. Further because we set thresholds for the genes, the gene score
 comparison plot will be coloring according to these thresholds.
 
 <<CScompare,echo=TRUE,eval=TRUE,cache=TRUE,message=FALSE,fig.keep="high",fig.show='hold',fig.pos='H',out.width='9cm',out.height='10cm',fig.align='left',fig.cap="Compare CSresults">>=
-	corr_ZG_MFA <- CScompare(out_ZG,out_MFA,component2.plot=1,plot.type="sweave")
+	comp_ZG_MFA <- CScompare(out_ZG,out_MFA,component2.plot=1,plot.type="sweave")
 	
-	corr_MFA_FABIA <- CScompare(out_MFA,out_FABIA,component1.plot=1,component2.plot=1,
+	comp_MFA_FABIA <- CScompare(out_MFA,out_FABIA,component1.plot=1,component2.plot=1,
 			gene.thresP=c(2,2),gene.thresN=c(-2,-2),plot.type="sweave")
 	
-	corr_ZG_MFA$correlation
-	corr_MFA_FABIA$correlation
-	
-	corr_ZG_MFA$spearcorrelation
-	corr_MFA_FABIA$spearcorrelation
+	comp_ZG_MFA[[1]]	
+	comp_MFA_FABIA[[1]]
 	
 @
 \noindent Note that apart from the scatter plots in Figure \ref{fig:CScompare},
@@ -349,8 +350,8 @@ returned object also contains a small comparison between the number of
 significant p-values. The significancy threshold can be changed with the
 \texttt{threshold.pvalues} parameter and is defaulted to 0.05.
 <<CScompare2,echo=TRUE>>=
-	corr_ZG_MFA$compare.CSpvalues
-	corr_ZG_MFA$compare.CSpvalues.adjusted
+comp_ZG_MFA[[2]]	
+comp_MFA_FABIA[[2]]
 @
 
 \newpage

@@ -12,13 +12,11 @@ An S4 class in which the results of the Connectivity Scores by Factor Analysis a
 \describe{
 \item{\code{type}}{A character string containing the analysis type.}
 
-\item{\code{CS}}{List containing the connectivity scores for the query (and reference loadings). If permutation was applied, will also contain p-values.}
+\item{\code{CS}}{List of any number of lists (depending on how many components were selected) which contain the connectivity loadings and ranking scores for the query (and reference loadings). If permutation was applied, will also contain p-values.}
 
 \item{\code{GS}}{Dataframe containing the gene scores.}
 
-\item{\code{CSRankScores}}{Dataframe containing the CS Rank Scores (Not for CSzhang). First column is the weighted mean and the subsequent ones per reference.}
-
-\item{\code{object}}{Object containing the FA or Zhang result.}
+\item{\code{extra}}{List which contains \code{CSRank_Full} (contains all intermediate values while calculating the CS Ranking Score) and \code{Object} (contains the complete original FA or Zhang result).}
 
 \item{\code{permutation.object}}{Contains permuted data, CS for permuted data and a dataframe with the p-values (only for MFA and Zhang).}
 
