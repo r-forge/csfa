@@ -17,7 +17,14 @@
 #' @param CSresult2 Second result.
 #' @param component1.plot If you are using a non-Zhang&Gant result, specify the bicluster, factor or principal component which should be used to derive connectivity scores from for the \emph{first} result.
 #' @param component2.plot If you are using a non-Zhang&Gant result, specify the bicluster, factor or principal component which should be used to derive connectivity scores from for the \emph{second} result.
-#' @param which Choose one or both plots which should be created.\cr 1: CS Comparison Plot\cr 2: GS Comparison Plot\cr 3: CSRankScores (Normal CS for CSzhang) Comparison Plot\cr 4: CS p-values comparison plot (Raw & Adjusted).\cr 5: CRankScores p-values comparison plot (Raw & Adjusted).
+#' @param which Choose one or both plots which should be created.
+#' \enumerate{
+#' \item CS Comparison Plot
+#' \item GS Comparison Plot
+#' \item CSRankScores (Normal CS for CSzhang) Comparison Plot
+#' \item CS p-values comparison plot (Raw & Adjusted).
+#' \item CRankScores p-values comparison plot (Raw & Adjusted).
+#' }
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
 #' @param gene.thresP Vector of length 2 containing the positive gene thresholds for \code{CSresult1} and \code{CSresult2}. Genes above the threshold will be colored. (e.g. \code{c(1,2)})
 #' @param gene.thresN Vector of length 2 containing the negative gene thresholds for \code{CSresult1} and \code{CSresult2}. Genes below the threshold will be colored. (e.g. \code{c(-1,-2)})
@@ -74,17 +81,6 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 	rankscores2 <- CSGS2$CSRank
 	names(rankscores1) <- names(rankscores2) <- names(loadings1)[-c(1:refdim1)]
 	
-	# add a check here if one of the results is Zhang, if so (unless 2 zhang), delete ref.index + also use correct default colors (no refblue)
-	if(length(loadings1)!=length(loadings2)){
-		if(length(loadings1)<length(loadings2)){
-			loadings2 <- loadings2[-c(1:refdim2)]
-		}else{
-			loadings1 <- loadings1[-c(1:refdim1)]
-		}
-		
-	}
-	
-	if(length(legend.names)!=length(legend.cols)){stop("Error in legend parameters, different length of legend names and colors.",call.=FALSE)}
 	
 	
 	if(CSresult1@type!="CSzhang" & CSresult2@type!="CSzhang"){
@@ -115,14 +111,29 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 		
 	}
 	
+	color.columns.loadings <- color.columns
+	
+	# add a check here if one of the results is Zhang, if so (unless 2 zhang), delete ref.index + also use correct default colors (no refblue)
+	if(length(loadings1)!=length(loadings2)){
+		if(length(loadings1)<length(loadings2)){
+			loadings2 <- loadings2[-c(1:refdim2)]
+		}else{
+			loadings1 <- loadings1[-c(1:refdim1)]
+		}
+		
+		if(!is.null(color.columns)){color.columns.loadings <- color.columns[-c(1:refdim1)]}
+	}
+	
+	if(length(legend.names)!=length(legend.cols)){stop("Error in legend parameters, different length of legend names and colors.",call.=FALSE)}
+	
+	
+	
 		# below needs to be done correctly (e.g. correct color columns length)
 	
 	scores_correlation <- matrix(NA,nrow=2,ncol=3,dimnames=list(c("Correlation_Pearson","Correlation_Spearman"),c("CLoadings","CRankScores","GeneScores")))
 	
 	
 	if(1%in%which){
-		if(length(color.columns)!=(refdim1+querdim1)){color.columns.loadings <-color.columns[-c(1:refdim1)]}else{color.columns.loadings <- color.columns}
-
 		compare.CS.plot(loadings1=loadings1,loadings2=loadings2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,nref=refdim1,color.columns=color.columns.loadings,legend.names=legend.names,legend.cols=legend.cols,legend.pos=legend.pos,plot.type=plot.type,basefilename=basefilename)
 	}
 	scores_correlation[1,1] <- cor(loadings1,loadings2,use="complete.obs")
