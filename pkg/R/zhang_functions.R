@@ -23,21 +23,89 @@
 #ord.query: if set to FALSE, it is assumed the queries are not ordered. "ranks" will be -1 or 1
 
 
+#zhangscore.support_OLD <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE,ntop.scores=10){
+#	
+#	if(is.null(rownames(dataref))){stop("Provide rownames for dataref",call.=FALSE)}
+#	if(is.null(rownames(dataquery))){stop("Provide rownames for dataquery",call.=FALSE)}
+#	if(ord.query==FALSE & !is.null(nquery)){stop("Cannot take top of non-ordered query",call.=FALSE)}
+#
+#	# Make ranks for dataref
+#	refSign <- sign(dataref)
+#	dataref_Rank <- apply(abs(dataref), 2, rank) * refSign
+#	
+#	
+#	# Make ranks for query
+#	querySign <- sign(dataquery)
+#	if(ord.query==TRUE){dataquery_Rank <- apply(abs(dataquery),2,rank)*querySign} else {dataquery_Rank <- querySign}
+#	
+#	if(is.null(nref)){nref <- nrow(dataref)}
+#	if(is.null(nquery)){nquery <- nrow(dataquery)} 
+#	if(sum(nref<nquery)>0){stop("Number of chosen genes larger in query than in reference. ",call.=FALSE)}
+#	
+#	scores_query <- NULL
+#	
+#	# Go into a for-loop for each column in the query
+#	for(i.query in 1:ncol(dataquery)){
+#				
+#		# Go into for-loop for when more than 1 compound is in the reference set. (Mean will be taken in the end)
+#		refset_scores <- NULL
+#		for(i.ref in 1:ncol(dataref)){
+#					
+#			# Sort and take threshold
+#			sort.ref <- dataref_Rank[order(abs(dataref_Rank[,i.ref]),decreasing=TRUE),i.ref]
+#			sort.query <- dataquery_Rank[order(abs(dataquery_Rank[,i.query]),decreasing=TRUE),i.query]
+#			
+#			thres.ref <- sort.ref[1:nref]
+#			thres.query <- sort.query[1:nquery]
+#			
+#			# Multiply + Sum common genes
+#			
+#			if(length(intersect(names(thres.ref),names(thres.query)))>0){
+#				if(ord.query==TRUE){
+#					maxTheoreticalScore <- sum(abs(thres.ref)[1:length(thres.query)]*abs(thres.query))
+#				}else{
+#					maxTheoreticalScore <- sum(abs(thres.ref)[1:length(thres.query)])
+#				}
+#				
+#				connscore <- sum(thres.query * thres.ref[names(thres.query)],na.rm=TRUE)/maxTheoreticalScore
+#				refset_scores[i.ref] <- connscore 
+#			}
+#			else{refset_scores[i.ref] <- NA} # If Top N genes of ref do not share genes with top m genes of query
+#		}
+#		scores_query[i.query] <- mean(refset_scores,na.rm=TRUE)
+#		
+#	}
+#	
+#	if(!is.null(colnames(dataquery))){names(scores_query)=colnames(dataquery)}
+#	output = data.frame(ZhangScore=scores_query)
+#	
+#	if(ncol(dataquery)<ntop.scores){ntop <- ncol(dataquery)} else { ntop <- ntop.scores}
+#	scores_query_sort <- sort(scores_query,decreasing=TRUE)
+#	toppos <- scores_query_sort[1:ntop]
+#	topneg <- scores_query_sort[length(scores_query_sort):(length(scores_query_sort)-(ntop-1))]
+#	
+#	if(!is.null(colnames(dataquery))){
+#	topoutput <- data.frame(posname=names(toppos),posscore=toppos,negname=names(topneg),negscore=topneg)
+#	}
+#	else{
+#		topoutput <- data.frame(posscore=toppos,negscore=topneg)
+#		
+#	}
+#	
+#	rownames(topoutput) <- NULL
+#	
+#	listout <- list(Top=topoutput,All=output)
+#	return(listout)
+#	
+#}
+
 zhangscore.support <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query=TRUE,ntop.scores=10){
 	
 	if(is.null(rownames(dataref))){stop("Provide rownames for dataref",call.=FALSE)}
 	if(is.null(rownames(dataquery))){stop("Provide rownames for dataquery",call.=FALSE)}
 	if(ord.query==FALSE & !is.null(nquery)){stop("Cannot take top of non-ordered query",call.=FALSE)}
-
-	# Make ranks for dataref
-	refSign <- sign(dataref)
-	dataref_Rank <- apply(abs(dataref), 2, rank) * refSign
 	
-	
-	# Make ranks for query
-	querySign <- sign(dataquery)
-	if(ord.query==TRUE){dataquery_Rank <- apply(abs(dataquery),2,rank)*querySign} else {dataquery_Rank <- refSign}
-	
+			
 	if(is.null(nref)){nref <- nrow(dataref)}
 	if(is.null(nquery)){nquery <- nrow(dataquery)} 
 	if(sum(nref<nquery)>0){stop("Number of chosen genes larger in query than in reference. ",call.=FALSE)}
@@ -46,23 +114,37 @@ zhangscore.support <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query
 	
 	# Go into a for-loop for each column in the query
 	for(i.query in 1:ncol(dataquery)){
-				
+		
 		# Go into for-loop for when more than 1 compound is in the reference set. (Mean will be taken in the end)
 		refset_scores <- NULL
 		for(i.ref in 1:ncol(dataref)){
-					
+			
 			# Sort and take threshold
-			sort.ref <- dataref_Rank[order(abs(dataref_Rank[,i.ref]),decreasing=TRUE),i.ref]
-			sort.query <- dataquery_Rank[order(abs(dataquery_Rank[,i.query]),decreasing=TRUE),i.query]
+			sort.ref <- dataref[order(abs(dataref[,i.ref]),decreasing=TRUE),i.ref]
+			sort.query <- dataquery[order(abs(dataquery[,i.query]),decreasing=TRUE),i.query]
 			
 			thres.ref <- sort.ref[1:nref]
 			thres.query <- sort.query[1:nquery]
 			
+			# Make ranks for dataref
+			refSign <- sign(thres.ref)
+			thres.ref.rank <- rank(abs(thres.ref)) * refSign
+			
+			# Make ranks for query
+			querySign <- sign(thres.query)
+			if(ord.query==TRUE){thres.query.rank <- rank(abs(thres.query))*querySign} else {thres.query.rank <- querySign}
+			
+			
 			# Multiply + Sum common genes
 			
-			if(length(intersect(names(thres.ref),names(thres.query)))>0){
-				maxTheoreticalScore <- sum(abs(thres.ref)[1:length(thres.query)]*abs(thres.query))
-				connscore <- sum(thres.query * thres.ref[names(thres.query)],na.rm=TRUE)/maxTheoreticalScore
+			if(length(intersect(names(thres.ref.rank),names(thres.query.rank)))>0){
+				if(ord.query==TRUE){
+							maxTheoreticalScore <- sum(abs(thres.ref.rank)[1:length(thres.query.rank)]*abs(thres.query.rank))
+						}else{
+							maxTheoreticalScore <- sum(abs(thres.ref.rank)[1:length(thres.query.rank)])
+						}
+						
+				connscore <- sum(thres.query.rank * thres.ref.rank[names(thres.query.rank)],na.rm=TRUE)/maxTheoreticalScore
 				refset_scores[i.ref] <- connscore 
 			}
 			else{refset_scores[i.ref] <- NA} # If Top N genes of ref do not share genes with top m genes of query
@@ -80,7 +162,7 @@ zhangscore.support <- function(dataref,dataquery,nref=NULL,nquery=NULL,ord.query
 	topneg <- scores_query_sort[length(scores_query_sort):(length(scores_query_sort)-(ntop-1))]
 	
 	if(!is.null(colnames(dataquery))){
-	topoutput <- data.frame(posname=names(toppos),posscore=toppos,negname=names(topneg),negscore=topneg)
+		topoutput <- data.frame(posname=names(toppos),posscore=toppos,negname=names(topneg),negscore=topneg)
 	}
 	else{
 		topoutput <- data.frame(posscore=toppos,negscore=topneg)
