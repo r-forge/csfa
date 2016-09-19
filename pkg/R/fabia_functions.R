@@ -14,9 +14,9 @@ fabia.overlap <- function(resFAB,ind.ref,type="loadings",thresZ=0.5,thresL=NULL)
 	ind.bc.load <- bicResult$numn[,1]
 	ind.bc.factor <- bicResult$numn[,2]
 	
-	overlap.BC <- c()
-	n.overlap.ref <- c()
-	n.overlap.query <- c()
+	overlap.BC <- c(1:length(ind.bc.load))
+	n.overlap.ref <- c(1:length(ind.bc.load))
+	n.overlap.query <- c(1:length(ind.bc.load))
 	
 	if(type=="loadings"){
 		ind.total <- c(1:dim(resFAB@L)[1])
@@ -28,9 +28,9 @@ fabia.overlap <- function(resFAB,ind.ref,type="loadings",thresZ=0.5,thresL=NULL)
 			nquery.temp <- length(intersect(ind.query,ind.bc.load.i))
 			
 			if((length(intersect(ind.ref,ind.bc.load.i))>=1)  & (length(intersect(ind.query,ind.bc.load.i))>=1)){
-				overlap.BC <- c(overlap.BC,i.bc)
-				n.overlap.ref <- c(n.overlap.ref,nref.temp)
-				n.overlap.query <- c(n.overlap.query,nquery.temp)
+				overlap.BC[i.bc] <- i.bc
+				n.overlap.ref[i.bc] <- nref.temp
+				n.overlap.query[i.bc] <- nquery.temp
 			}
 			
 #			# OR
@@ -51,9 +51,9 @@ fabia.overlap <- function(resFAB,ind.ref,type="loadings",thresZ=0.5,thresL=NULL)
 			nquery.temp <- length(intersect(ind.query,ind.bc.factor.i))
 			
 			if((length(intersect(ind.ref,ind.bc.factor.i))>=1)  & (length(intersect(ind.query,ind.bc.factor.i))>=1)){
-				overlap.BC <- c(overlap.BC,i.bc)
-				n.overlap.ref <- c(n.overlap.ref,nref.temp)
-				n.overlap.query <- c(n.overlap.query,nquery.temp)
+				overlap.BC[i.bc] <- i.bc
+				n.overlap.ref[i.bc] <- nref.temp
+				n.overlap.query[i.bc] <- nquery.temp
 			}
 			
 		}

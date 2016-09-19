@@ -21,7 +21,7 @@ NULL
 #' @importFrom FactoMineR PCA MFA
 #' @importFrom pls stdize
 #' @importFrom elasticnet spca arrayspc
-
+#' @importFrom randomcoloR distinctColorPalette
 
 
 ## CLASSES ##
@@ -37,7 +37,7 @@ setClass("CSzhang",slots=c(call="call"))
 #' @slot type A character string containing the analysis type.
 #' @slot CS List of any number of lists (depending on how many components were selected) which contain the connectivity loadings and ranking scores for the query (and reference loadings). If permutation was applied, will also contain p-values.
 #' @slot GS Dataframe containing the gene scores.
-#' @slot extra List which contains \code{CSRank_Full} (contains all intermediate values while calculating the CS Ranking Score) and \code{Object} (contains the complete original FA or Zhang result).
+#' @slot extra List which contains \code{CSRank_Full} (contains all intermediate values while calculating the CS Ranking Score), \code{Object} (contains the complete original FA or Zhang result) and \code{samplefactorlabels} (contains thresholded labels based on the factor loadings, see plot \code{which=9}).
 #' @slot permutation.object Contains permuted data, CS for permuted data and a dataframe with the p-values (only for MFA and Zhang).
 #' @slot call List object containing the original call of \code{CSanalysis} as well as the parameters for the chosen method.
 setClass("CSresult",slots=list(type="character",CS="list",GS="data.frame",extra="list",permutation.object="ANY",call="ANY"))
@@ -51,7 +51,15 @@ setClass("CSresult",slots=list(type="character",CS="list",GS="data.frame",extra=
 ## METHODS  - CSANALYSIS ##
 #' Connectivity Score Analysis.
 #' 
-#' Doing a CS analysis, interactively generating graphs. See specific type for additional parameteres.
+#' Doing a CS analysis, interactively generating graphs. See specific type for additional parameteres.\cr
+#' Types:\cr
+#' \itemize{
+#' \item \code{\link[=CSanalysis,matrix,matrix,CSzhang-method]{Zhang and Gant}}
+#' \item \code{\link[=CSanalysis,matrix,matrix,CSmfa-method]{MFA}}
+#' \item \code{\link[=CSanalysis,matrix,matrix,CSpca-method]{PCA}}
+#' \item \code{\link[=CSanalysis,matrix,matrix,CSsmfa-method]{Sparse MFA}}
+#' \item \code{\link[=CSanalysis,matrix,matrix,CSfabia-method]{FABIA}}
+#' }
 #' 
 #' @export
 #' @param refMat Reference matrix (Rows = genes and columns = compounds)
@@ -74,7 +82,15 @@ setGeneric('CSanalysis', function(refMat,querMat,type, ...){standardGeneric('CSa
 
 #' Connectivity Score Analysis.
 #' 
-#' Doing a CS analysis, interactively generating graphs. See specific type for additional parameteres.
+#' Doing a CS analysis, interactively generating graphs. See specific type for additional parameteres.\cr
+#' Types:\cr
+#' \itemize{
+#' \item \code{\link[=CSanalysis,matrix,matrix,CSzhang-method]{Zhang and Gant}}
+#' \item \code{\link[=CSanalysis,matrix,matrix,CSmfa-method]{MFA}}
+#' \item \code{\link[=CSanalysis,matrix,matrix,CSpca-method]{PCA}}
+#' \item \code{\link[=CSanalysis,matrix,matrix,CSsmfa-method]{Sparse MFA}}
+#' \item \code{\link[=CSanalysis,matrix,matrix,CSfabia-method]{FABIA}}
+#' }
 #' 
 #' @export
 #' @param refMat Reference matrix (Rows = genes and columns = compounds)
@@ -128,18 +144,46 @@ setMethod('CSanalysis', c('matrix','matrix','character'),
 #' @param nL \emph{Fabia Parameter:} maximal number of biclusters at which a row element can participate; default = 0 (no limit)
 #' @param lL \emph{Fabia Parameter:} maximal number of row elements per bicluster; default = 0 (no limit)
 #' @param bL \emph{Fabia Parameter:} cycle at which the nL or lL maximum starts; default = 0 (start at the beginning)
-#' @param which Choose one or more plots to draw: \cr 1. Percentage Variance Explained / Information Content for Component (Factor/Bicluster) \cr 2. Loadings for reference compounds \cr 3  Loadings for Component (Factor/Bicluster) ( \code{component.plot} \cr 4  Gene Scores for Component (Factor/Bicluster) \code{component.Plot} \cr 5. Connectivity Ranking Scores for Component \code{component.plot} \cr 6. Component \code{component.plot} VS Other Component : Loadings & Genes \cr 7. Profile plot (see \code{profile.type})
+#' @param which Choose one or more plots to draw: 
+#' \enumerate{
+#' \item Percentage Variance Explained / Information Content for Component (Factor/Bicluster)
+#' \item Loadings for reference compounds
+#' \item Loadings for Component (Factor/Bicluster) \code{component.plot}
+#' \item Gene Scores for Component (Factor/Bicluster) \code{component.Plot}
+#' \item Connectivity Ranking Scores for Component \code{component.plot}
+#' \item Component \code{component.plot} VS Other Component : Loadings & Genes 
+#' \item Profile plot (see \code{profile.type})
+#' \item Trend Profile Plots (NOT YET AVAILABLE)
+#' \item Group Loadings Plots for all components (see \code{grouploadings.labels}).
+#' }
 #' @param component.plot Which components (Factor/Bicluster) should be investigated? Can be a vector of multiple (e.g. \code{c(1,3,5)}). If \code{NULL}, you can choose components of interest interactively from reference loadings plot.
 #' @param CSrank.refplot Logical value deciding if the CS Rank Scores (\code{which=5}) should also be plotted per reference (instead of only the weighted mean).
 #' @param column.interest Numeric vector of indices of query columns which should be in the profiles plots (\code{which=7}). If \code{NULL}, you can interactively select genes on the Compound Loadings plot (\code{which=3}).
 #' @param row.interest Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=7}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).
-#' @param profile.type Type of \code{which=7} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
+#' @param profile.type Type of \code{which=7} plot:
+#' \itemize{
+#' \item \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. 
+#' \item \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
+#' }
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
-#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
+#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors. (e.g. You can use this to highlight genes you know to be differentially expressed)
 #' @param gene.thresP Threshold for genes with a high score (\code{which=4}).
 #' @param gene.thresN Threshold for genes with a low score (\code{which=4}).
 #' @param thresP.col Color of genes above \code{gene.thresP}.
 #' @param thresN.col Color of genes below \code{gene.thresN}.
+#' @param grouploadings.labels This parameter used for the Group Loadings Plots (\code{which=9}). In general this plot will contain the loadings of all factors, grouped and colored by the labels given in this parameter.
+#' \itemize{
+#' \item If \code{grouploadings.labels!=NULL}:\cr
+#' Provide a vector for all samples (ref + query) containing labels on which the plot will be based on.
+#' 
+#' \item If \code{grouploadings.labels=NULL}: \cr
+#' If no labels are provided when choosing \code{which=9}, automatic labels ("Top Samples of Component 1, 2....") will be created. These labels are given to the top \code{grouploadings.cutoff}  number of samples based on the absolute values of the loadings. 
+#' }
+#' Plot \code{which=9} can be used to check 2 different situations. Either to check if your provided labels coincide with the discovered structure in the analysis. The other aim is to find new interesting structures (of samples) which strongly appear in one or multiple components. A subsequent step could be to take some strong samples/compounds of these compounds and use them as a new reference set in a new CS analysis to check its validity or to find newly connected compounds.
+#' 
+#' Please note that even when \code{group.loadings.labels!=NULL}, that the labels based on the absolute loadings of all the factors (the top \code{grouploadings.cutoff}) will always be generated and saved in \code{samplefactorlabels} in the \code{extra} slot of the \code{CSresult} object. 
+#' This can then later be used for the \code{CSlabelscompare} function to compare them with your true labels.
+#' @param grouploadings.cutoff Parameter used in plot \code{which=9}. See \code{grouploadings.labels=NULL} for more information. If this parameter is not provided, it will be automatically set to 10\% of the total number of loadings.
 #' @param legend.names Option to draw a legend of for example colored columns in Compound Loadings plot (\code{which=3}). If \code{NULL}, only "References" will be in the legend.
 #' @param legend.cols Colors to be used in legends. If \code{NULL}, only blue for "References is used".
 #' @param legend.pos Position of the legend in all requested plots, can be \code{"topright"}, \code{"topleft"}, \code{"bottomleft"}, \code{"bottomright"}, \code{"bottom"}, \code{"top"}, \code{"left"}, \code{"right"}, \code{"center"}.
@@ -155,6 +199,7 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 				,column.interest=NULL,row.interest=NULL,profile.type="gene"
 				,color.columns=NULL,gene.highlight=NULL
 				,gene.thresP=1,gene.thresN=-1,thresP.col="blue",thresN.col="red"
+				,grouploadings.labels=NULL,grouploadings.cutoff=NULL
 				,legend.names=NULL,legend.cols=NULL,legend.pos="topright"
 				,result.available=NULL,result.available.update=FALSE
 				,plot.type="device",basefilename="analyseFABIA"
@@ -192,7 +237,9 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 					colour.columns=colour.columns,legend.pos=legend.pos,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
 					result.available=result.available,plot.type=plot.type,CSrank.refplot=CSrank.refplot,
 					which=which,
-					gene.highlight=gene.highlight,profile.type=profile.type,result.available.update=result.available.update)
+					gene.highlight=gene.highlight,profile.type=profile.type,
+					grouploadings.labels=grouploadings.labels,grouploadings.cutoff=grouploadings.cutoff,
+					result.available.update=result.available.update)
 
 
 			return(out)
@@ -214,18 +261,46 @@ setMethod('CSanalysis',c('matrix','matrix','CSfabia'),
 #' @param ncp \emph{MFA Parameter:} Number of dimensions kept in the results (by default 5).
 #' @param weight.col.mfa \emph{MFA Parameter:} Vector of weights, useful for HMFA method (by default, \code{NULL} and an MFA is performed).
 #' @param row.w \emph{MFA Parameter:} An optional row weights (by default, a vector of 1 for uniform row weights).
-#' @param which Choose one or more plots to draw: \cr 1. Percentage Variance Explained / Information Content for Component (Factor/Bicluster) \cr 2. Loadings for reference compounds \cr 3  Loadings for Component (Factor/Bicluster) ( \code{component.plot} \cr 4  Gene Scores for Component (Factor/Bicluster) \code{component.Plot} \cr 5. Connectivity Ranking Scores for Component \code{component.plot} \cr 6. Component \code{component.plot} VS Other Component : Loadings & Genes \cr 7. Profile plot (see \code{profile.type})
+#' @param which Choose one or more plots to draw: 
+#' \enumerate{
+#' \item Percentage Variance Explained / Information Content for Component (Factor/Bicluster)
+#' \item Loadings for reference compounds
+#' \item Loadings for Component (Factor/Bicluster) \code{component.plot}
+#' \item Gene Scores for Component (Factor/Bicluster) \code{component.Plot}
+#' \item Connectivity Ranking Scores for Component \code{component.plot}
+#' \item Component \code{component.plot} VS Other Component : Loadings & Genes 
+#' \item Profile plot (see \code{profile.type})
+#' \item Trend Profile Plots (NOT YET AVAILABLE)
+#' \item Group Loadings Plots for all components (see \code{grouploadings.labels}).
+#' }
 #' @param component.plot Which components (Factor/Bicluster) should be investigated? Can be a vector of multiple (e.g. \code{c(1,3,5)}). If \code{NULL}, you can choose components of interest interactively from reference loadings plot.
 #' @param CSrank.refplot Logical value deciding if the CS Rank Scores (\code{which=5}) should also be plotted per reference (instead of only the weighted mean).
 #' @param column.interest Numeric vector of indices of query columns which should be in the profiles plots (\code{which=7}). If \code{NULL}, you can interactively select genes on the Compound Loadings plot (\code{which=3}).
 #' @param row.interest Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=7}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).
-#' @param profile.type Type of \code{which=7} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
+#' @param profile.type Type of \code{which=7} plot:
+#' \itemize{
+#' \item \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. 
+#' \item \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
+#' }
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
-#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
+#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors. (e.g. You can use this to highlight genes you know to be differentially expressed)
 #' @param gene.thresP Threshold for genes with a high score (\code{which=4}).
 #' @param gene.thresN Threshold for genes with a low score (\code{which=4}).
 #' @param thresP.col Color of genes above \code{gene.thresP}.
 #' @param thresN.col Color of genes below \code{gene.thresN}.
+#' @param grouploadings.labels This parameter used for the Group Loadings Plots (\code{which=9}). In general this plot will contain the loadings of all factors, grouped and colored by the labels given in this parameter.
+#' \itemize{
+#' \item If \code{grouploadings.labels!=NULL}:\cr
+#' Provide a vector for all samples (ref + query) containing labels on which the plot will be based on.
+#' 
+#' \item If \code{grouploadings.labels=NULL}: \cr
+#' If no labels are provided when choosing \code{which=9}, automatic labels ("Top Samples of Component 1, 2....") will be created. These labels are given to the top \code{grouploadings.cutoff}  number of samples based on the absolute values of the loadings. 
+#' }
+#' Plot \code{which=9} can be used to check 2 different situations. Either to check if your provided labels coincide with the discovered structure in the analysis. The other aim is to find new interesting structures (of samples) which strongly appear in one or multiple components. A subsequent step could be to take some strong samples/compounds of these compounds and use them as a new reference set in a new CS analysis to check its validity or to find newly connected compounds.
+#' 
+#' Please note that even when \code{group.loadings.labels!=NULL}, that the labels based on the absolute loadings of all the factors (the top \code{grouploadings.cutoff}) will always be generated and saved in \code{samplefactorlabels} in the \code{extra} slot of the \code{CSresult} object. 
+#' This can then later be used for the \code{CSlabelscompare} function to compare them with your true labels.
+#' @param grouploadings.cutoff Parameter used in plot \code{which=9}. See \code{grouploadings.labels=NULL} for more information. If this parameter is not provided, it will be automatically set to 10\% of the total number of loadings.
 #' @param legend.names Option to draw a legend of for example colored columns in Compound Loadings plot (\code{which=3}). If \code{NULL}, only "References" will be in the legend.
 #' @param legend.cols Colors to be used in legends. If \code{NULL}, only blue for "References is used".
 #' @param legend.pos Position of the legend in all requested plots, can be \code{"topright"}, \code{"topleft"}, \code{"bottomleft"}, \code{"bottomright"}, \code{"bottom"}, \code{"top"}, \code{"left"}, \code{"right"}, \code{"center"}.
@@ -241,6 +316,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSmfa"),function(
 				,column.interest=NULL,row.interest=NULL,profile.type="gene",
 				color.columns=NULL,gene.highlight=NULL,				
 				gene.thresP=1,gene.thresN=-1,thresP.col="blue",thresN.col="red",
+				grouploadings.labels=NULL,grouploadings.cutoff=NULL,
 				legend.names=NULL,legend.cols=NULL,legend.pos="topright",				
 				result.available=NULL,result.available.update=FALSE,
 				plot.type="device",basefilename="analyseMFA"
@@ -284,6 +360,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSmfa"),function(
 					colour.columns=colour.columns,legend.pos=legend.pos,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
 					result.available=result.available,plot.type=plot.type,CSrank.refplot=CSrank.refplot,
 					which=which,
+					grouploadings.labels=grouploadings.labels,grouploadings.cutoff=grouploadings.cutoff,
 					gene.highlight=gene.highlight,profile.type=profile.type,result.available.update=result.available.update)
 			
 		return(out)
@@ -305,18 +382,46 @@ setMethod("CSanalysis",c("matrix","matrix","CSmfa"),function(
 #' @param scale.unit \emph{PCA Parameter:} A boolean, if TRUE (value set by default) then data are scaled to unit variance.
 #' @param row.w \emph{PCA Parameter:} An optional row weights (by default, a vector of 1 for uniform row weights).
 #' @param col.w \emph{PCA Parameter:} An optional column weights (by default, uniform column weights).
-#' @param which Choose one or more plots to draw: \cr 1. Percentage Variance Explained / Information Content for Component (Factor/Bicluster) \cr 2. Loadings for reference compounds \cr 3  Loadings for Component (Factor/Bicluster) ( \code{component.plot} \cr 4  Gene Scores for Component (Factor/Bicluster) \code{component.Plot} \cr 5. Connectivity Ranking Scores for Component \code{component.plot} \cr 6. Component \code{component.plot} VS Other Component : Loadings & Genes \cr 7. Profile plot (see \code{profile.type})
+#' @param which Choose one or more plots to draw: 
+#' \enumerate{
+#' \item Percentage Variance Explained / Information Content for Component (Factor/Bicluster)
+#' \item Loadings for reference compounds
+#' \item Loadings for Component (Factor/Bicluster) \code{component.plot}
+#' \item Gene Scores for Component (Factor/Bicluster) \code{component.Plot}
+#' \item Connectivity Ranking Scores for Component \code{component.plot}
+#' \item Component \code{component.plot} VS Other Component : Loadings & Genes 
+#' \item Profile plot (see \code{profile.type})
+#' \item Trend Profile Plots (NOT YET AVAILABLE)
+#' \item Group Loadings Plots for all components (see \code{grouploadings.labels}).
+#' }
 #' @param component.plot Which components (Factor/Bicluster) should be investigated? Can be a vector of multiple (e.g. \code{c(1,3,5)}). If \code{NULL}, you can choose components of interest interactively from reference loadings plot.
 #' @param CSrank.refplot Logical value deciding if the CS Rank Scores (\code{which=5}) should also be plotted per reference (instead of only the weighted mean).
 #' @param column.interest Numeric vector of indices of query columns which should be in the profiles plots (\code{which=7}). If \code{NULL}, you can interactively select genes on the Compound Loadings plot (\code{which=3}).
 #' @param row.interest Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=7}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).
-#' @param profile.type Type of \code{which=7} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
+#' @param profile.type Type of \code{which=7} plot:
+#' \itemize{
+#' \item \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. 
+#' \item \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
+#' }
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
-#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
+#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors. (e.g. You can use this to highlight genes you know to be differentially expressed)
 #' @param gene.thresP Threshold for genes with a high score (\code{which=4}).
 #' @param gene.thresN Threshold for genes with a low score (\code{which=4}).
 #' @param thresP.col Color of genes above \code{gene.thresP}.
 #' @param thresN.col Color of genes below \code{gene.thresN}.
+#' @param grouploadings.labels This parameter used for the Group Loadings Plots (\code{which=9}). In general this plot will contain the loadings of all factors, grouped and colored by the labels given in this parameter.
+#' \itemize{
+#' \item If \code{grouploadings.labels!=NULL}:\cr
+#' Provide a vector for all samples (ref + query) containing labels on which the plot will be based on.
+#' 
+#' \item If \code{grouploadings.labels=NULL}:\cr 
+#' If no labels are provided when choosing \code{which=9}, automatic labels ("Top Samples of Component 1, 2....") will be created. These labels are given to the top \code{grouploadings.cutoff}  number of samples based on the absolute values of the loadings. 
+#' }
+#' Plot \code{which=9} can be used to check 2 different situations. Either to check if your provided labels coincide with the discovered structure in the analysis. The other aim is to find new interesting structures (of samples) which strongly appear in one or multiple components. A subsequent step could be to take some strong samples/compounds of these compounds and use them as a new reference set in a new CS analysis to check its validity or to find newly connected compounds.
+#' 
+#' Please note that even when \code{group.loadings.labels!=NULL}, that the labels based on the absolute loadings of all the factors (the top \code{grouploadings.cutoff}) will always be generated and saved in \code{samplefactorlabels} in the \code{extra} slot of the \code{CSresult} object. 
+#' This can then later be used for the \code{CSlabelscompare} function to compare them with your true labels.
+#' @param grouploadings.cutoff Parameter used in plot \code{which=9}. See \code{grouploadings.labels=NULL} for more information. If this parameter is not provided, it will be automatically set to 10\% of the total number of loadings.
 #' @param legend.names Option to draw a legend of for example colored columns in Compound Loadings plot (\code{which=3}). If \code{NULL}, only "References" will be in the legend.
 #' @param legend.cols Colors to be used in legends. If \code{NULL}, only blue for "References is used".
 #' @param legend.pos Position of the legend in all requested plots, can be \code{"topright"}, \code{"topleft"}, \code{"bottomleft"}, \code{"bottomright"}, \code{"bottom"}, \code{"top"}, \code{"left"}, \code{"right"}, \code{"center"}.
@@ -331,6 +436,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 				column.interest=NULL,row.interest=NULL,profile.type="gene",
 				color.columns=NULL,gene.highlight=NULL,				
 				gene.thresP=1,gene.thresN=-1,thresP.col="blue",thresN.col="red",
+				grouploadings.labels=NULL,grouploadings.cutoff=NULL,
 				legend.names=NULL,legend.cols=NULL,legend.pos="topright",
 				result.available=NULL,result.available.update=FALSE,
 				plot.type="device",basefilename="analysePCA"
@@ -374,7 +480,9 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 					component.plot=component.plot,column.interest=column.interest,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
 					colour.columns=colour.columns,legend.pos=legend.pos,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
 					result.available=result.available,plot.type=plot.type,which=which,CSrank.refplot=CSrank.refplot,
-					profile.type=profile.type,gene.highlight=gene.highlight,result.available.update=result.available.update)
+					profile.type=profile.type,gene.highlight=gene.highlight,
+					grouploadings.labels=grouploadings.labels,grouploadings.cutoff=grouploadings.cutoff,
+					result.available.update=result.available.update)
 			
 			return(out)
 			
@@ -398,18 +506,46 @@ setMethod("CSanalysis",c("matrix","matrix","CSpca"),function(
 #' @param sparse \emph{sMFA Parameters (\code{lambda < Inf} only):} If \code{sparse="penalty"}, \code{para} is a vector of 1-norm penalty parameters. If \code{sparse="varnum"}, \code{para} defines the number of sparse loadings to be obtained.
 #' @param max.iter \emph{sMFA Parameters:} Maximum number of iterations.
 #' @param eps.conv \emph{sMFA Parameters:} Convergence criterion.
-#' @param which Choose one or more plots to draw: \cr 1. Percentage Variance Explained / Information Content for Component (Factor/Bicluster) \cr 2. Loadings for reference compounds \cr 3  Loadings for Component (Factor/Bicluster) ( \code{component.plot} \cr 4  Gene Scores for Component (Factor/Bicluster) \code{component.Plot} \cr 5. Connectivity Ranking Scores for Component \code{component.plot} \cr 6. Component \code{component.plot} VS Other Component : Loadings & Genes \cr 7. Profile plot (see \code{profile.type})
+#' @param which Choose one or more plots to draw: 
+#' \enumerate{
+#' \item Percentage Variance Explained / Information Content for Component (Factor/Bicluster)
+#' \item Loadings for reference compounds
+#' \item Loadings for Component (Factor/Bicluster) \code{component.plot}
+#' \item Gene Scores for Component (Factor/Bicluster) \code{component.Plot}
+#' \item Connectivity Ranking Scores for Component \code{component.plot}
+#' \item Component \code{component.plot} VS Other Component : Loadings & Genes 
+#' \item Profile plot (see \code{profile.type})
+#' \item Trend Profile Plots (NOT YET AVAILABLE)
+#' \item Group Loadings Plots for all components (see \code{grouploadings.labels}).
+#' }
 #' @param component.plot Which components (Factor/Bicluster) should be investigated? Can be a vector of multiple (e.g. \code{c(1,3,5)}). If \code{NULL}, you can choose components of interest interactively from reference loadings plot.
 #' @param CSrank.refplot Logical value deciding if the CS Rank Scores (\code{which=5}) should also be plotted per reference (instead of only the weighted mean).
 #' @param column.interest Numeric vector of indices of query columns which should be in the profiles plots (\code{which=7}). If \code{NULL}, you can interactively select genes on the Compound Loadings plot (\code{which=3}).
 #' @param row.interest Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=7}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).
-#' @param profile.type Type of \code{which=7} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
+#' @param profile.type Type of \code{which=7} plot:
+#' \itemize{
+#' \item \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. 
+#' \item \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
+#' }
 #' @param color.columns Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.
-#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.
+#' @param gene.highlight Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors. (e.g. You can use this to highlight genes you know to be differentially expressed)
 #' @param gene.thresP Threshold for genes with a high score (\code{which=4}).
 #' @param gene.thresN Threshold for genes with a low score (\code{which=4}).
 #' @param thresP.col Color of genes above \code{gene.thresP}.
 #' @param thresN.col Color of genes below \code{gene.thresN}.
+#' @param grouploadings.labels This parameter used for the Group Loadings Plots (\code{which=9}). In general this plot will contain the loadings of all factors, grouped and colored by the labels given in this parameter.
+#' \itemize{
+#' \item If \code{grouploadings.labels!=NULL}:\cr
+#' Provide a vector for all samples (ref + query) containing labels on which the plot will be based on.
+#' 
+#' \item If \code{grouploadings.labels=NULL}: \cr
+#' If no labels are provided when choosing \code{which=9}, automatic labels ("Top Samples of Component 1, 2....") will be created. These labels are given to the top \code{grouploadings.cutoff}  number of samples based on the absolute values of the loadings. 
+#' }
+#' Plot \code{which=9} can be used to check 2 different situations. Either to check if your provided labels coincide with the discovered structure in the analysis. The other aim is to find new interesting structures (of samples) which strongly appear in one or multiple components. A subsequent step could be to take some strong samples/compounds of these compounds and use them as a new reference set in a new CS analysis to check its validity or to find newly connected compounds.
+#' 
+#' Please note that even when \code{group.loadings.labels!=NULL}, that the labels based on the absolute loadings of all the factors (the top \code{grouploadings.cutoff}) will always be generated and saved in \code{samplefactorlabels} in the \code{extra} slot of the \code{CSresult} object. 
+#' This can then later be used for the \code{CSlabelscompare} function to compare them with your true labels.
+#' @param grouploadings.cutoff Parameter used in plot \code{which=9}. See \code{grouploadings.labels=NULL} for more information. If this parameter is not provided, it will be automatically set to 10\% of the total number of loadings.
 #' @param legend.names Option to draw a legend of for example colored columns in Compound Loadings plot (\code{which=3}). If \code{NULL}, only "References" will be in the legend.
 #' @param legend.cols Colors to be used in legends. If \code{NULL}, only blue for "References is used".
 #' @param legend.pos Position of the legend in all requested plots, can be \code{"topright"}, \code{"topleft"}, \code{"bottomleft"}, \code{"bottomright"}, \code{"bottom"}, \code{"top"}, \code{"left"}, \code{"right"}, \code{"center"}.
@@ -425,6 +561,7 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 				column.interest=NULL,row.interest=NULL,profile.type="gene",
 				color.columns=NULL,gene.highlight=NULL,
 				gene.thresP=1,gene.thresN=-1,thresP.col="blue",thresN.col="red",
+				grouploadings.labels=NULL,grouploadings.cutoff=NULL,
 				legend.names=NULL,legend.cols=NULL,legend.pos="topright",
 				result.available=NULL,result.available.update=FALSE,
 				plot.type="device",basefilename="analysesMFA"
@@ -463,7 +600,9 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 					component.plot=component.plot,column.interest=column.interest,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
 					colour.columns=colour.columns,legend.pos=legend.pos,legend.names=legend.names,legend.cols=legend.cols,thresP.col=thresP.col,thresN.col=thresN.col,
 					result.available=result.available,plot.type=plot.type,CSrank.refplot=CSrank.refplot,
-					which=which,profile.type=profile.type,gene.highlight=gene.highlight,row.interest=row.interest,result.available.update=result.available.update)
+					which=which,profile.type=profile.type,gene.highlight=gene.highlight,
+					grouploadings.labels=grouploadings.labels,grouploadings.cutoff=grouploadings.cutoff,
+					row.interest=row.interest,result.available.update=result.available.update)
 			
 			return(out)
 						
@@ -482,7 +621,10 @@ setMethod("CSanalysis",c("matrix","matrix","CSsmfa"),function(
 #' @param nref \emph{Zhang Parameter:} Number of top up- and downregulated genes in reference signature. If \code{NULL}, all rows (genes) are used.
 #' @param nquery \emph{Zhang Parameter:} Number of top up- and downregulated genes in query signature. If \code{NULL}, all rows (genes) are used. (Note that \eqn{nref >= nquery})
 #' @param ord.query \emph{Zhang Parameter:} Logical value. Should the query signature be treated as ordered?
-#' @param which Choose plot to draw.\cr 1. Zhang and Gant Scores Plot
+#' @param which Choose plot to draw.
+#' \enumerate{
+#' \item Zhang and Gant Scores Plot
+#' }
 # @param permute \emph{Zhang Parameter:} Logical value. Should p-values be computed through permutation?
 # @param B \emph{Zhang Parameter:} Number of permutations for p-value calculation.
 # @param ntop.pvalues \emph{Zhang Parameter:} Number of top p-values to be reported first. 

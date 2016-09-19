@@ -105,7 +105,7 @@ strongly negative connected compounds and 300 compounds which are not connected
 at all.
 
 <<load,echo=FALSE,warning=FALSE,message=FALSE,results='hide'>>=
-require(gplots)
+require(viridis)
 library(CSFA)
 data("dataSIM",package="CSFA")
 @
@@ -114,11 +114,11 @@ data("dataSIM",package="CSFA")
 
 par(fig=c(0,0.25,0,1),xpd=TRUE)
 d <- dataSIM[,c(1:6)]
-image(c(1:dim(d)[2]),c(1:dim(d)[1]),t(d),xlab="condition",ylab="genes",col=greenred(75))
+image(c(1:dim(d)[2]),c(1:dim(d)[1]),t(d),xlab="condition",ylab="genes",col=viridis(75))
 par(fig=c(0.25,1,0,1), new=TRUE,xpd=TRUE)
 d <- dataSIM[,-c(1:6)]
 #d <- dataMFA
-image(c(1:dim(d)[2]),c(1:dim(d)[1]),t(d),xlab="condition",ylab="genes",col=greenred(75),axes=FALSE)
+image(c(1:dim(d)[2]),c(1:dim(d)[1]),t(d),xlab="condition",ylab="genes",col=viridis(75),axes=FALSE)
 @
 %also add image plot of data
 

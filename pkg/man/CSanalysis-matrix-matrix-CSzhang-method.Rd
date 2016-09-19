@@ -27,7 +27,10 @@
 
 \item{ntop.scores}{\emph{Zhang Parameter:} Number of top positive and negative CS to be reported first.}
 
-\item{which}{Choose plot to draw.\cr 1. Zhang and Gant Scores Plot}
+\item{which}{Choose plot to draw.
+\enumerate{
+\item Zhang and Gant Scores Plot
+}}
 
 \item{color.query}{Vector of colors for the query columns. You can use this option to highlight columns(compounds) of interest in the CS plot. (This does not include the reference columns since they are not included in the CS plot.)}
 

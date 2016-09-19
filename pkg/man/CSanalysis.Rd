@@ -19,7 +19,15 @@ CSanalysis(refMat, querMat, type, ...)
 An object of the S4 Class \code{CSresult}.
 }
 \description{
-Doing a CS analysis, interactively generating graphs. See specific type for additional parameteres.
+Doing a CS analysis, interactively generating graphs. See specific type for additional parameteres.\cr
+Types:\cr
+\itemize{
+\item \code{\link[=CSanalysis,matrix,matrix,CSzhang-method]{Zhang and Gant}}
+\item \code{\link[=CSanalysis,matrix,matrix,CSmfa-method]{MFA}}
+\item \code{\link[=CSanalysis,matrix,matrix,CSpca-method]{PCA}}
+\item \code{\link[=CSanalysis,matrix,matrix,CSsmfa-method]{Sparse MFA}}
+\item \code{\link[=CSanalysis,matrix,matrix,CSfabia-method]{FABIA}}
+}
 }
 \examples{
 \dontrun{
