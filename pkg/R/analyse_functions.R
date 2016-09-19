@@ -46,7 +46,7 @@ analyse_FA <- function(
 		legend.pos="topright",legend.names=NULL,legend.cols=unique(colour.columns),
 		thresP.col="blue",thresN.col="red",gene.thresP=NULL,gene.thresN=NULL,
 			
-		CSrank.refplot=FALSE,profile.type="gene",
+		CSrank.refplot=FALSE,profile.type="gene",grouploadings.labels=NULL,grouploadings.cutoff=NULL,
 		basefilename="analyseMFA",result.available=NULL,result.available.update=FALSE,plot.type="pdf"
 		
 		){
@@ -183,7 +183,8 @@ analyse_FA <- function(
 					colour.columns=colour.columns,
 					legend.pos=legend.pos,legend.names=legend.names,legend.cols=legend.cols,
 					thresP.col=thresP.col,thresN.col=thresN.col,gene.thresP=gene.thresP,gene.thresN=gene.thresN,
-					CSrank.refplot=CSrank.refplot,profile.type=profile.type,
+					CSrank.refplot=CSrank.refplot,profile.type=profile.type,grouploadings.labels=grouploadings.labels,
+					grouploadings.cutoff=grouploadings.cutoff,
 					basefilename=basefilename,result.available=result.available,plot.type=plot.type
 			)
 			
@@ -193,6 +194,7 @@ analyse_FA <- function(
 			loadings <- out$loadings
 			scores <- out$scores
 			CSRank <- out$CSRank
+			sample.factorlabels <- out$factorlabels
 			
 			CS <- vector("list",length(component.select))
 			
@@ -227,13 +229,13 @@ analyse_FA <- function(
 					if(!is.null(result.available@permutation.object) ){ # Case for when CSpermute was used
 						if(!identical(unname(sort(component.select)),unname(sort(c(result.available@call$component.select,result.available@permutation.object$extra.parameters$component.select))))){
 							warning("CS and GS slot will be overwritten due to a different Component choice. \n Any p-values were also deleted together with the permutation.object slot. ")
-							return(new("CSresult",type=modeltype,CS=CS,GS=GS,extra=list(CSRank.Full=CSRank,object=result),permutation.object=NULL,call=call.object))
+							return(new("CSresult",type=modeltype,CS=CS,GS=GS,extra=list(CSRank.Full=CSRank,object=result,samplefactorlabels=sample.factorlabels),permutation.object=NULL,call=call.object))
 						}else{
 							return(new("CSresult",type=modeltype,CS=result.available@CS,GS=result.available@GS,extra=result.available@extra,permutation.object=result.available@permutation.object,call=result.available@call))
 						}
 					}else{ # Case for when no permutation was used
 						if(!identical(unname(sort(component.select)),unname(sort(result.available@call$component.select)))){warning("CS and GS slot will be overwritten due to a different Component choice.")}
-						return(new("CSresult",type=modeltype,CS=CS,GS=GS,extra=list(CSRank.Full=CSRank,object=result),permutation.object=NULL,call=call.object))
+						return(new("CSresult",type=modeltype,CS=CS,GS=GS,extra=list(CSRank.Full=CSRank,object=result,samplefactorlabels=sample.factorlabels),permutation.object=NULL,call=call.object))
 					}
 					
 				}else{
@@ -241,7 +243,7 @@ analyse_FA <- function(
 				}
 				
 			}else{
-				return(new("CSresult",type=modeltype,CS=CS,GS=GS,extra=list(CSRank.Full=CSRank,object=result),permutation.object=NULL,call=call.object))
+				return(new("CSresult",type=modeltype,CS=CS,GS=GS,extra=list(CSRank.Full=CSRank,object=result,samplefactorlabels=sample.factorlabels),permutation.object=NULL,call=call.object))
 			}
 				
 }
@@ -264,7 +266,7 @@ analyse_FA2 <- function(data,result,loadings,scores,ref.index,modeltype,
 		component.plot,which,column.interest,row.interest,gene.highlight,
 		colour.columns,legend.pos,legend.names,legend.cols,thresP.col,
 		thresN.col,gene.thresP,gene.thresN,CSrank.refplot,
-		profile.type,basefilename,result.available,plot.type){
+		profile.type,grouploadings.labels,grouploadings.cutoff,basefilename,result.available,plot.type){
 	
 	
 	## Plot-in and -out functions ##
@@ -688,8 +690,20 @@ analyse_FA2 <- function(data,result,loadings,scores,ref.index,modeltype,
 		}
 	}
 	
+	## TREND PLOTS ##
+#	if((8 %in% which & ....)){
+#		
+#	}
+
+	## GROUPED LOADINGS PLOTS ##
+	if(9 %in% which){		
+		sample.factorlabels <- CSgrouploadings(loadings=loadings,grouploadings.labels=grouploadings.labels,grouploadings.cutoff=grouploadings.cutoff,ref.index=ref.index,method.name=method.name,component.name=component.name,basefilename=basefilename,plot.type=plot.type,plot=TRUE)
+	}else{
+		sample.factorlabels <- CSgrouploadings(loadings=loadings,grouploadings.labels=grouploadings.labels,grouploadings.cutoff=grouploadings.cutoff,ref.index=ref.index,method.name=method.name,component.name=component.name,basefilename=basefilename,plot.type=plot.type,plot=FALSE)
+	}
+	
 	## RETURN OBJECT ##
-	out <- list(component.select=component.plot,result=result,loadings=loadings,scores=scores,CSRank=out_CS_rank,component.name=component.name)	
+	out <- list(component.select=component.plot,result=result,loadings=loadings,scores=scores,CSRank=out_CS_rank,component.name=component.name,factorlabels=sample.factorlabels)	
 	return(out)
 	
 	

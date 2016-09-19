@@ -11,6 +11,7 @@
   column.interest = NULL, row.interest = NULL, profile.type = "gene",
   color.columns = NULL, gene.highlight = NULL, gene.thresP = 1,
   gene.thresN = -1, thresP.col = "blue", thresN.col = "red",
+  grouploadings.labels = NULL, grouploadings.cutoff = NULL,
   legend.names = NULL, legend.cols = NULL, legend.pos = "topright",
   result.available = NULL, result.available.update = FALSE,
   plot.type = "device", basefilename = "analysePCA")
@@ -30,7 +31,18 @@
 
 \item{col.w}{\emph{PCA Parameter:} An optional column weights (by default, uniform column weights).}
 
-\item{which}{Choose one or more plots to draw: \cr 1. Percentage Variance Explained / Information Content for Component (Factor/Bicluster) \cr 2. Loadings for reference compounds \cr 3  Loadings for Component (Factor/Bicluster) ( \code{component.plot} \cr 4  Gene Scores for Component (Factor/Bicluster) \code{component.Plot} \cr 5. Connectivity Ranking Scores for Component \code{component.plot} \cr 6. Component \code{component.plot} VS Other Component : Loadings & Genes \cr 7. Profile plot (see \code{profile.type})}
+\item{which}{Choose one or more plots to draw: 
+\enumerate{
+\item Percentage Variance Explained / Information Content for Component (Factor/Bicluster)
+\item Loadings for reference compounds
+\item Loadings for Component (Factor/Bicluster) \code{component.plot}
+\item Gene Scores for Component (Factor/Bicluster) \code{component.Plot}
+\item Connectivity Ranking Scores for Component \code{component.plot}
+\item Component \code{component.plot} VS Other Component : Loadings & Genes 
+\item Profile plot (see \code{profile.type})
+\item Trend Profile Plots (NOT YET AVAILABLE)
+\item Group Loadings Plots for all components (see \code{grouploadings.labels}).
+}}
 
 \item{component.plot}{Which components (Factor/Bicluster) should be investigated? Can be a vector of multiple (e.g. \code{c(1,3,5)}). If \code{NULL}, you can choose components of interest interactively from reference loadings plot.}
 
@@ -40,11 +52,15 @@
 
 \item{row.interest}{Numeric vector of gene indices to be plotted in gene profiles plot (\code{which=7}, \code{profile.type="gene"}). If \code{NULL}, you can interactively select them in the gene scores plot (\code{which=4}).}
 
-\item{profile.type}{Type of \code{which=7} plot:\cr - \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. \cr - \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})}
+\item{profile.type}{Type of \code{which=7} plot:
+\itemize{
+\item \code{"gene"}: Gene profiles plot of selected genes in \code{row.interest} with the reference compounds and those selected in \code{column.interest} ordered first on the x axis. The other compounds are ordered in decreasing CScore. 
+\item \code{"cmpd"}: Compound profiles plot of reference and selected compounds (\code{column.interest}) and only those genes on the x-axis which beat the thresholds (\code{gene.thresP}, \code{gene.thresN})
+}}
 
 \item{color.columns}{Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.}
 
-\item{gene.highlight}{Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors.}
+\item{gene.highlight}{Single numeric vector or list of maximum 5 numeric vectors. This highlights gene of interest in gene scores plot (\code{which=4}) up to 5 different colors. (e.g. You can use this to highlight genes you know to be differentially expressed)}
 
 \item{gene.thresP}{Threshold for genes with a high score (\code{which=4}).}
 
@@ -53,6 +69,21 @@
 \item{thresP.col}{Color of genes above \code{gene.thresP}.}
 
 \item{thresN.col}{Color of genes below \code{gene.thresN}.}
+
+\item{grouploadings.labels}{This parameter used for the Group Loadings Plots (\code{which=9}). In general this plot will contain the loadings of all factors, grouped and colored by the labels given in this parameter.
+\itemize{
+\item If \code{grouploadings.labels!=NULL}:\cr
+Provide a vector for all samples (ref + query) containing labels on which the plot will be based on.
+
+\item If \code{grouploadings.labels=NULL}:\cr 
+If no labels are provided when choosing \code{which=9}, automatic labels ("Top Samples of Component 1, 2....") will be created. These labels are given to the top \code{grouploadings.cutoff}  number of samples based on the absolute values of the loadings. 
+}
+Plot \code{which=9} can be used to check 2 different situations. Either to check if your provided labels coincide with the discovered structure in the analysis. The other aim is to find new interesting structures (of samples) which strongly appear in one or multiple components. A subsequent step could be to take some strong samples/compounds of these compounds and use them as a new reference set in a new CS analysis to check its validity or to find newly connected compounds.
+
+Please note that even when \code{group.loadings.labels!=NULL}, that the labels based on the absolute loadings of all the factors (the top \code{grouploadings.cutoff}) will always be generated and saved in \code{samplefactorlabels} in the \code{extra} slot of the \code{CSresult} object. 
+This can then later be used for the \code{CSlabelscompare} function to compare them with your true labels.}
+
+\item{grouploadings.cutoff}{Parameter used in plot \code{which=9}. See \code{grouploadings.labels=NULL} for more information. If this parameter is not provided, it will be automatically set to 10\% of the total number of loadings.}
 
 \item{legend.names}{Option to draw a legend of for example colored columns in Compound Loadings plot (\code{which=3}). If \code{NULL}, only "References" will be in the legend.}
 

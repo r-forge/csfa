@@ -22,7 +22,14 @@ CScompare(CSresult1, CSresult2, component1.plot, component2.plot,
 
 \item{threshold.pvalues}{If both CSresult1 and CSresult contain pvalues (and adjusted pvalues), this threshold will be used to compare the number of overlapping significant results.}
 
-\item{which}{Choose one or both plots which should be created.\cr 1: CS Comparison Plot\cr 2: GS Comparison Plot\cr 3: CSRankScores (Normal CS for CSzhang) Comparison Plot\cr 4: CS p-values comparison plot (Raw & Adjusted).\cr 5: CRankScores p-values comparison plot (Raw & Adjusted).}
+\item{which}{Choose one or both plots which should be created.
+\enumerate{
+\item CS Comparison Plot
+\item GS Comparison Plot
+\item CSRankScores (Normal CS for CSzhang) Comparison Plot
+\item CS p-values comparison plot (Raw & Adjusted).
+\item CRankScores p-values comparison plot (Raw & Adjusted).
+}}
 
 \item{color.columns}{Vector of colors for the reference and query columns (compounds). If \code{NULL}, blue will be used for reference and black for query. Use this option to highlight reference columns and query columns of interest.}
 
@@ -45,7 +52,7 @@ CScompare(CSresult1, CSresult2, component1.plot, component2.plot,
 \item{basefilename}{Basename of the graphs if saved in pdf files}
 }
 \value{
-A list object with the vector with (pearson + spearman) correlation between Connectivity Scores, Rank Scores (and Gene Scores if available). If both CSresult contain p-values the other list slots are filled with some comparison between the number of significant p-values for CS and CSRank.
+A list object with 2 slotes. In the first slot, Pearson and Spearman correlation between the results (CLoadings, Gene Scores, CRanking Scores, (adjusted) p-values) can be found. The second slot, if permutation was applied, contaisn a small comparison between the significant results based on \code{threshold.pvalues}.
 }
 \description{
 After applying different CSanalysis on the same data, you can compare 2 different results of connectivity loadings, connectivity ranking scores and gene scores

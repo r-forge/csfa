@@ -2,6 +2,7 @@
 
 export(CSanalysis)
 export(CScompare)
+export(CSlabelscompare)
 export(CSpermute)
 exportClasses(CSresult)
 exportMethods(CSanalysis)
@@ -17,3 +18,4 @@ importFrom(fabia,extractBic)
 importFrom(fabia,fabia)
 importFrom(fabia,showSelected)
 importFrom(pls,stdize)
+importFrom(randomcoloR,distinctColorPalette)

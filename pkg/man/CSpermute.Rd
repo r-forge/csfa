@@ -24,7 +24,13 @@ CSpermute(refMat, querMat, CSresult, B = 500, mfa.factor = NULL,
 
 \item{verbose}{If \code{TRUE}, progression dots     of the permutation analysis will be printed.}
 
-\item{which}{Choose which plot to draw.\cr 1. A volcano plot of the -log(p-values) versus the observed connection scores.\cr 2. A histogram of the permuted connection scores under the null hypothesis for a specific compound. A vertical line(s) is added for the observed CS and its p-value. The \code{cmpd.hist} parameter determines which compounds are drawn like this.\cr 3. Analog to \code{which=1}, but for CSRankScores.\cr 4. Analog to \code{which=2}, but for CSRankScores.}
+\item{which}{Choose which plot to draw:
+\enumerate{
+\item A volcano plot of the -log(p-values) versus the observed connection scores.
+\item A histogram of the permuted connection scores under the null hypothesis for a specific compound. A vertical line(s) is added for the observed CS and its p-value. The \code{cmpd.hist} parameter determines which compounds are drawn like this.
+\item Analog to \code{which=1}, but for CSRankScores.
+\item Analog to \code{which=2}, but for CSRankScores.
+}}
 
 \item{cmpd.hist}{Query index vector which decides which query compounds are plotted for the histogram distribution under null hypothesis (\code{which=2}). If \code{NULL}, you can select which compounds you want interactively on the volcano plot.}
 

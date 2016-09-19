@@ -25,7 +25,13 @@
 #' @param verbose If \code{TRUE}, progression dots	 of the permutation analysis will be printed.
 # @param querMat.Perm Possible to provide user-created permuted querMat data. Should be a list object of B times permuted querMat matrices.
 # @param save.querMat.Perm If \code{TRUE}, the list of permuted querMat matrices will be saved in the permutation.object slot of the CSresult.
-#' @param which Choose which plot to draw.\cr 1. A volcano plot of the -log(p-values) versus the observed connection scores.\cr 2. A histogram of the permuted connection scores under the null hypothesis for a specific compound. A vertical line(s) is added for the observed CS and its p-value. The \code{cmpd.hist} parameter determines which compounds are drawn like this.\cr 3. Analog to \code{which=1}, but for CSRankScores.\cr 4. Analog to \code{which=2}, but for CSRankScores.
+#' @param which Choose which plot to draw:
+#' \enumerate{
+#' \item A volcano plot of the -log(p-values) versus the observed connection scores.
+#' \item A histogram of the permuted connection scores under the null hypothesis for a specific compound. A vertical line(s) is added for the observed CS and its p-value. The \code{cmpd.hist} parameter determines which compounds are drawn like this.
+#' \item Analog to \code{which=1}, but for CSRankScores.
+#' \item Analog to \code{which=2}, but for CSRankScores.
+#' }
 #' @param cmpd.hist Query index vector which decides which query compounds are plotted for the histogram distribution under null hypothesis (\code{which=2}). If \code{NULL}, you can select which compounds you want interactively on the volcano plot.
 #' @param plot.type How should the plots be outputted? \code{"pdf"} to save them in pdf files, \code{device} to draw them in a graphics device (default), \code{sweave} to use them in a sweave or knitr file.
 #' @param color.columns Option to color the compounds on the volcano plot (\code{which=1}). Should be a vector of colors with the length of number of queries.
@@ -86,7 +92,7 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 
 			if(verbose){cat("Analysing Permuted Data with MFA\n(Factor is chosen based on highest average reference loadings):\n")}
 			
-			CS.Perm <- list()
+			CS.Perm <- vector("list",B)
 			MFA.factor.Perm <- c(1:B)
 			
 			for(i in 1:B){
@@ -133,7 +139,7 @@ CSpermute <- function(refMat,querMat,CSresult,B=500,mfa.factor=NULL,method.adjus
 		if(type=="CSzhang"){
 			if(verbose){cat("Analysing Permuted Data with Zhang and Gant:\n")}
 			
-			CS.Perm <- list()
+			CS.Perm <- vector("list",B)
 			
 			for(i in 1:B){
 				
@@ -407,14 +413,14 @@ pvalue_compute <- function(obs.result,list.h0.result,list.h0.result.rank,ref.ind
 		
 		pval.dataframe <- data.frame(Cmpd=rownames(obs.result@CS$CS.query))
 		pval.dataframe$Cmpd <- as.character(pval.dataframe$Cmpd)
-		temp.pval <- c()
+		temp.pval <- c(1:length(obs.scores))
 		
 		for(i.cmpd in c(1:length(obs.scores))){
 			h0.data <- unlist(lapply(list.h0.result,FUN=function(x){return(x[i.cmpd])}))
 			obs <- obs.scores[i.cmpd]
 			pvalue <- (1+sum(abs(h0.data)>=abs(obs)))/(length(h0.data)+1)
 			
-			temp.pval <- c(temp.pval,pvalue)
+			temp.pval[i.cmpd] <- pvalue
 		}
 		
 		pval.dataframe$observed <- obs.scores
@@ -432,12 +438,12 @@ pvalue_compute <- function(obs.result,list.h0.result,list.h0.result.rank,ref.ind
 		obs.scores <- obs.result@extra$object$quanti.var$coord[-ref.index,mfa.factor]
 		pval.dataframe <- data.frame(Cmpd=names(obs.scores))
 		pval.dataframe$Cmpd <- as.character(pval.dataframe$Cmpd)
-		temp.pval <- c()
+		temp.pval <- c(1:length(obs.scores))
 		
 		# Prep for CSrank pvalues
 		obs.scores.rank <- CSrank2(obs.result@extra$object$quanti.var$coord,ref.index=ref.index,plot=FALSE,component.plot=mfa.factor)$CSRankScores
 		pval.dataframe.rank<- data.frame(Cmpd=names(obs.scores))
-		temp.pval.rank <- c()
+		temp.pval.rank <- c(1:length(obs.scores))
 		
 		for(i.cmpd in c(1:length(obs.scores))){
 			
@@ -445,13 +451,13 @@ pvalue_compute <- function(obs.result,list.h0.result,list.h0.result.rank,ref.ind
 			h0.data <- unlist(lapply(list.h0.result,FUN=function(x){return(x[i.cmpd+length(ref.index)])}))
 			obs <- obs.scores[i.cmpd]
 			pvalue <- (1+sum(abs(h0.data)>=abs(obs)))/(length(h0.data)+1)
-			temp.pval <- c(temp.pval,pvalue)
+			temp.pval[i.cmpd] <- pvalue
 			
 			# P-values of CSRank
 			h0.data.rank <- unlist(lapply(list.h0.result.rank,FUN=function(x){return(x[i.cmpd])}))
 			obs.rank <- obs.scores.rank[i.cmpd]
 			pvalue.rank <- (1+sum(abs(h0.data.rank)>=abs(obs.rank)))/(length(h0.data.rank)+1)
-			temp.pval.rank <- c(temp.pval.rank,pvalue.rank)
+			temp.pval.rank[i.cmpd] <- pvalue.rank
 						
 		}
 		pval.dataframe$pvalues <- temp.pval

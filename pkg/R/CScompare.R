@@ -63,7 +63,7 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 	
 	if(refdim1!=refdim2){stop("Using 2 different reference matrices",call.=FALSE)}
 	if(querdim1!=querdim2){stop("Using 2 different query matrices",call.=FALSE)}
-	if(CSresult1@call$dimensions$row != CSresult2@call$dimensions$row){stop("Different amount of genes between 2 results",call.=FALSE)}
+	if(CSresult1@call$dimensions$row != CSresult2@call$dimensions$row){warning("Different amount of genes between 2 results. No correlation computation or scatter plot will be done for the Gene Scores.",call.=FALSE)}
 	if(!all(rownames(CSresult1@CS[[1]]$CS.query)==rownames(CSresult2@CS[[1]]$CS.query))){stop("Different rownames for 2 results",call.=FALSE)}
 	
 	CSGS1 <- get.CS.GS(CSresult1,component1.plot,refdim1)
@@ -141,11 +141,18 @@ CScompare <- function(CSresult1,CSresult2,component1.plot,component2.plot,thresh
 	
 	
 	if(!(is.null(scores1)|is.null(scores2)|!(2 %in% which))){
-		compare.GS.plot(scores1=scores1,scores2=scores2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,nref=refdim1,gene.thresP=gene.thresP,gene.thresN=gene.thresN,thresP.col=thresP.col,thresN.col=thresN.col,plot.type=plot.type,basefilename=basefilename)
+		if(CSresult1@call$dimensions$row == CSresult2@call$dimensions$row){
+				compare.GS.plot(scores1=scores1,scores2=scores2,name1=name1,name2=name2,axename1=axename1,axename2=axename2,nref=refdim1,gene.thresP=gene.thresP,gene.thresN=gene.thresN,thresP.col=thresP.col,thresN.col=thresN.col,plot.type=plot.type,basefilename=basefilename)
+		}
 	}
 	if(!(is.null(scores1)|is.null(scores2))){
-		scores_correlation[1,3] <- cor(scores1,scores2,use="complete.obs")
-		scores_correlation[2,3] <- cor(scores1,scores2,use="complete.obs",method="spearman")
+		if(CSresult1@call$dimensions$row == CSresult2@call$dimensions$row){
+			scores_correlation[1,3] <- cor(scores1,scores2,use="complete.obs")
+			scores_correlation[2,3] <- cor(scores1,scores2,use="complete.obs",method="spearman")
+		}else{
+			scores_correlation[1,3] <- NA
+			scores_correlation[2,3] <- NA
+		}
 	}
 	
 	

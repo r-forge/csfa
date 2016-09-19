@@ -26,10 +26,12 @@ CSprofiles <- function(data,ref_index,gene.select,cmpd.select,profile.type=c("ge
 		
 		data.new <- data[gene.index,c(ref_index,cmpd.index,order.others),drop=FALSE]
 		
+		gene.colors <- distinctColorPalette(length(gene.index))
+		
 		plot.in(plot.type,paste0(basefilename,"_GeneProfiles.pdf"))
 		plot(0,type="n",axes=FALSE,xlim=c(1,dim(data.new)[2]),ylim=c(min(data.new),max(data.new)),ylab="Gene Expression",xlab="Compounds",main=paste0(main.base," - Gene Profiles for ",paste0(rownames(data.new),collapse=", ")))
 		for(i.gene in c(1:length(gene.index))){
-			lines(c(1:dim(data.new)[2]),data.new[i.gene,],col=i.gene)
+			lines(c(1:dim(data.new)[2]),data.new[i.gene,],col=gene.colors[i.gene])
 		}
 		axis(side=2)
 		axis(side=1,labels=FALSE)
@@ -267,3 +269,279 @@ compare_CS_CSRankScores <- function(CSresult,color.columns=NULL,plot.type="devic
 	}
 	
 }
+
+
+CSgrouploadings <- function(loadings,grouploadings.labels,grouploadings.cutoff,ref.index,method.name,component.name,basefilename,plot.type,plot=FALSE){
+	
+	## Plot-in and -out functions
+	plot.in <- function(plot.type,name){
+		if(plot.type=="pdf"){pdf(name,width=14)}
+#		if(plot.type=="device"){dev.new()}
+		if(plot.type=="sweave"){}
+	}
+	plot.out <- function(plot.type){if(plot.type=="pdf"){dev.off()}}	
+	
+		
+	## Make Factor Labels 
+	if(method.name=="FABIA"){component.short <- "BC"}else{component.short <- "F"}
+	
+	if(is.null(grouploadings.cutoff)){grouploadings.cutoff <- round(0.1*nrow(loadings))}
+	
+	
+	labelmatrix <- matrix(FALSE,nrow=nrow(loadings),ncol=ncol(loadings))
+	
+	for(i in 1:ncol(labelmatrix)){
+		labelmatrix[order(abs(loadings[,i]),decreasing=TRUE)[1:grouploadings.cutoff],i] <- TRUE
+	}
+	
+	factor.labels <- apply(labelmatrix,MARGIN=1,FUN=function(x){
+				if(sum(x)==0){return("None")}else{return(paste0(component.short,which(x),collapse="-"))}
+			})
+	
+	# If other labels not provided; based on cutoff
+		
+	if(is.null(grouploadings.labels)){
+		grouploadings.labels <- factor.labels
+		unique.labels <- unique(factor.labels)
+		unique.labels <- unique.labels[-which(unique.labels=="None")]
+		unique.labels <- c(unique.labels,"None")
+		
+		# TO DO: still need some special ordering so None is as last
+		# TO DO: RETURN LABELS TOO IN EXTRA! -> WANT TO USE THIS TO COMPARE WITH ACTUAL GROUPING -> MAKING FUNCTION FOR TO COMPARE THIS WITH ACTUAL LABELS -> FROM UNSUPERVISE TO SUPERVISE (1 plot for each label, then color with true labels)
+	}else{
+		unique.labels <- unique(grouploadings.labels)
+	}
+	
+	
+	## Make plots
+	if(plot){
+		
+		inset.temp <- ifelse(plot.type=="pdf",0.1,0.25)
+		
+		# Correct colors
+		colorpalette <- distinctColorPalette(length(unique.labels))
+		names(colorpalette) <- unique.labels
+		if(names(colorpalette)[length(colorpalette)]=="None"){colorpalette[length(colorpalette)] <- "grey"}
+		
+		col.temp <- rep("black",nrow(loadings))
+		order.index <- rep(0,nrow(loadings))
+		current.at <- 1
+		
+		for(i.label in unique.labels){
+			label.index <- which(grouploadings.labels==i.label)
+			order.index[current.at:(current.at+length(label.index)-1)] <- label.index
+			current.at <- current.at+length(label.index)
+			
+			col.temp[label.index] <- colorpalette[i.label]
+		}
+		bg.temp <- col.temp
+		col.temp[ref.index] <- "blue"
+
+		# Sort the data + colors to get separate groups (in order of unique.labels)
+		
+		plot.in(plot.type,name=paste0(basefilename,"_grouploadings.pdf"))
+		
+		
+		for(i in 1:ncol(loadings)){
+			if(plot.type=="device"){dev.new()}
+			par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
+			
+			plot(loadings[order.index,i],pch=21,col=col.temp[order.index],bg=bg.temp[order.index],xlab="Index",ylab="Loadings",main=paste0(method.name," - ",component.name," ",i," - Grouped Loadings"))
+#			abline(h=0,lty=2)
+			lines(c(0,nrow(loadings)+1),c(0,0),lty=2)
+			
+			legend("topright",c("Ref.",names(colorpalette)),col=c("blue",colorpalette),pt.bg=c("white",colorpalette),inset=c(-inset.temp,0),bty="n",pch=21)
+		}
+		
+		
+		plot.out(plot.type)
+		
+	}
+	
+	return(factor.labels)
+}
+
+
+get.loadings <- function(CSresult){
+	type <- CSresult@type
+	
+	if(type=="CSfabia"){
+		loadings <- CSresult@extra$object@L
+	}
+	else if(type=="CSmfa"){
+		loadings <- CSresult@extra$object$quanti.var$cor
+	}
+	else if(type =="CSpca"){
+		loadings <- CSresult@extra$object$var$cor
+	}
+	else if(type =="CSsmfa"){
+		loadings <- CSresult@extra$object$loadings
+	}
+	else{
+		stop("Result type not recognised")
+	}
+	return(loadings)	
+	
+}	
+
+
+
+
+#' Compare Automatic Factor Labels with Manual Provided Labels.
+#' 
+#' With this function you can compare the automatic created labels based of the absolute loadings in \emph{CSanalysis} (\code{which=9}) with your own provided labels to investigate if there is relation between them.\cr
+#' See the \code{type} parameter which two plots can be created.\cr
+#' Note that the automatic created factor labels in \emph{CSanalysis} denote which factors this loading has a high/low value and these can be regenerated (with different a different cut-off) by simply running \emph{CSanalysis} again. Providing \code{resultavailable} will skip the analysis computation step and only regenerate the labels.
+#'  
+#' @export
+#' @param CSresult Object of CSresult S4 Class.
+#' @param labels Provide a vector with labels. (Length should be the number of references and queries together)
+#' @param type 
+#' \itemize{
+#' \item \code{type="factorlabels"}:\cr
+#' A K number of plots will be created (K = number of components in the analysis). Each plot will have the loadings on the y-axis and the original automatic generated factor labels on the x-axis.
+#' The loadings are plotted for these factor labels (with jitter) and are colored according to the manual provided labels (\code{labels}) which is shown in the legend. The coloring also shows which loadings were in the reference set.
+#'
+#' \item \code{type="factors"}:\cr
+#' A K number of plots will be created (K = number of components in the analysis). Each plot will have the loadings on the y-axis and factor labels on the x-axis.
+#' These factor labels are not exactly the generated labels, but simply "Factor 1", "Factor 2",..., "None" or "BC 1", "BC 2",..., "None". This means that should a loading be high/low in multiple factors, it will appear multiple times on this plot, namely for each corresponding factor.
+#' The loadings are plotted for these factor labels (with jitter) and are colored according to the manual provided labels (\code{labels}) which is shown in the legend. The coloring also shows which loadings were in the reference set.
+#' }
+#' Note that if none of the loadings is high/low in multiple factors, the types of plots should be identical.
+#' @param basefilename Base of the filename when saving the graph as a pdf (\code{plot.type="pdf"})
+#' @param plot.type How should the plots be outputted? \code{"pdf"} to save them in pdf files, \code{device} to draw them in a graphics device (default), \code{sweave} to use them in a sweave or knitr file.
+#' @examples
+#' \dontrun{
+#' data("dataSIM",package="CSFA")
+#' Mat1 <- dataSIM[,c(1:6)]
+#' Mat2 <- dataSIM[,-c(1:6)]
+#' 
+#' MFA_out <- CSanalysis(Mat1,Mat2,"CSmfa",component.plot=1,which=c())
+#' 
+#' labels <- rep("Noise",ncol(dataSIM))
+#' labels[c(1:31,332:341)] <- "Signal"
+#' 
+#' CSlabelscompare(CSresult=MFA_out,labels=labels,type="factors")
+#' CSlabelscompare(CSresult=MFA_out,labels=labels,type="factorlabels")
+#' }
+CSlabelscompare <- function(CSresult,labels,type="factors",basefilename="CSanalysis",plot.type="device"){
+	
+	if(class(CSresult)!="CSresult"){stop("CSresult is not of the correct class type",call.=FALSE)}
+	if(CSresult@type=="CSzhang"){stop("CSlabelscompare is not available for CSzhang results",call.=FALSE)}
+	
+	if(CSresult@type=="CSfabia"){
+		component.name <- label.name <- "BC"
+	}else{
+		label.name <- "F"
+		component.name <- "Factor"
+	}
+	
+	factorlabels <- CSresult@extra$samplefactorlabels
+	if(length(factorlabels)!=length(labels)){stop("Provided labels parameter does not have the correct length.",call.=FALSE)}
+	
+	loadings <- get.loadings(CSresult)
+	
+	ref.index <- 1:CSresult@call$dimensions$col[1]
+			
+			# jitter scatter plots (special function?)
+	
+	
+	# make 2 plots? Based on factors and based on factorlabels?
+	# Coloring always doen with true labels?
+	# factors should also contain "other"
+	
+	## Plot-in and -out functions
+	plot.in <- function(plot.type,name){
+		if(plot.type=="pdf"){pdf(name,width=14)}
+#		if(plot.type=="device"){dev.new()}
+		if(plot.type=="sweave"){}
+	}
+	plot.out <- function(plot.type){if(plot.type=="pdf"){dev.off()}}	
+	
+	
+	# General Preparation
+	inset.temp <- ifelse(plot.type=="pdf",0.1,0.25)
+	
+	unique.truenames <- unique(labels)		
+	colors.truenames <- distinctColorPalette(length(unique.truenames))
+	bg.true <- colors.true <- sapply(labels,FUN=function(x){return(colors.truenames[which(x==unique.truenames)])})
+	colors.true[ref.index] <- "blue"
+	
+	
+	if(type=="factors"){
+		
+		
+		# Get indices for new labels
+		factor.list <- vector("list",ncol(loadings))
+		for(i in 1:length(factor.list)){
+			factor.list[[i]] <- which(sapply(factorlabels,FUN=function(x){return(grepl(paste0(label.name,i),x))}))
+		}
+		# Add None label
+		factor.list[[length(factor.list)+1]] <- (1:nrow(loadings))[-unlist(factor.list[1:ncol(loadings)])]
+		names(factor.list) <- c(paste0(label.name,1:ncol(loadings)),"None")
+		
+		xlim.temp <- c(1,length(factor.list))
+		ylim.temp <- c(min(loadings),max(loadings))
+		
+		
+		# there will be some duplicate stuff... should be taken into account for true labels
+		plot.in(plot.type,paste0(basefilename,"_labelscompare_factors.pdf"))
+		for(i in 1:ncol(loadings)){
+			if(plot.type=="device"){dev.new()}
+			par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
+			
+			plot(0,type="n",axes=FALSE,xlim=xlim.temp,ylim=ylim.temp,xlab="Factor Labels",ylab="Loadings",main=paste0(CSresult@type," - ",component.name," ",i))
+		
+			for(j in 1:length(factor.list)){
+				data <- loadings[factor.list[[j]],i]
+			
+				if(length(data)==1){x.temp <- j}else{x.temp <- jitter(rep(j,length(data)),amount=0.2)}
+			
+				points(x.temp,data,pch=21,col=colors.true[factor.list[[j]]],bg=bg.true[factor.list[[j]]])
+				lines(c(0.8,length(factor.list)+0.2),c(0,0),lty=2)
+			}
+			axis(1,at=1:length(factor.list),labels=names(factor.list))
+			axis(2,at=seq(-1,1,0.2))
+			legend("topright",c("Ref.",unique.truenames),col=c("blue",colors.truenames),pt.bg=c("white",colors.truenames),inset=c(-inset.temp,0),bty="n",pch=21)
+		
+		}
+		plot.out(plot.type)
+	}
+	
+	if(type=="factorlabels"){
+	
+		unique.factornames <- unique(factorlabels)
+		if("None"%in%unique.factornames){
+			unique.factornames <- unique.factornames[-which(unique.factornames=="None")]
+			unique.factornames <- c(unique.factornames,"None")
+		}
+		
+		xlim.temp <- c(1,length(unique.factornames))
+		ylim.temp <- c(min(loadings),max(loadings))
+		
+		plot.in(plot.type,paste0(basefilename,"_labelscompare_factorlabels.pdf"))
+		for(i in 1:ncol(loadings)){
+			if(plot.type=="device"){dev.new()}
+			par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
+			
+			plot(0,type="n",axes=FALSE,xlim=xlim.temp,ylim=ylim.temp,xlab="Factor Labels",ylab="Loadings",main=paste0(CSresult@type," - ",component.name," ",i))
+			
+			for(j in 1:length(unique.factornames)){
+				current.select <- which(factorlabels==unique.factornames[j])
+				data <- loadings[current.select,i]
+				
+				if(length(data)==1){x.temp <- j}else{x.temp <- jitter(rep(j,length(data)),amount=0.2)}
+				
+				points(x.temp,data,pch=21,col=colors.true[current.select],bg=bg.true[current.select])
+				lines(c(0.8,length(unique.factornames)+0.2),c(0,0),lty=2)
+			}
+			axis(1,at=1:length(unique.factornames),labels=unique.factornames)
+			axis(2,at=seq(-1,1,0.2))
+			legend("topright",c("Ref.",unique.truenames),col=c("blue",colors.truenames),pt.bg=c("white",colors.truenames),inset=c(-inset.temp,0),bty="n",pch=21)
+			
+		}
+		plot.out(plot.type)
+	}
+}
+
+
